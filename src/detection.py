@@ -3,7 +3,6 @@ import cv2
 
 from matplotlib import pyplot as plt
 
-
 def show_image(images=[], titles=[]):
     fig = plt.figure(figsize=(150, 200))
     nrows = 1
@@ -18,7 +17,7 @@ def show_image(images=[], titles=[]):
         plt.xticks([])
         plt.yticks([])
 
-    plt.show()
+    #plt.show()
 
 
 def edge_detection(im):
@@ -32,7 +31,7 @@ def edge_detection(im):
 
     # PYR MEAN SHIFT FILTERING
     im = cv2.pyrMeanShiftFiltering(im, sp=2, sr=8, maxLevel=3)
-    images.append(im)
+    images.append(im);
     titles.append('Mean Shift Filtering')
 
     # Apply threshould
@@ -54,8 +53,7 @@ def edge_detection(im):
 
     # Canny
     # im = cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
-    im = cv2.Canny(im, threshold1=50, threshold2=150,
-                   apertureSize=3, L2gradient=True)
+    im = cv2.Canny(im, threshold1=50, threshold2=150, apertureSize=3, L2gradient=True)
     images.append(im)
     titles.append('Canny Filtering Image')
 
@@ -67,9 +65,9 @@ def edge_detection(im):
     if len(lines) > 0:
         for x in range(0, len(lines)):
             for x1, y1, x2, y2 in lines[x]:
-                cv2.line(im_lines, (x1, y1), (x2, y2), (255, 0, 0), 10)
+                cv2.line(im_lines, (x1, y1), (x2, y2), (255, 0, 0), 3)
     images.append(im_lines)
     titles.append('Image with Line')
 
-    # show_image(images, titles)
+    #show_image(images, titles)
     return im_lines
