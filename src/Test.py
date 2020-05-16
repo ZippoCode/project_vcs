@@ -3,6 +3,7 @@ import os
 
 from Detection import edge_detection
 
+
 def capVideo(video_path, name_video):
     cap = cv2.VideoCapture(video_path)
 
@@ -17,7 +18,12 @@ def capVideo(video_path, name_video):
         if ret == True:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             img_out = edge_detection(frame)
-            out.write(img_out)
+
+            # out.write(img_out)
+
+            cv2.imshow('frame', img_out)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
         else:
             break
 
@@ -26,12 +32,14 @@ def capVideo(video_path, name_video):
 
 
 if __name__ == '__main__':
-    for forder in os.listdir("../Project material/videos"):
+    for forder in os.listdir("./data/videos"):
         if forder == '.DS_Store':
             continue
-        path = os.path.join("../Project material/videos", forder)
+        path = os.path.join("./data/videos", forder)
         for file in os.listdir(path):
-            if file.endswith(".MOV") or file.endswith(".MOV"):
+            if file.endswith(".MOV") or file.endswith(".mp4") or file.endswith(".MP4"):
                 video = os.path.join(path, file)
-                capVideo(video, 'edge_detection/' + forder + '/' + file)
+                capVideo(video, 'data/result/' + forder + '/' + file)
                 print('Finish ...')
+
+# capVideo('./data/videos/000/VIRB0392.mp4', 'VIRB0392.mp4')
