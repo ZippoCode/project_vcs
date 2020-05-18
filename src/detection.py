@@ -3,6 +3,7 @@ import cv2
 import math
 
 from try_erosion import execute
+from plotting import plt_images
 
 
 def eight_directional_sobel_filter(image, stride=1):
@@ -61,6 +62,7 @@ def edge_detection(im):
     :param im:
     :return:
     """
+    list_painting = []
 
     images = []
     titles = []
@@ -74,11 +76,9 @@ def edge_detection(im):
     im = cv2.pyrMeanShiftFiltering(im, sp=8, sr=8, maxLevel=3)
     images.append(im)
     titles.append('Mean Shift Filtering')
-    cv2.imshow('Mean Shift Filtering', im)
-    cv2.waitKey(0)
 
     # Erosion and dilation
-    #   execute(im_original)
+
     erosion_size = 20
     element = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * erosion_size + 1, 2 * erosion_size + 1),
                                         (erosion_size, erosion_size))
@@ -87,8 +87,10 @@ def edge_detection(im):
     titles.append("Erosed Image")
 
     # Apply difference Threshold
-    hsv = cv2.cvtColor(np.float32(im), cv2.COLOR_RGB2HSV)
+    hsv = cv2.cvtColor(im, cv2.COLOR_RGB2HSV)
     H, S, V = np.arange(3)
+    ret, hsv[:, :, V] = cv2.threshold(
+        hsv[:, :, V], 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     scale = 1
     delta = 0
     ddepth = cv2.CV_16S
@@ -100,46 +102,24 @@ def edge_detection(im):
     abs_grad_y = cv2.convertScaleAbs(grad_y)
     hsv[:, :, V] = cv2.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
     im = hsv[:, :, V].astype(np.uint8)
+    # Apply to threshould
     images.append(im)
-    titles.append("Image with Sobel dimension V of HSV color space")
-
-    im = np.where(im > 30, 255, 0).astype(np.uint8)
-    images.append(im)
-    titles.append("Prova")
+    titles.append("Threshold and Sobel image")
 
     # Lines
     im_lines = np.copy(im_original)
     contours, _ = cv2.findContours(
         im, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for contour in contours:
-        arc_len = cv2.arcLength(contour, True)
-        approx = cv2.approxPolyDP(contour, 0.06 * arc_len, True)
-        if (len(approx) == 4):
-            cv2.drawContours(im_lines, contours, -1, (0, 255, 0), 3)
+        epsilon = cv2.arcLength(contour, True) * 0.06
+        approx = cv2.approxPolyDP(contour, epsilon=epsilon, closed=True)
+        if len(approx) == 4 and cv2.contourArea(contour) > 5000:
+            x, y, w, h = cv2.boundingRect(contour)
+            cv2.rectangle(im_lines, (x, y), (x + w, y + h), (0, 255, 0), 3)
+            list_painting.append((x, y, w, h))
 
     images.append(im_lines)
     titles.append('Image with Line')
-    """
+    #   plt_images(images, titles)
 
-    # Canny
-    im = cv2.Canny(im, threshold1=150, threshold2=250, apertureSize=3, L2gradient=True)
-    images.append(im)
-    titles.append('Canny Filtering Image')
-    cv2.imshow('Canny', im)
-    cv2.waitKey(0)
-
-
-    
-        im_lines = np.copy(im_original)
-    #   lines = cv2.HoughLines(im, rho=1, theta=np.pi / 180, threshold=100, srn=0, stn=0, min_theta=0, max_theta=0)
-    linesP = cv2.HoughLinesP(im, 1, np.pi / 180, 50, None, 50, 10)
-    if linesP is not None:
-        for i in range(0, len(linesP)):
-            l = linesP[i][0]
-            cv2.line(im_lines, (l[0], l[1]), (l[2], l[3]), (0, 0, 255), 3, cv2.LINE_AA)
-    images.append(im_lines)
-    titles.append('Image with Line')
-
-    """
-
-    return images, titles
+    return list_painting
