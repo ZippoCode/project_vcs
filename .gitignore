@@ -1,5 +1,7 @@
 data/
+output/
 
+# macOS Files
 .DS_Store
 
 *.mp4

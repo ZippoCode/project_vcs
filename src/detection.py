@@ -122,13 +122,7 @@ def edge_detection(im):
     """
 
     # Canny
-<<<<<<< HEAD
-    # im = cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
-    im = cv2.Canny(im, threshold1=50, threshold2=150,
-                   apertureSize=3, L2gradient=True)
-=======
     im = cv2.Canny(im, threshold1=150, threshold2=250, apertureSize=3, L2gradient=True)
->>>>>>> f422debd47b6662d79ebe6a88fb5454cf3e1832b
     images.append(im)
     titles.append('Canny Filtering Image')
     cv2.imshow('Canny', im)
