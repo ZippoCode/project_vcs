@@ -11,7 +11,7 @@ def plt_images(images, titles):
     """
     fig = plt.figure(figsize=(150, 200))
     nrows = 3
-    ncols = 2
+    ncols = 3
     for img in range(len(images)):
         fig.add_subplot(nrows, ncols, img + 1)
         if (len(images[img].shape) < 3):
