@@ -91,39 +91,60 @@ def edge_detection(im):
     images.append(im)
     titles.append("Erosed Image")
 
-    # Apply difference Threshold
+    # Apply difference Threshold of V dimension
     hsv = cv2.cvtColor(im, cv2.COLOR_RGB2HSV)
     H, S, V = np.arange(3)
-    ret, hsv[:, :, V] = cv2.threshold(hsv[:, :, V], 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    ret, im = cv2.threshold(hsv[:, :, V], 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    images.append(im)
+    titles.append("Threshold image")
+
+    # Apply Sobel to V-dimension of HSV color space
     scale = 1
     delta = 0
     ddepth = cv2.CV_16S
-    grad_x = cv2.Sobel(hsv[:, :, V], ddepth, 1, 0, ksize=3,
-                       scale=scale, delta=delta, borderType=cv2.BORDER_DEFAULT)
-    grad_y = cv2.Sobel(hsv[:, :, V], ddepth, 0, 1, ksize=3,
-                       scale=scale, delta=delta, borderType=cv2.BORDER_DEFAULT)
+    grad_x = cv2.Sobel(im, ddepth, 1, 0, ksize=3, scale=scale, delta=delta, borderType=cv2.BORDER_DEFAULT)
+    grad_y = cv2.Sobel(im, ddepth, 0, 1, ksize=3, scale=scale, delta=delta, borderType=cv2.BORDER_DEFAULT)
     abs_grad_x = cv2.convertScaleAbs(grad_x)
     abs_grad_y = cv2.convertScaleAbs(grad_y)
-    hsv[:, :, V] = cv2.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
-    im = hsv[:, :, V].astype(np.uint8)
-    # Apply to threshould
+    im = cv2.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
     images.append(im)
-    titles.append("Threshold and Sobel image")
+    titles.append("Sobel image")
+
+    # Connected components
+    _, labeled_img = cv2.connectedComponentsWithAlgorithm(im, 8, cv2.CV_32S, cv2.CCL_GRANA)
+    labels = np.unique(labeled_img)
+    labels = labels[labels != 0]
+    im = np.zeros_like(labeled_img, dtype=np.uint8)
+    for label in labels:
+        mask = np.zeros_like(labeled_img, dtype=np.uint8)
+        mask[labeled_img == label] = 255
+        contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        hull = []
+        for cnt in contours:
+            hull.append(cv2.convexHull(cnt, False))
+        hull_mask = np.zeros((mask.shape[0], mask.shape[1]), dtype=np.uint8)
+        for i in range(len(contours)):
+            hull_mask = cv2.drawContours(hull_mask, hull, i, 255, -1, 8)
+        im = np.clip(im + hull_mask, 0, 255)
+    images.append(im)
+    titles.append('Connected components Image')
 
     # Lines
     im_lines = np.copy(im_original)
-    contours, _ = cv2.findContours(im, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(im, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     for contour in contours:
         epsilon = cv2.arcLength(contour, True) * 0.06
         approx = cv2.approxPolyDP(contour, epsilon=epsilon, closed=True)
         if len(approx) == 4 and cv2.contourArea(contour) > 5000:
             x, y, w, h = cv2.boundingRect(contour)
-            cv2.drawContours(im_lines, contours, -1, (255, 0, 0), 4)
+            #   cv2.drawContours(im_lines, contours, -1, (255, 0, 0), 4)
             cv2.rectangle(im_lines, (x, y), (x + w, y + h), (0, 255, 0), 3)
             list_painting.append((x, y, w, h))
 
     images.append(im_lines)
-    titles.append('Image with Line')
+    titles.append("Lines Image")
+
     plt_images(images, titles)
 
     return list_painting
