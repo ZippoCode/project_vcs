@@ -38,7 +38,7 @@ def capVideo(video_path, name_video):
             break
 
         # Show only image
-        #   break
+        break
 
     cap.release()
     print("Saving file: {}".format(name_video))

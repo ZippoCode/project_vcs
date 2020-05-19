@@ -34,13 +34,13 @@ def eight_directional_sobel_filter(image, stride=1):
     for col in range(oH):
         for row in range(oW):
             Gx = np.sum(image[col * stride: col * stride + kH,
-                              row * stride: row * stride + kW] * S_h)
+                        row * stride: row * stride + kW] * S_h)
             Gy = np.sum(image[col * stride: col * stride + kH,
-                              row * stride: row * stride + kW] * S_v)
+                        row * stride: row * stride + kW] * S_v)
             G_dl = np.sum(image[col * stride: col * stride +
-                                kH, row * stride: row * stride + kW] * S_dl)
+                                              kH, row * stride: row * stride + kW] * S_dl)
             G_dr = np.sum(image[col * stride: col * stride +
-                                kH, row * stride: row * stride + kW] * S_dr)
+                                              kH, row * stride: row * stride + kW] * S_dr)
             M = np.sqrt(Gx ** 2 + Gy ** 2)
 
             Hor[col, row] = Gx
@@ -78,7 +78,6 @@ def edge_detection(im):
     titles.append('Mean Shift Filtering')
 
     # Erosion and dilation
-
     erosion_size = 20
     element = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * erosion_size + 1, 2 * erosion_size + 1),
                                         (erosion_size, erosion_size))
@@ -108,18 +107,18 @@ def edge_detection(im):
 
     # Lines
     im_lines = np.copy(im_original)
-    contours, _ = cv2.findContours(
-        im, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(im, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for contour in contours:
         epsilon = cv2.arcLength(contour, True) * 0.06
         approx = cv2.approxPolyDP(contour, epsilon=epsilon, closed=True)
         if len(approx) == 4 and cv2.contourArea(contour) > 5000:
             x, y, w, h = cv2.boundingRect(contour)
+            cv2.drawContours(im_lines, contours, -1, (255, 0, 0), 4)
             cv2.rectangle(im_lines, (x, y), (x + w, y + h), (0, 255, 0), 3)
             list_painting.append((x, y, w, h))
 
     images.append(im_lines)
     titles.append('Image with Line')
-    #   plt_images(images, titles)
+    plt_images(images, titles)
 
     return list_painting
