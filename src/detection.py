@@ -33,13 +33,13 @@ def eight_directional_sobel_filter(image, stride=1):
     for col in range(oH):
         for row in range(oW):
             Gx = np.sum(image[col * stride: col * stride + kH,
-                        row * stride: row * stride + kW] * S_h)
+                              row * stride: row * stride + kW] * S_h)
             Gy = np.sum(image[col * stride: col * stride + kH,
-                        row * stride: row * stride + kW] * S_v)
+                              row * stride: row * stride + kW] * S_v)
             G_dl = np.sum(image[col * stride: col * stride +
-                                              kH, row * stride: row * stride + kW] * S_dl)
+                                kH, row * stride: row * stride + kW] * S_dl)
             G_dr = np.sum(image[col * stride: col * stride +
-                                              kH, row * stride: row * stride + kW] * S_dr)
+                                kH, row * stride: row * stride + kW] * S_dr)
             M = np.sqrt(Gx ** 2 + Gy ** 2)
 
             Hor[col, row] = Gx
@@ -85,7 +85,8 @@ def edge_detection(im):
     EROSION_ITERATIONS = 3
 
     im = cv2.erode(im_original, KERNEL_HIGH_PASS_FILTER)
-    im = cv2.dilate(im, np.ones(DILATE_KERNEL_SIZE, dtype=np.uint8), iterations=DILATE_ITERATIONS)
+    im = cv2.dilate(im, np.ones(DILATE_KERNEL_SIZE,
+                                dtype=np.uint8), iterations=DILATE_ITERATIONS)
     im = cv2.erode(im, KERNEL_HIGH_PASS_FILTER, iterations=EROSION_ITERATIONS)
     images.append(im)
     titles.append("Erosed Image")
@@ -93,7 +94,8 @@ def edge_detection(im):
     # Apply difference Threshold
     hsv = cv2.cvtColor(im, cv2.COLOR_RGB2HSV)
     H, S, V = np.arange(3)
-    ret, hsv[:, :, V] = cv2.threshold(hsv[:, :, V], 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    ret, hsv[:, :, V] = cv2.threshold(
+        hsv[:, :, V], 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     scale = 1
     delta = 0
     ddepth = cv2.CV_16S
@@ -111,7 +113,8 @@ def edge_detection(im):
 
     # Lines
     im_lines = np.copy(im_original)
-    contours, _ = cv2.findContours(im, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(
+        im, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for contour in contours:
         epsilon = cv2.arcLength(contour, True) * 0.06
         approx = cv2.approxPolyDP(contour, epsilon=epsilon, closed=True)
@@ -123,6 +126,6 @@ def edge_detection(im):
 
     images.append(im_lines)
     titles.append('Image with Line')
-    plt_images(images, titles)
+    # plt_images(images, titles)
 
     return list_painting
