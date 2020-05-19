@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 import math
 
-from try_erosion import execute
 from plotting import plt_images
 
 
