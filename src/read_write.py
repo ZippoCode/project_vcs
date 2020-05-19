@@ -32,7 +32,8 @@ def capVideo(video_path, name_video):
             list_painting = edge_detection(frame)
             for painting in list_painting:
                 x, y, w, h = painting
-                drawing_frame = cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
+                drawing_frame = cv2.rectangle(
+                    frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
                 out.write(cv2.cvtColor(drawing_frame, cv2.COLOR_BGR2RGB))
         else:
             break
