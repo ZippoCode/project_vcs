@@ -21,4 +21,4 @@ if __name__ == '__main__':
     capVideo(video, '../output/' + file_name)
 
 # if __name__ == '__main__':
-#     capVideo('../data/videos/VIRB0392.mp4', '../output/VIRB0392.mp4')
+#     capVideo('../data/videos/000/VIRB0406.MP4', '../output/VIRB0406.mp4')
