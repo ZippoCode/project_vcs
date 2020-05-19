@@ -78,18 +78,23 @@ def edge_detection(im):
     titles.append('Mean Shift Filtering')
 
     # Erosion and dilation
-    erosion_size = 20
-    element = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * erosion_size + 1, 2 * erosion_size + 1),
-                                        (erosion_size, erosion_size))
-    im = cv2.erode(src=im, kernel=element)
+    #   KERNEL_HIGH_PASS_FILTER = np.asarray([[0, 1, 5], [-1, -5, -1], [0, -1, 0]], np.uint8)
+    KERNEL_HIGH_PASS_FILTER = np.asarray(
+        [[0, 0, 1, 0, 0], [0, 0, 1, 0, 0], [1, 1, 1, 1, 1], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0]], np.uint8)
+    DILATE_KERNEL_SIZE = (5, 5)
+    DILATE_ITERATIONS = 2
+    EROSION_ITERATIONS = 3
+
+    im = cv2.erode(im_original, KERNEL_HIGH_PASS_FILTER)
+    im = cv2.dilate(im, np.ones(DILATE_KERNEL_SIZE, dtype=np.uint8), iterations=DILATE_ITERATIONS)
+    im = cv2.erode(im, KERNEL_HIGH_PASS_FILTER, iterations=EROSION_ITERATIONS)
     images.append(im)
     titles.append("Erosed Image")
 
     # Apply difference Threshold
     hsv = cv2.cvtColor(im, cv2.COLOR_RGB2HSV)
     H, S, V = np.arange(3)
-    ret, hsv[:, :, V] = cv2.threshold(
-        hsv[:, :, V], 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    ret, hsv[:, :, V] = cv2.threshold(hsv[:, :, V], 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     scale = 1
     delta = 0
     ddepth = cv2.CV_16S
