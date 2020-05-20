@@ -1,9 +1,0 @@
-data/
-output/
-
-# macOS Files
-.DS_Store
-
-*.mp4
-*.MP4
-*.MOV

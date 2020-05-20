@@ -1,7 +1,19 @@
 import cv2
 
 # Custom importing
-from detection import edge_detection
+from detection import edge_detection, get_bounding_boxes
+from plotting import plt_images
+from matplotlib import pyplot as plt
+
+
+def read_single_image(input_filename, output_filename='output.jpg'):
+    image = cv2.imread(input_filename, cv2.IMREAD_COLOR)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    if image is None:
+        print("Error reading image")
+        return
+    edge_detection(image)
+    cv2.imwrite(output_filename, image)
 
 
 def capVideo(video_path, name_video):
@@ -29,12 +41,35 @@ def capVideo(video_path, name_video):
         ret, frame = cap.read()
         if ret == True:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            list_painting = edge_detection(frame)
+            images, titles = edge_detection(frame)
+            list_painting = get_bounding_boxes(images[-1])
             for painting in list_painting:
-                x, y, w, h = painting
-                drawing_frame = cv2.rectangle(
-                    frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
-                out.write(cv2.cvtColor(drawing_frame, cv2.COLOR_BGR2RGB))
+                upper_left, upper_right, down_left, down_right = painting
+                cv2.line(frame, upper_left, upper_right, (0, 255, 0), 10)
+                cv2.line(frame, upper_left, down_left, (0, 255, 0), 10)
+                cv2.line(frame, down_left, down_right, (0, 255, 0), 10)
+                cv2.line(frame, upper_right, down_right, (0, 255, 0), 10)
+
+                # THIS IS THE FOUR POINTS
+                x, y = upper_left
+                w = upper_right[0] - x
+                h = down_left[1] - y
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 10)
+
+                # Try to calculate w, h
+                cv2.circle(frame, upper_left, 12, (0, 255, 0), -1)
+                cv2.circle(frame, down_left, 12, (255, 0, 0), -1)
+                cv2.circle(frame, upper_right, 12, (0, 0, 255), -1)
+                cv2.circle(frame, down_right, 12, (255, 255, 255), -1)
+
+                out.write(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+            # Add the drawing image with the rectangle
+            images.append(frame)
+            titles.append('Final result')
+
+            # Show the images
+            plt_images(images, titles)
         else:
             break
 
