@@ -9,6 +9,8 @@ def plt_images(images, titles):
     :param titles
     :return:
     """
+    if len(images) != len(titles) or len(images) > 20:
+        return
     fig = plt.figure(figsize=(150, 200))
     nrows = 3
     ncols = 3
