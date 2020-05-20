@@ -3,6 +3,7 @@ import cv2
 import math
 
 from plotting import plt_images
+from parameters import *
 
 
 def eight_directional_sobel_filter(image, stride=1):
@@ -80,9 +81,6 @@ def edge_detection(im):
     #   KERNEL_HIGH_PASS_FILTER = np.asarray([[0, 1, 5], [-1, -5, -1], [0, -1, 0]], np.uint8)
     KERNEL_HIGH_PASS_FILTER = np.asarray(
         [[0, 0, 1, 0, 0], [0, 0, 1, 0, 0], [1, 1, 1, 1, 1], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0]], np.uint8)
-    DILATE_KERNEL_SIZE = (5, 5)
-    DILATE_ITERATIONS = 2
-    EROSION_ITERATIONS = 3
 
     im = cv2.erode(im_original, KERNEL_HIGH_PASS_FILTER)
     im = cv2.dilate(im, np.ones(DILATE_KERNEL_SIZE,
@@ -150,6 +148,6 @@ def edge_detection(im):
     images.append(im_lines)
     titles.append("Lines Image")
 
-    plt_images(images, titles)
+    # plt_images(images, titles)
 
     return list_painting
