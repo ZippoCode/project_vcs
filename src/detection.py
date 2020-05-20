@@ -1,8 +1,7 @@
 import numpy as np
 import cv2
-import math
 
-from plotting import plt_images
+# Custom importing
 from parameters import *
 
 
@@ -34,13 +33,13 @@ def eight_directional_sobel_filter(image, stride=1):
     for col in range(oH):
         for row in range(oW):
             Gx = np.sum(image[col * stride: col * stride + kH,
-                              row * stride: row * stride + kW] * S_h)
+                        row * stride: row * stride + kW] * S_h)
             Gy = np.sum(image[col * stride: col * stride + kH,
-                              row * stride: row * stride + kW] * S_v)
+                        row * stride: row * stride + kW] * S_v)
             G_dl = np.sum(image[col * stride: col * stride +
-                                kH, row * stride: row * stride + kW] * S_dl)
+                                              kH, row * stride: row * stride + kW] * S_dl)
             G_dr = np.sum(image[col * stride: col * stride +
-                                kH, row * stride: row * stride + kW] * S_dr)
+                                              kH, row * stride: row * stride + kW] * S_dr)
             M = np.sqrt(Gx ** 2 + Gy ** 2)
 
             Hor[col, row] = Gx
@@ -59,11 +58,11 @@ def edge_detection(im):
         The first list contains edited images while the second contains
         a name of algorithms which used
 
-    :param im:
+    :param im: original image
     :return:
+        - a list containing the images of the operations carried out
+        - a list containing the names of the changes applied
     """
-    list_painting = []
-
     images = []
     titles = []
 
@@ -81,7 +80,6 @@ def edge_detection(im):
     #   KERNEL_HIGH_PASS_FILTER = np.asarray([[0, 1, 5], [-1, -5, -1], [0, -1, 0]], np.uint8)
     KERNEL_HIGH_PASS_FILTER = np.asarray(
         [[0, 0, 1, 0, 0], [0, 0, 1, 0, 0], [1, 1, 1, 1, 1], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0]], np.uint8)
-
     im = cv2.erode(im_original, KERNEL_HIGH_PASS_FILTER)
     im = cv2.dilate(im, np.ones(DILATE_KERNEL_SIZE,
                                 dtype=np.uint8), iterations=DILATE_ITERATIONS)
@@ -112,16 +110,14 @@ def edge_detection(im):
     titles.append("Sobel image")
 
     # Connected components
-    _, labeled_img = cv2.connectedComponentsWithAlgorithm(
-        im, 8, cv2.CV_32S, cv2.CCL_GRANA)
+    _, labeled_img = cv2.connectedComponentsWithAlgorithm(im, 8, cv2.CV_32S, cv2.CCL_GRANA)
     labels = np.unique(labeled_img)
     labels = labels[labels != 0]
     im = np.zeros_like(labeled_img, dtype=np.uint8)
     for label in labels:
         mask = np.zeros_like(labeled_img, dtype=np.uint8)
         mask[labeled_img == label] = 255
-        contours, _ = cv2.findContours(
-            mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         hull = []
         for cnt in contours:
@@ -133,21 +129,59 @@ def edge_detection(im):
     images.append(im)
     titles.append('Connected components Image')
 
-    # Lines
-    im_lines = np.copy(im_original)
-    contours, _ = cv2.findContours(im, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    return images, titles
+
+
+def get_bounding_boxes(image):
+    """
+        Given an image it looks for the paintings and returns a list of bounding boxes
+
+    :param image:
+    :return: list of bounding boxes (x, y, w, h)
+    """
+
+    def sorted_points(contour):
+        """
+            Given a contour with shape (4, 1, 2) and return the sorted points
+            Upper Left, Upper Right, Down Left, Down Right.
+
+        :param contour:
+        :return:
+        """
+        sorted = []
+        middle_x = 0
+        middle_y = 0
+        upper_left = (0, 0)
+        upper_right = (0, 0)
+        down_left = (0, 0)
+        down_right = (0, 0)
+        for point in range(contour.shape[0]):
+            #   print("X: {}, Y : {}".format(contour[point, 0, 1], contour[point, 0, 0]))
+            middle_x += contour[point, 0, 1]
+            middle_y += contour[point, 0, 0]
+        middle_x /= 4
+        middle_y /= 4
+        for point in range(contour.shape[0]):
+            if (contour[point, 0, 1] < middle_x and contour[point, 0, 0] < middle_y):
+                upper_left = (contour[point, 0, 0], contour[point, 0, 1])
+            elif (contour[point, 0, 1] < middle_x and contour[point, 0, 0] > middle_y):
+                upper_right = (contour[point, 0, 0], contour[point, 0, 1])
+            elif (contour[point, 0, 1] > middle_x and contour[point, 0, 0] < middle_y):
+                down_left = (contour[point, 0, 0], contour[point, 0, 1])
+            elif (contour[point, 0, 1] > middle_x and contour[point, 0, 0] > middle_y):
+                down_right = (contour[point, 0, 0], contour[point, 0, 1])
+            else:
+                return
+        return upper_left, upper_right, down_left, down_right
+
+    list_bounding_boxes = []
+    contours, hierarchy = cv2.findContours(image, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_TC89_L1)
     for contour in contours:
         epsilon = cv2.arcLength(contour, True) * 0.06
         approx = cv2.approxPolyDP(contour, epsilon=epsilon, closed=True)
         if len(approx) == 4 and cv2.contourArea(contour) > 5000:
-            x, y, w, h = cv2.boundingRect(contour)
-            #   cv2.drawContours(im_lines, contours, -1, (255, 0, 0), 4)
-            cv2.rectangle(im_lines, (x, y), (x + w, y + h), (0, 255, 0), 3)
-            list_painting.append((x, y, w, h))
+            sorted_approx = sorted_points(approx)
+            if not (0, 0) in sorted_approx:
+                list_bounding_boxes.append(sorted_approx)
 
-    images.append(im_lines)
-    titles.append("Lines Image")
-
-    # plt_images(images, titles)
-
-    return list_painting
+    return list_bounding_boxes
