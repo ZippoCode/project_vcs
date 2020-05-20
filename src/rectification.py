@@ -95,6 +95,7 @@ def recfitication(im):
     # plt_images(images, titles)
     return gray
 
+
 # recfitication('../data/Amalia_image.jpeg')
 
 
@@ -104,9 +105,9 @@ print(list_painting)
 drawing_frame = im.copy()
 for painting in range(len(list_painting)):
     x, y, w, h = list_painting[painting]
-    img_crop = im[y:y+h, x:x+w, :]
+    img_crop = im[y:y + h, x:x + w, :]
     gray = recfitication(img_crop)
-    cv2.imwrite('../output/100_'+str(painting)+'.jpg', img_crop)
+    cv2.imwrite('../output/100_' + str(painting) + '.jpg', img_crop)
     drawing_frame = cv2.rectangle(
         im, (x, y), (x + w, y + h), (0, 255, 0), 3)
     # cv2.imshow('crop_img', img_crop)

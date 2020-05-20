@@ -3,7 +3,7 @@ import cv2
 # Custom importing
 from detection import edge_detection, get_bounding_boxes
 from plotting import plt_images
-from matplotlib import pyplot as plt
+from improve_quality import multiscale_retinex
 
 
 def read_single_image(input_filename, output_filename='output.jpg'):
@@ -40,8 +40,25 @@ def capVideo(video_path, name_video):
     while (cap.isOpened()):
         ret, frame = cap.read()
         if ret == True:
+            images = []
+            titles = []
+
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            images, titles = edge_detection(frame)
+            images.append(frame)
+            titles.append("Original Image")
+
+            # Apply Multiscale Retinex
+            frame_retinex = multiscale_retinex(frame)
+            images.append(frame_retinex)
+            titles.append('Multiscale retinex')
+
+            # Edge Detection
+            edit_images, edit_titles =  edge_detection(frame_retinex)
+            for image in edit_images:
+                images.append(image)
+            for title in edit_titles:
+                titles.append(title)
+
             list_painting = get_bounding_boxes(images[-1])
             for painting in list_painting:
                 upper_left, upper_right, down_left, down_right = painting

@@ -68,8 +68,6 @@ def edge_detection(im):
 
     # Original Image
     im_original = im.copy()
-    images.append(im_original)
-    titles.append('Original Image')
 
     # PYR MEAN SHIFT FILTERING
     im = cv2.pyrMeanShiftFiltering(im, sp=8, sr=8, maxLevel=3)
