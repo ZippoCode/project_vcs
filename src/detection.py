@@ -63,6 +63,8 @@ def edge_detection(im):
         - a list containing the images of the operations carried out
         - a list containing the names of the changes applied
     """
+    list_painting = []
+
     images = []
     titles = []
 
@@ -126,9 +128,23 @@ def edge_detection(im):
         for i in range(len(contours)):
             hull_mask = cv2.drawContours(hull_mask, hull, i, 255, -1, 8)
         im = np.clip(im + hull_mask, 0, 255)
+
     images.append(im)
     titles.append('Connected components Image')
 
+    # Lines	    return images, titles
+    # im_lines = np.copy(im_original)
+    # contours, _ = cv2.findContours(im, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    # for contour in contours:
+    #     epsilon = cv2.arcLength(contour, True) * 0.06
+    #     approx = cv2.approxPolyDP(contour, epsilon=epsilon, closed=True)
+    #     if len(approx) == 4 and cv2.contourArea(contour) > 5000:
+    #         x, y, w, h = cv2.boundingRect(contour)
+    #         #   cv2.drawContours(im_lines, contours, -1, (255, 0, 0), 4)
+    #         cv2.rectangle(im_lines, (x, y), (x + w, y + h), (0, 255, 0), 3)
+    #         list_painting.append((x, y, w, h))
+    # return list_painting
     return images, titles
 
 
