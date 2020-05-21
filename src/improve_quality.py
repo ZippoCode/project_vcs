@@ -14,8 +14,10 @@ def multiscale_retinex(image):
         Original Image with shape (H, W, C)
     :return:
     """
+    hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+
     H, W, C = image.shape
-    image = cv2.resize(image, (int(H / 4), int(W / 4)), interpolation=cv2.INTER_LINEAR)
+    image = cv2.resize(image, (int(H / 8), int(W / 8)), interpolation=cv2.INTER_LINEAR)
     sigma = [15, 80, 250]
     low_clip = 0.01
     high_clip = 0.99
