@@ -41,8 +41,6 @@ def recfitication(im):
                                     dtype=np.uint8), iterations=DILATE_ITERATIONS)
     gray = cv2.erode(gray, KERNEL_HIGH_PASS_FILTER,
                      iterations=EROSION_ITERATIONS)
-    # images.append(gray)
-    # titles.append('Erode Dilate')
 
     # Connected components
     _, labeled_img = cv2.connectedComponentsWithAlgorithm(
@@ -68,8 +66,6 @@ def recfitication(im):
 
         global_mask = np.clip(
             global_mask + hull_mask, 0, 255)
-    # images.append(global_mask)
-    # titles.append('Connected components')
 
     # dst = cv2.cornerHarris(global_mask, 2, 3, 0.04)
     # # result is dilated for marking the corners, not important
@@ -115,19 +111,13 @@ def affine_transformation(im, coordinate):
     return img_output
 
 
-im = cv2.imread('../data/100.jpg')
-images, titles = edge_detection(im)
-list_painting = get_bounding_boxes(images[-1])
-# drawing_frame = im.copy()
-for painting in range(len(list_painting)):
-    print(painting)
-    new_im = affine_transformation(im, list_painting[painting])
-#     img_crop = im[y:y+h, x:x+w, :]
-    cv2.imwrite('../output/100_'+str(painting)+'.jpg', new_im)
-#     drawing_frame = cv2.rectangle(
-#         im, (x, y), (x + w, y + h), (0, 255, 0), 3)
-# cv2.imshow('crop_img', img_crop)
-# cv2.waitKey()
+# im = cv2.imread('../data/100.jpg')
+# images, titles = edge_detection(im)
+# list_painting = get_bounding_boxes(images[-1])
+# for painting in range(len(list_painting)):
+#     new_im = affine_transformation(im, list_painting[painting])
+# #     img_crop = im[y:y+h, x:x+w, :]
+#     cv2.imwrite('../output/100_'+str(painting)+'.jpg', new_im)
 
-# cv2.imshow('Edge Detection', drawing_frame)
-# cv2.waitKey()
+# cv2.release()
+# cv2.destroyAllWindows()

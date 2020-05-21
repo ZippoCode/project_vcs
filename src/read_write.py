@@ -4,6 +4,7 @@ import cv2
 from detection import edge_detection, get_bounding_boxes
 from plotting import plt_images
 from improve_quality import multiscale_retinex
+from rectification import affine_transformation
 
 
 def read_single_image(input_filename, output_filename='output.jpg'):
@@ -53,7 +54,7 @@ def capVideo(video_path, name_video):
             titles.append('Multiscale retinex')
 
             # Edge Detection
-            edit_images, edit_titles =  edge_detection(frame_retinex)
+            edit_images, edit_titles = edge_detection(frame_retinex)
             for image in edit_images:
                 images.append(image)
             for title in edit_titles:
@@ -61,6 +62,10 @@ def capVideo(video_path, name_video):
 
             list_painting = get_bounding_boxes(images[-1])
             for painting in list_painting:
+                # Affine Transformation for painting
+                new_image = affine_transformation(frame, painting)
+                cv2.imwrite('../output/'+name_video+'.jpg', new_image)
+
                 upper_left, upper_right, down_left, down_right = painting
                 cv2.line(frame, upper_left, upper_right, (0, 255, 0), 10)
                 cv2.line(frame, upper_left, down_left, (0, 255, 0), 10)
