@@ -27,6 +27,10 @@ def recfitication(im):
     # Adaptive Threshold
     gray = cv2.adaptiveThreshold(
         gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+
+    # Edge_detection
+    canny = cv2.Canny(img, 50, 240)
+
     images.append(gray)
     titles.append('Adaptive Theshold')
 
@@ -111,11 +115,11 @@ def affine_transformation(im, coordinate):
     return img_output
 
 
-# im = cv2.imread('../data/100.jpg')
-# images, titles = edge_detection(im)
-# list_painting = get_bounding_boxes(images[-1])
-# for painting in range(len(list_painting)):
-#     new_im = affine_transformation(im, list_painting[painting])
+im = cv2.imread('../data/100.jpg')
+images, titles = edge_detection(im)
+list_painting = get_bounding_boxes(images[-1])
+for painting in range(len(list_painting)):
+    new_im = affine_transformation(im, list_painting[painting])
 # #     img_crop = im[y:y+h, x:x+w, :]
 #     cv2.imwrite('../output/100_'+str(painting)+'.jpg', new_im)
 

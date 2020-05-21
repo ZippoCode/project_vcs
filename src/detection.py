@@ -194,6 +194,7 @@ def get_bounding_boxes(image):
     list_bounding_boxes = []
     contours, hierarchy = cv2.findContours(
         image, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_TC89_L1)
+    print('contours', len(contours))
     for contour in contours:
         epsilon = cv2.arcLength(contour, True) * 0.06
         approx = cv2.approxPolyDP(contour, epsilon=epsilon, closed=True)
