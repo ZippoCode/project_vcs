@@ -65,6 +65,8 @@ def capVideo(video_path, name_video):
     :return:
     """
     print("Reading file: {}".format((video_path)))
+    path_video = '../output/videos/{}'.format(name_video)
+    path_painting = "../output/paintings/{}_#{}.jpg"
     cap = cv2.VideoCapture(video_path)
 
     width = int(cap.get(3))  # float
@@ -73,7 +75,7 @@ def capVideo(video_path, name_video):
     fps = cap.get(cv2.CAP_PROP_FPS)
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(name_video, fourcc, fps, (width, height))
+    out = cv2.VideoWriter(path_video, fourcc, fps, (width, height))
     if (not out.isOpened()):
         print("Error Output Video")
         return
@@ -86,17 +88,20 @@ def capVideo(video_path, name_video):
             out.write(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
 
             # Step Two
-            painting = []
+            paintings = []
             titles = []
-            painting.append(result)
+            paintings.append(result)
             titles.append("Detection Frame")
             for bounding, num in zip(list_boundings, range(len(list_boundings))):
                 # Affine Transformation for painting
-                image = affine_transformation(frame, bounding)
-                painting.append(image)
-                titles.append("Paiting #ID: {}".format(num))
-            plt_images(painting, titles)
-                #cv2.imwrite('../output/' + name_video + '.jpg', new_image)
+                painting = affine_transformation(frame, bounding)
+                paintings.append(painting)
+                titles.append("Painting #ID: {}".format(num))
+                # Take the only name of file
+                name = name_video.split('.')[0]
+                # The swapaxes is utile for swap R and B
+                cv2.imwrite(path_painting.format(name, num), cv2.cvtColor(painting, cv2.COLOR_BGR2RGB))
+            plt_images(paintings, titles)
 
         else:
             break
@@ -105,6 +110,6 @@ def capVideo(video_path, name_video):
         break
 
     cap.release()
-    print("Saving file: {}".format(name_video))
+    print("Saving file: {}".format(path_video))
     out.release()
     cv2.destroyAllWindows()

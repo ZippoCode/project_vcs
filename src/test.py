@@ -24,11 +24,7 @@ if __name__ == '__main__':
         video = random.choice(video_list)
         video_list.remove(video)
         file_name = video.split('/')[-1]
-        capVideo(video, '../output/' + file_name)
-
-
-
-
+        capVideo(video, file_name)
 
 # if __name__ == '__main__':
 #     capVideo('../data/videos/000/VIRB0406.MP4', '../output/VIRB0406.MP4')
