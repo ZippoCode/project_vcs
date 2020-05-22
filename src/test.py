@@ -20,11 +20,15 @@ if __name__ == '__main__':
     # Take a random video and remove it from list
     # video_list = []
     # video_list.append('../data/videos/002/20180206_113059.mp4')
-    while len(video_list) > 0:
-        video = random.choice(video_list)
-        video_list.remove(video)
-        file_name = video.split('/')[-1]
-        capVideo(video, file_name)
+    # while len(video_list) > 0:
+    #     video = random.choice(video_list)
+    #     video_list.remove(video)
+    #     file_name = video.split('/')[-1]
+    #     capVideo(video, file_name)
+    capVideo('../data/videos/001/GOPR5832.MP4',
+             'GOPR5832.MP4')
+    # capVideo('../data/videos/010/VID_20180529_112440.mp4',
+    #  'VID_20180529_112440.mp4')
 
 # if __name__ == '__main__':
 #     capVideo('../data/videos/000/VIRB0406.MP4', '../output/VIRB0406.MP4')

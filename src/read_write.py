@@ -1,4 +1,5 @@
 import cv2
+from matplotlib import pyplot as plt
 
 # Custom importing
 from detection import edge_detection, get_bounding_boxes
@@ -30,7 +31,9 @@ def elaborate_edge_detection(frame, show_images=False):
         - A list of bounding boxes (x, y, w, h)
     """
     frame_retinex = multiscale_retinex(frame)
+    # plt_images([frame, frame_retinex], ['frame', 'frame_retinex'])
     edit_images, edit_titles = edge_detection(frame_retinex)
+    plt_images(edit_images, edit_titles)
     list_bounding = get_bounding_boxes(edit_images[-1])
 
     if show_images:
@@ -100,7 +103,8 @@ def capVideo(video_path, name_video):
                 # Take the only name of file
                 name = name_video.split('.')[0]
                 # The swapaxes is utile for swap R and B
-                cv2.imwrite(path_painting.format(name, num), cv2.cvtColor(painting, cv2.COLOR_BGR2RGB))
+                cv2.imwrite(path_painting.format(name, num),
+                            cv2.cvtColor(painting, cv2.COLOR_BGR2RGB))
             plt_images(paintings, titles)
 
         else:

@@ -71,6 +71,26 @@ titles.append('Detect corner')
 
 plt_images(images, titles)
 
-# cv2.imshow('Image', img)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
+
+def crop_rotated_rectangle(self, img, coords):
+    # find rotated rectangle
+    rect = cv2.minAreaRect(coords.reshape(4, 1, 2).astype(np.float32))
+    rbox = self.order_points(cv2.boxPoints(rect))
+    # get width and height of the detected rectangle
+    # output of minAreaRect is unreliable for already axis aligned rectangles!!
+    width = np.linalg.norm([rbox[0, 0] - rbox[1, 0], rbox[0, 1] - rbox[1, 1]])
+    height = np.linalg.norm(
+        [rbox[0, 0] - rbox[-1, 0], rbox[0, 1] - rbox[-1, 1]])
+    src_pts = rbox.astype(np.float32)
+    # coordinate of the points in box points after the rectangle has been straightened
+    # this step needs order_points to be called on src
+    dst_pts = np.array([[0, 0],
+                        [width - 1, 0],
+                        [width - 1, height - 1],
+                        [0, height - 1]], dtype="float32")
+    # the perspective transformation matrix
+    M = cv2.getPerspectiveTransform(src_pts, dst_pts)
+    # directly warp the rotated rectangle to get the straightened rectangle
+    warped = cv2.warpPerspective(img, M, (width, height), None, cv2.INTER_LINEAR, cv2.BORDER_CONSTANT,
+                                 (255, 255, 255))
+    return warped
