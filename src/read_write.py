@@ -1,5 +1,4 @@
 import cv2
-from matplotlib import pyplot as plt
 
 # Custom importing
 from detection import edge_detection, get_bounding_boxes
@@ -35,7 +34,6 @@ def elaborate_edge_detection(frame, show_images=False):
     # plt.show()
     # plt_images([frame, frame_retinex], ['frame', 'frame_retinex'])
     edit_images, edit_titles = edge_detection(frame_retinex)
-    # plt_images(edit_images, edit_titles)
     list_bounding = get_bounding_boxes(edit_images[-1])
 
     if show_images:
@@ -118,4 +116,3 @@ def capVideo(video_path, name_video):
     cap.release()
     print("Saving file: {}".format(path_video))
     out.release()
-    cv2.destroyAllWindows()

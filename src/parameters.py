@@ -1,3 +1,11 @@
+# Folders
+PATH = '../data/paintings_db/'
+
 DILATE_KERNEL_SIZE = (5, 5)
 DILATE_ITERATIONS = 2
 EROSION_ITERATIONS = 3
+
+# Retrieval
+FLANN_INDEX_LSH = 6
+RATIO = 0.75
+MIN_MATCH_COUNT = 10
