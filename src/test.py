@@ -25,8 +25,10 @@ if __name__ == '__main__':
     #     video_list.remove(video)
     #     file_name = video.split('/')[-1]
     #     capVideo(video, file_name)
-    capVideo('../data/videos/001/GOPR5832.MP4',
-             'GOPR5832.MP4')
+    # capVideo('../data/videos/001/GOPR5832.MP4',
+    #          'GOPR5832.MP4')
+    capVideo('../data/videos/000/VIRB0406.MP4',
+             'VIRB0406.MP4')
     # capVideo('../data/videos/010/VID_20180529_112440.mp4',
     #  'VID_20180529_112440.mp4')
 
