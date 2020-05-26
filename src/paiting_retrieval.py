@@ -1,36 +1,18 @@
 import cv2
 from os import listdir
 
-path = '../data/paintings_db/'
-RATIO = 0.7
-MIN_MATCH_COUNT = 20
-
-
-def extract_features(path_images, detector):
-    """
-        Given a vector of paths return a dictionary of key-points and descriptor fpr each image
-    :return: 
-    """
-    features = dict()
-    if path_images is None:
-        return
-    for path_image in path_images:
-        image = cv2.imread(path + path_image, cv2.IMREAD_GRAYSCALE)
-        kp, des = detector.detectAndCompute(image, None)
-        if kp is not None and des is not None:
-            features[path_image] = (kp, des)
-    return features
+# Custom importing
+from parameters import *
 
 
 def match_paitings(query_painting):
     """
         Given a rectified painting return a ranked list of all the images in the painting DB,
         sorted by descending similarity with the detected painting.
-
     :param query_painting: numpy.ndarray with shape (H, W)
     :return: a list of (string, similarity)
     """
-    images_name = [file for file in listdir(path)]
+    images_name = [file for file in listdir(PATH)]
 
     # Init detector and matcher
     detector = cv2.xfeatures2d.SIFT_create()
@@ -43,20 +25,32 @@ def match_paitings(query_painting):
     kp_q, des_q = detector.detectAndCompute(query_painting, None)
 
     # Detect -> TRAIN
-    database_paiting = extract_features(path_images=images_name, detector=detector)
+    database_features = dict()
+    for path_image in images_name:
+        image = cv2.imread(PATH + path_image, cv2.IMREAD_GRAYSCALE)
+        image = cv2.resize(image, query_painting.shape)
+        kp, des = detector.detectAndCompute(image, None)
+        if kp is not None and des is not None:
+            database_features[path_image] = (kp, des)
 
     database_matches = dict()
-    for image, (kp, des) in database_paiting.items():
-        raw_matches = matcher.knnMatch(des_q, des, k=2)
-        good_matches = []
-        for m, n in raw_matches:
-            if m.distance < n.distance * RATIO:
-                good_matches.append(m)
-        distance = 0
-        if len(good_matches) > MIN_MATCH_COUNT:
-            for m in good_matches:
-                distance += m.distance
-            database_matches[image] = distance
+    for image, (kp_t, des_t) in database_features.items():
+        raw_matches_one = matcher.knnMatch(des_q, des_t, k=2)
+        good_matches_one = []
+        for m in raw_matches_one:
+            if len(m) == 2 and m[0].distance < m[1].distance * RATIO:
+                good_matches_one.append(m[0])
+        raw_matches_two = matcher.knnMatch(des_t, des_q, k=2)
+        good_matches_two = []
+        for m in raw_matches_two:
+            if len(m) == 2 and m[0].distance < m[1].distance * RATIO:
+                good_matches_two.append(m[0])
 
-    sorted_matches = sorted(database_matches.items(), key=lambda x: x[1])
+        database_matches[image] = 0
+        for match_one in good_matches_one:
+            for match_two in good_matches_two:
+                if match_one.queryIdx == match_two.trainIdx and match_one.trainIdx == match_two.queryIdx:
+                    database_matches[image] += 1
+
+    sorted_matches = sorted(database_matches.items(), key=lambda x: x[1], reverse=True)
     return sorted_matches

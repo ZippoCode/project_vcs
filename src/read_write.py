@@ -1,5 +1,4 @@
 import cv2
-from matplotlib import pyplot as plt
 
 # Custom importing
 from detection import edge_detection, get_bounding_boxes
