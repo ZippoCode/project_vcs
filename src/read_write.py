@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from detection import edge_detection, get_bounding_boxes
 from plotting import plt_images, draw_paintings
 from improve_quality import multiscale_retinex
-from rectification import affine_transformation
+from rectification import rectification
 
 
 def read_single_image(input_filename, output_filename='../output/output.jpg'):
@@ -31,9 +31,11 @@ def elaborate_edge_detection(frame, show_images=False):
         - A list of bounding boxes (x, y, w, h)
     """
     frame_retinex = multiscale_retinex(frame)
+    # plt.imshow(frame_retinex)
+    # plt.show()
     # plt_images([frame, frame_retinex], ['frame', 'frame_retinex'])
     edit_images, edit_titles = edge_detection(frame_retinex)
-    plt_images(edit_images, edit_titles)
+    # plt_images(edit_images, edit_titles)
     list_bounding = get_bounding_boxes(edit_images[-1])
 
     if show_images:
@@ -97,7 +99,7 @@ def capVideo(video_path, name_video):
             titles.append("Detection Frame")
             for bounding, num in zip(list_boundings, range(len(list_boundings))):
                 # Affine Transformation for painting
-                painting = affine_transformation(frame, bounding)
+                painting = rectification(frame, bounding)
                 paintings.append(painting)
                 titles.append("Painting #ID: {}".format(num))
                 # Take the only name of file

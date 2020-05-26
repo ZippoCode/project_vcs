@@ -67,10 +67,15 @@ def edge_detection(im):
     images = []
     titles = []
 
-    # PYR MEAN SHIFT FILTERING
+    # # PYR MEAN SHIFT FILTERING
     im = cv2.pyrMeanShiftFiltering(im, sp=8, sr=8, maxLevel=3)
     images.append(im)
     titles.append('Mean Shift Filtering')
+
+    # gray = image_segmentation(im)
+    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+    images.append(gray)
+    titles.append('image_segmentation')
 
     # Erosion and dilation
     #   KERNEL_HIGH_PASS_FILTER = np.asarray([[0, 1, 5], [-1, -5, -1], [0, -1, 0]], np.uint8)
@@ -83,8 +88,6 @@ def edge_detection(im):
     images.append(im)
     titles.append("Erosed Image")
 
-    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-
     # Apply difference Threshold of V dimension
     hsv = cv2.cvtColor(im, cv2.COLOR_RGB2HSV)
     H, S, V = np.arange(3)
@@ -93,7 +96,7 @@ def edge_detection(im):
     im = hsv[:, :, V]
 
     # Blending the images (gray and hsv)
-    im = cv2.addWeighted(im, 0.35, gray, 0.65, 0)
+    im = cv2.addWeighted(im, 0.65, gray, 0.35, 0)
     images.append(im)
     titles.append("HSV color space")
 
@@ -118,24 +121,9 @@ def edge_detection(im):
     titles.append("Threshold image")
 
     # Connected components
-    _, labeled_img = cv2.connectedComponentsWithAlgorithm(
-        im, 8, cv2.CV_32S, cv2.CCL_GRANA)
-    labels = np.unique(labeled_img)
-    labels = labels[labels != 0]
-    im = np.zeros_like(labeled_img, dtype=np.uint8)
-    for label in labels:
-        mask = np.zeros_like(labeled_img, dtype=np.uint8)
-        mask[labeled_img == label] = 255
-        contours, _ = cv2.findContours(
-            mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    im = connected_components_segmentation(im)
 
-        hull = []
-        for cnt in contours:
-            hull.append(cv2.convexHull(cnt, False))
-        hull_mask = np.zeros((mask.shape[0], mask.shape[1]), dtype=np.uint8)
-        for i in range(len(contours)):
-            hull_mask = cv2.drawContours(hull_mask, hull, i, 255, -1, 8)
-        im = np.clip(im + hull_mask, 0, 255)
+    # im = connected_components_segmentation(im)
 
     images.append(im)
     titles.append('Connected components Image')
@@ -154,6 +142,67 @@ def edge_detection(im):
     #         list_painting.append((x, y, w, h))
     # return list_painting
     return images, titles
+
+
+def image_segmentation(im):
+    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (3, 3), 15)
+
+    # Erosion and dilation
+    gray = cv2.erode(gray, np.ones((3, 3), dtype=np.uint8))
+    gray = cv2.dilate(gray, np.ones((5, 5),
+                                    dtype=np.uint8), iterations=2)
+    gray = cv2.erode(gray, np.ones((3, 3),
+                                   dtype=np.uint8), iterations=3)
+
+    plt.imshow(gray, cmap='gray')
+    plt.title('image_segmentation')
+    plt.show()
+
+    # Connected components
+    _, labeled_img = cv2.connectedComponentsWithAlgorithm(
+        gray, 8, cv2.CV_32S, cv2.CCL_GRANA)
+    labels = np.unique(labeled_img)
+    labels = labels[labels != 0]
+    im = np.zeros_like(labeled_img, dtype=np.uint8)
+    for label in labels:
+        mask = np.zeros_like(labeled_img, dtype=np.uint8)
+        mask[labeled_img == label] = 255
+        contours, _ = cv2.findContours(
+            mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        hull = []
+        for cnt in contours:
+            hull.append(cv2.convexHull(cnt, False))
+        hull_mask = np.zeros((mask.shape[0], mask.shape[1]), dtype=np.uint8)
+        for i in range(len(contours)):
+            hull_mask = cv2.drawContours(hull_mask, hull, i, 255, -1, 8)
+        im = np.clip(im + hull_mask, 0, 255)
+
+    return im
+
+
+def connected_components_segmentation(im):
+    # Connected components
+    _, labeled_img = cv2.connectedComponentsWithAlgorithm(
+        im, 8, cv2.CV_32S, cv2.CCL_GRANA)
+    labels = np.unique(labeled_img)
+    labels = labels[labels != 0]
+    im = np.zeros_like(labeled_img, dtype=np.uint8)
+    for label in labels:
+        mask = np.zeros_like(labeled_img, dtype=np.uint8)
+        mask[labeled_img == label] = 255
+        contours, _ = cv2.findContours(
+            mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        hull = []
+        for cnt in contours:
+            hull.append(cv2.convexHull(cnt, False))
+        hull_mask = np.zeros((mask.shape[0], mask.shape[1]), dtype=np.uint8)
+        for i in range(len(contours)):
+            hull_mask = cv2.drawContours(hull_mask, hull, i, 255, -1, 8)
+        im = np.clip(im + hull_mask, 0, 255)
+    return im
 
 
 def sorted_points(contour):
@@ -187,6 +236,8 @@ def sorted_points(contour):
             down_right = (contour[point, 0, 0], contour[point, 0, 1])
         else:
             return
+    if (upper_right[0]-upper_left[0]) < 150 or (down_left[1]-upper_left[1]) < 150:
+        return
     return upper_left, upper_right, down_left, down_right
 
 
@@ -205,7 +256,8 @@ def get_bounding_boxes(image):
         approx = cv2.approxPolyDP(contour, epsilon=epsilon, closed=True)
         if len(approx) == 4 and cv2.contourArea(contour) > 5000:
             sorted_approx = sorted_points(approx)
-            if not (0, 0) in sorted_approx:
-                list_bounding_boxes.append(sorted_approx)
+            if sorted_approx is not None:
+                if not (0, 0) in sorted_approx:
+                    list_bounding_boxes.append(sorted_approx)
 
     return list_bounding_boxes
