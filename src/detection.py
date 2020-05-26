@@ -4,53 +4,55 @@ from matplotlib import pyplot as plt
 
 # Custom importing
 from parameters import *
+from improve_quality import multiscale_retinex
+from plotting import plt_images, draw_paintings
 
 
-def eight_directional_sobel_filter(image, stride=1):
-    """
-        Run a Multi-direction Sobel Operator
-
-    :param image:
-    :param stride:
-    :return:
-    """
-    height, width = image.shape
-    image = cv2.resize(image, None, fx=0.1, fy=0.1,
-                       interpolation=cv2.INTER_CUBIC)
-    S_h = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
-    S_v = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
-    S_dl = np.array([[0, 1, 2], [-1, 0, 1], [-2, -1, 0]])
-    S_dr = np.array([[2, 1, 0], [1, 0, -1], [0, -1, -2]])
-
-    kH, kW = S_h.shape
-
-    oH = int((image.shape[0] - (kH - 1) - 1) / stride) + 1
-    oW = int((image.shape[1] - (kW - 1) - 1) / stride) + 1
-
-    out = np.zeros((oH, oW), )
-    Hor = np.zeros((oH, oW), )
-    Ver = np.zeros((oH, oW), )
-
-    for col in range(oH):
-        for row in range(oW):
-            Gx = np.sum(image[col * stride: col * stride + kH,
-                              row * stride: row * stride + kW] * S_h)
-            Gy = np.sum(image[col * stride: col * stride + kH,
-                              row * stride: row * stride + kW] * S_v)
-            G_dl = np.sum(image[col * stride: col * stride +
-                                kH, row * stride: row * stride + kW] * S_dl)
-            G_dr = np.sum(image[col * stride: col * stride +
-                                kH, row * stride: row * stride + kW] * S_dr)
-            M = np.sqrt(Gx ** 2 + Gy ** 2)
-
-            Hor[col, row] = Gx
-            Ver[col, row] = Gy
-            out[col, row] = M
-
-    # Normalize Magnitude and Direction
-    out = cv2.normalize(out, None, 0, 255, cv2.NORM_MINMAX)
-    out = cv2.resize(out, (width, height), interpolation=cv2.INTER_CUBIC)
-    return out.astype(np.uint8)
+# def eight_directional_sobel_filter(image, stride=1):
+#     """
+#         Run a Multi-direction Sobel Operator
+# 
+#     :param image:
+#     :param stride:
+#     :return:
+#     """
+#     height, width = image.shape
+#     image = cv2.resize(image, None, fx=0.1, fy=0.1,
+#                        interpolation=cv2.INTER_CUBIC)
+#     S_h = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+#     S_v = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
+#     S_dl = np.array([[0, 1, 2], [-1, 0, 1], [-2, -1, 0]])
+#     S_dr = np.array([[2, 1, 0], [1, 0, -1], [0, -1, -2]])
+# 
+#     kH, kW = S_h.shape
+# 
+#     oH = int((image.shape[0] - (kH - 1) - 1) / stride) + 1
+#     oW = int((image.shape[1] - (kW - 1) - 1) / stride) + 1
+# 
+#     out = np.zeros((oH, oW), )
+#     Hor = np.zeros((oH, oW), )
+#     Ver = np.zeros((oH, oW), )
+# 
+#     for col in range(oH):
+#         for row in range(oW):
+#             Gx = np.sum(image[col * stride: col * stride + kH,
+#                         row * stride: row * stride + kW] * S_h)
+#             Gy = np.sum(image[col * stride: col * stride + kH,
+#                         row * stride: row * stride + kW] * S_v)
+#             G_dl = np.sum(image[col * stride: col * stride +
+#                                               kH, row * stride: row * stride + kW] * S_dl)
+#             G_dr = np.sum(image[col * stride: col * stride +
+#                                               kH, row * stride: row * stride + kW] * S_dr)
+#             M = np.sqrt(Gx ** 2 + Gy ** 2)
+# 
+#             Hor[col, row] = Gx
+#             Ver[col, row] = Gy
+#             out[col, row] = M
+# 
+#     # Normalize Magnitude and Direction
+#     out = cv2.normalize(out, None, 0, 255, cv2.NORM_MINMAX)
+#     out = cv2.resize(out, (width, height), interpolation=cv2.INTER_CUBIC)
+#     return out.astype(np.uint8)
 
 
 def edge_detection(im):
@@ -171,7 +173,7 @@ def sorted_points(contour):
     down_left = (0, 0)
     down_right = (0, 0)
     for point in range(contour.shape[0]):
-            #   print("X: {}, Y : {}".format(contour[point, 0, 1], contour[point, 0, 0]))
+        #   print("X: {}, Y : {}".format(contour[point, 0, 1], contour[point, 0, 0]))
         middle_x += contour[point, 0, 1]
         middle_y += contour[point, 0, 0]
     middle_x /= 4
@@ -209,3 +211,40 @@ def get_bounding_boxes(image):
                 list_bounding_boxes.append(sorted_approx)
 
     return list_bounding_boxes
+
+
+def elaborate_edge_detection(frame, show_images=False):
+    """
+        Elaborate an frame with Edge Detection and Rectification
+
+    :param frame: numpy.ndarray with shape (H, W, C)
+
+    :return:
+        - A list of bounding boxes (x, y, w, h)
+    """
+    frame_retinex = multiscale_retinex(frame)
+    edit_images, edit_titles = edge_detection(frame_retinex)
+    list_bounding = get_bounding_boxes(edit_images[-1])
+
+    if show_images:
+        images = []
+        titles = []
+        # Append original frame
+        images.append(frame)
+        titles.append("Original Frame")
+        # Append frame with Retinex elaboration
+        images.append(frame_retinex)
+        titles.append('Multiscale retinex')
+        # Append all images from elaboration
+        for image in edit_images:
+            images.append(image)
+        for title in edit_titles:
+            titles.append(title)
+        # Drawing image with the rectangle, points and line
+        result = draw_paintings(frame, list_bounding)
+        images.append(result)
+        titles.append('Final result')
+        # Show the steps of image elaboration
+        plt_images(images, titles)
+
+    return list_bounding
