@@ -34,7 +34,7 @@ if __name__ == '__main__':
     # video_list.append('../data/videos/002/20180206_113059.mp4')
     # capVideo('../data/videos/001/GOPR5832.MP4',
     #          'GOPR5832.MP4')
-    video_list = ['../data/videos/000/VIRB0406.MP4']
+    video_list = ['../data/videos/001/GOPR5828.MP4']
     # capVideo('../data/videos/010/VID_20180529_112440.mp4',
     #  'VID_20180529_112440.mp4')
     while len(video_list) > 0:
