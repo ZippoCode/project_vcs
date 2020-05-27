@@ -64,11 +64,11 @@ if __name__ == '__main__':
                 painting = rectification(frame, bounding)
                 paintings.append(painting)
                 titles.append("Painting #ID: {}".format(num))
-                cv2.imwrite(path_painting.format(file_name, num),
-                            cv2.cvtColor(painting, cv2.COLOR_BGR2RGB))
+                # cv2.imwrite(path_painting.format(file_name, num),
+                #             cv2.cvtColor(painting, cv2.COLOR_BGR2RGB))
             plt_images(paintings, titles)
 
-        write_video(path_video.format(file_name), video_results)
+        # write_video(path_video.format(file_name), video_results)
     # # Paiting Retrival
     # path = '../output/paintings/IMG_4083_#3.jpg'
     # painting = cv2.imread(path, cv2.IMREAD_GRAYSCALE)

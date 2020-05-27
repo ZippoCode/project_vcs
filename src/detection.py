@@ -11,7 +11,7 @@ from plotting import plt_images, draw_paintings
 # def eight_directional_sobel_filter(image, stride=1):
 #     """
 #         Run a Multi-direction Sobel Operator
-# 
+#
 #     :param image:
 #     :param stride:
 #     :return:
@@ -23,16 +23,16 @@ from plotting import plt_images, draw_paintings
 #     S_v = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
 #     S_dl = np.array([[0, 1, 2], [-1, 0, 1], [-2, -1, 0]])
 #     S_dr = np.array([[2, 1, 0], [1, 0, -1], [0, -1, -2]])
-# 
+#
 #     kH, kW = S_h.shape
-# 
+#
 #     oH = int((image.shape[0] - (kH - 1) - 1) / stride) + 1
 #     oW = int((image.shape[1] - (kW - 1) - 1) / stride) + 1
-# 
+#
 #     out = np.zeros((oH, oW), )
 #     Hor = np.zeros((oH, oW), )
 #     Ver = np.zeros((oH, oW), )
-# 
+#
 #     for col in range(oH):
 #         for row in range(oW):
 #             Gx = np.sum(image[col * stride: col * stride + kH,
@@ -44,11 +44,11 @@ from plotting import plt_images, draw_paintings
 #             G_dr = np.sum(image[col * stride: col * stride +
 #                                               kH, row * stride: row * stride + kW] * S_dr)
 #             M = np.sqrt(Gx ** 2 + Gy ** 2)
-# 
+#
 #             Hor[col, row] = Gx
 #             Ver[col, row] = Gy
 #             out[col, row] = M
-# 
+#
 #     # Normalize Magnitude and Direction
 #     out = cv2.normalize(out, None, 0, 255, cv2.NORM_MINMAX)
 #     out = cv2.resize(out, (width, height), interpolation=cv2.INTER_CUBIC)
@@ -74,10 +74,46 @@ def edge_detection(im):
     images.append(im)
     titles.append('Mean Shift Filtering')
 
-    # gray = image_segmentation(im)
+    im = image_segmentation_version1(im)
+    # im = image_segmentation_version2(im)
+    images.append(im)
+    titles.append('Connected components Image')
+
+    return images, titles
+
+
+def image_segmentation_version1(im):
     gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-    images.append(gray)
-    titles.append('image_segmentation')
+    # Cerco la soglia adatta per creare la maschera successivamente
+    thresh, _ = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
+
+    # Applico la soglia per creare la maschera dell'immagine
+    mask = (gray < thresh).astype(np.uint8)*255
+    # gray = cv2.GaussianBlur(gray, (3, 3), 15)
+
+    gray = cv2.Canny(mask, 50, 150)
+
+    # Erosion and dilation
+    gray = cv2.dilate(gray, np.ones((5, 5),
+                                    dtype=np.uint8), iterations=2)
+    gray = cv2.erode(gray, np.ones((3, 3),
+                                   dtype=np.uint8), iterations=3)
+
+    # Connected components
+    im = connected_components_segmentation(gray)
+
+    # Erosion and dilation
+    im = cv2.dilate(im, np.ones((5, 5), dtype=np.uint8), iterations=2)
+    im = cv2.erode(im, np.ones((3, 3),
+                               dtype=np.uint8), iterations=3)
+
+    # Connected components
+    im = connected_components_segmentation(im)
+    return im
+
+
+def image_segmentation_version2(im):
+    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
 
     # Erosion and dilation
     #   KERNEL_HIGH_PASS_FILTER = np.asarray([[0, 1, 5], [-1, -5, -1], [0, -1, 0]], np.uint8)
@@ -87,8 +123,6 @@ def edge_detection(im):
     im = cv2.dilate(im, np.ones(DILATE_KERNEL_SIZE,
                                 dtype=np.uint8), iterations=DILATE_ITERATIONS)
     im = cv2.erode(im, KERNEL_HIGH_PASS_FILTER, iterations=EROSION_ITERATIONS)
-    images.append(im)
-    titles.append("Erosed Image")
 
     # Apply difference Threshold of V dimension
     hsv = cv2.cvtColor(im, cv2.COLOR_RGB2HSV)
@@ -98,9 +132,7 @@ def edge_detection(im):
     im = hsv[:, :, V]
 
     # Blending the images (gray and hsv)
-    im = cv2.addWeighted(im, 0.65, gray, 0.35, 0)
-    images.append(im)
-    titles.append("HSV color space")
+    im = cv2.addWeighted(im, 0.35, gray, 0.65, 0)
 
     scale = 1
     delta = 0
@@ -112,25 +144,16 @@ def edge_detection(im):
     abs_grad_x = cv2.convertScaleAbs(grad_x)
     abs_grad_y = cv2.convertScaleAbs(grad_y)
     im = cv2.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
-    images.append(im)
-    titles.append("Sobel image")
 
     # average_mean_V = int(np.average(gray))
     average_mean_V = int(np.average(hsv[:, :, V]))
     ret, im = cv2.threshold(im, average_mean_V, 255,
                             cv2.ADAPTIVE_THRESH_GAUSSIAN_C + cv2.THRESH_MASK)
-    images.append(im)
-    titles.append("Threshold image")
 
     # Connected components
     im = connected_components_segmentation(im)
 
-    # im = connected_components_segmentation(im)
-
-    images.append(im)
-    titles.append('Connected components Image')
-
-    # Lines	    return images, titles
+    # Lines return images, titles
     # im_lines = np.copy(im_original)
     # contours, _ = cv2.findContours(im, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -142,45 +165,6 @@ def edge_detection(im):
     #         #   cv2.drawContours(im_lines, contours, -1, (255, 0, 0), 4)
     #         cv2.rectangle(im_lines, (x, y), (x + w, y + h), (0, 255, 0), 3)
     #         list_painting.append((x, y, w, h))
-    # return list_painting
-    return images, titles
-
-
-def image_segmentation(im):
-    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray, (3, 3), 15)
-
-    # Erosion and dilation
-    gray = cv2.erode(gray, np.ones((3, 3), dtype=np.uint8))
-    gray = cv2.dilate(gray, np.ones((5, 5),
-                                    dtype=np.uint8), iterations=2)
-    gray = cv2.erode(gray, np.ones((3, 3),
-                                   dtype=np.uint8), iterations=3)
-
-    plt.imshow(gray, cmap='gray')
-    plt.title('image_segmentation')
-    plt.show()
-
-    # Connected components
-    _, labeled_img = cv2.connectedComponentsWithAlgorithm(
-        gray, 8, cv2.CV_32S, cv2.CCL_GRANA)
-    labels = np.unique(labeled_img)
-    labels = labels[labels != 0]
-    im = np.zeros_like(labeled_img, dtype=np.uint8)
-    for label in labels:
-        mask = np.zeros_like(labeled_img, dtype=np.uint8)
-        mask[labeled_img == label] = 255
-        contours, _ = cv2.findContours(
-            mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-        hull = []
-        for cnt in contours:
-            hull.append(cv2.convexHull(cnt, False))
-        hull_mask = np.zeros((mask.shape[0], mask.shape[1]), dtype=np.uint8)
-        for i in range(len(contours)):
-            hull_mask = cv2.drawContours(hull_mask, hull, i, 255, -1, 8)
-        im = np.clip(im + hull_mask, 0, 255)
-
     return im
 
 
@@ -195,7 +179,7 @@ def connected_components_segmentation(im):
         mask = np.zeros_like(labeled_img, dtype=np.uint8)
         mask[labeled_img == label] = 255
         contours, _ = cv2.findContours(
-            mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         hull = []
         for cnt in contours:
@@ -276,6 +260,7 @@ def elaborate_edge_detection(frame, show_images=False):
     """
     frame_retinex = multiscale_retinex(frame)
     edit_images, edit_titles = edge_detection(frame_retinex)
+    plt_images(edit_images, edit_titles)
     list_bounding = get_bounding_boxes(edit_images[-1])
 
     if show_images:
