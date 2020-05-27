@@ -83,22 +83,36 @@ def edge_detection(im):
 
 
 def image_segmentation_version1(im):
+    images = []
+    titles = []
     gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-    # Cerco la soglia adatta per creare la maschera successivamente
-    thresh, _ = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
 
-    # Applico la soglia per creare la maschera dell'immagine
+    # Apply difference Threshold of V dimension
+    hsv = cv2.cvtColor(im, cv2.COLOR_RGB2HSV)
+    H, S, V = np.arange(3)
+
+    # Apply Sobel to V-dimension of HSV color space
+    hsv = hsv[:, :, V]
+
+    # Blending the images (gray and hsv)
+    gray = cv2.addWeighted(hsv, 0.35, gray, 0.65, 0)
+    thresh, _ = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
     mask = (gray < thresh).astype(np.uint8)*255
-    # gray = cv2.GaussianBlur(gray, (3, 3), 15)
+
+    images.append(mask)
+    titles.append('threshold')
 
     gray = cv2.Canny(mask, 50, 150)
+    images.append(gray)
+    titles.append('Canny')
 
     # Erosion and dilation
     gray = cv2.dilate(gray, np.ones((5, 5),
                                     dtype=np.uint8), iterations=2)
     gray = cv2.erode(gray, np.ones((3, 3),
                                    dtype=np.uint8), iterations=3)
-
+    images.append(gray)
+    titles.append('Erosion and dilation')
     # Connected components
     im = connected_components_segmentation(gray)
 
@@ -106,9 +120,12 @@ def image_segmentation_version1(im):
     im = cv2.dilate(im, np.ones((5, 5), dtype=np.uint8), iterations=2)
     im = cv2.erode(im, np.ones((3, 3),
                                dtype=np.uint8), iterations=3)
-
+    images.append(gray)
+    titles.append('Erosion and dilation')
     # Connected components
     im = connected_components_segmentation(im)
+    # plt_images(images, titles)
+
     return im
 
 

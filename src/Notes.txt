@@ -1,9 +1,17 @@
 Problems with video
-../data/videos/014/VID_20180529_112517.mp4
-../data/videos/001/GOPR5821.MP4
+../data/videos/014/VID_20180529_112517.mp4 -- fixed
+../data/videos/001/GOPR5821.MP4 --
 ../data/videos/009/IMG_2653.MOV
 ../data/videos/009/IMG_2664.MOV'
 ../data/videos/007/IMG_7850.MOV
+../data/videos/011/3.mp4
+../data/videos/003/GOPR1930.MP4
+../data/videos/005/GOPR2045.MP4
+../data/videos/001/GOPR5827.MP4
+../data/videos/009/IMG_2657.MOV
+../data/videos/010/VID_20180529_112706.mp4
+../data/videos/010/VID_20180529_112722.mp4
+
 
 # Painting presents into paiting_db
 IMG_3814_#1.jpg -> Correct
