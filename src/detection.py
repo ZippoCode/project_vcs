@@ -60,7 +60,6 @@ def edge_detection(im):
         Takes an image RGB and return a two lists.
         The first list contains edited images while the second contains
         a name of algorithms which used
-
     :param im: original image
     :return:
         - a list containing the images of the operations carried out
@@ -97,7 +96,7 @@ def image_segmentation_version1(im):
     # Blending the images (gray and hsv)
     gray = cv2.addWeighted(hsv, 0.35, gray, 0.65, 0)
     thresh, _ = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
-    mask = (gray < thresh).astype(np.uint8)*255
+    mask = (gray < thresh).astype(np.uint8) * 255
 
     images.append(mask)
     titles.append('threshold')
@@ -212,7 +211,6 @@ def sorted_points(contour):
     """
         Given a contour with shape (4, 1, 2) and return the sorted points
         Upper Left, Upper Right, Down Left, Down Right.
-
     :param contour:
     :return:
     """
@@ -239,7 +237,7 @@ def sorted_points(contour):
             down_right = (contour[point, 0, 0], contour[point, 0, 1])
         else:
             return
-    if (upper_right[0]-upper_left[0]) < 150 or (down_left[1]-upper_left[1]) < 150:
+    if (upper_right[0] - upper_left[0]) < 150 or (down_left[1] - upper_left[1]) < 150:
         return
     return upper_left, upper_right, down_left, down_right
 
@@ -247,7 +245,6 @@ def sorted_points(contour):
 def get_bounding_boxes(image):
     """
         Given an image it looks for the paintings and returns a list of bounding boxes
-
     :param image:
     :return: list of bounding boxes (x, y, w, h)
     """
@@ -269,9 +266,7 @@ def get_bounding_boxes(image):
 def elaborate_edge_detection(frame, show_images=False):
     """
         Elaborate an frame with Edge Detection and Rectification
-
     :param frame: numpy.ndarray with shape (H, W, C)
-
     :return:
         - A list of bounding boxes (x, y, w, h)
     """

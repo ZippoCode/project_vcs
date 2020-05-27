@@ -2,7 +2,7 @@ Problems with video
 ../data/videos/014/VID_20180529_112517.mp4 -- fixed
 ../data/videos/001/GOPR5821.MP4 --
 ../data/videos/009/IMG_2653.MOV
-../data/videos/009/IMG_2664.MOV'
+../data/videos/009/IMG_2664.MOV
 ../data/videos/007/IMG_7850.MOV
 ../data/videos/011/3.mp4
 ../data/videos/003/GOPR1930.MP4
@@ -24,3 +24,4 @@ VID_20180529_112627_#2.jpg -> Correct
 VID_20180529_112627_#4.jpg -> Correct
 GOPR5818_#2.jpg -> Correct
 IMG_4083_#3.jpg -> Correct
+IMG_3819.MOV_#1.jpg -> Correct
