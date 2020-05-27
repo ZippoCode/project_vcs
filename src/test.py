@@ -31,29 +31,10 @@ def paiting_detection(num_example=1):
         for file in os.listdir(path):
             if file.endswith(".mp4") or file.endswith(".MP4") or file.endswith(".MOV"):
                 video = os.path.join(path, file)
-<<<<<<< HEAD
-                video_list.append(video)
-
-    # video_list = []
-    # Take a random video and remove it from list
-    # video_list = []
-    # video_list.append('../data/videos/002/20180206_113059.mp4')
-    # capVideo('../data/videos/001/GOPR5832.MP4',
-    #          'GOPR5832.MP4')
-    video_list = ['../data/videos/001/GOPR5828.MP4']
-    # capVideo('../data/videos/010/VID_20180529_112440.mp4',
-    #  'VID_20180529_112440.mp4')
-    while len(video_list) > 0:
-        path_painting = "../output/paintings/{}_#{}.jpg"
-        video = random.choice(video_list)
-        video_list.remove(video)
-        file_name = video.split('/')[-1]
-
-        # Edge Detection
-=======
                 path_videos.append(video)
 
-    path_videos = random.choices(path_videos, k=num_example if num_example > 0 else len(path_videos))
+    path_videos = random.choices(
+        path_videos, k=num_example if num_example > 0 else len(path_videos))
     while len(path_videos) > 0:
         path_video = random.choice(path_videos)
         path_videos.remove(path_video)
@@ -68,7 +49,6 @@ def paiting_detection(num_example=1):
         # if not os.path.exists(path_output_paitings):
         #     os.makedirs(path_output_paitings)
 
->>>>>>> 8354d9c013d35fb371eb769e60fb58471b570b20
         video_results = list()
         frames = read_video(path_video, file_name)
 
@@ -101,7 +81,8 @@ def paiting_detection(num_example=1):
 
 def painting_retrieval(num_example=1):
     ROOT_PATH = "../output/paintings/"
-    path_paitings = [file for file in os.listdir(ROOT_PATH) if file.endswith('.jpg')]
+    path_paitings = [file for file in os.listdir(
+        ROOT_PATH) if file.endswith('.jpg')]
 
     paiting_choices = random.choices(path_paitings, k=num_example)
     for name_paiting in paiting_choices:
