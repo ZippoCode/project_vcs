@@ -1,5 +1,6 @@
 import cv2
 import os
+import sys
 
 # Custom importing
 from parameters import *
@@ -26,8 +27,9 @@ def get_videos():
 def save_paitings(dict_image, origin_path, folders=False):
     file_name = origin_path.split('/')[-1]
     file_name = file_name.split('.')[0]
+    folder = origin_path.split('/')[-2]
+
     if folders:
-        folder = origin_path.split('/')[-2]
         output_path = ROOT_PATH_DETECTED + '{}/{}/'.format(folder, file_name)
     else:
         output_path = ROOT_PATH_DETECTED
@@ -39,7 +41,7 @@ def save_paitings(dict_image, origin_path, folders=False):
         if folders:
             path = output_path + "{}.jpg".format(title)
         else:
-            path = output_path + '{}_{}.jpg'.format(file_name, title)
+            path = output_path + '{}_{}_{}.jpg'.format(folder, file_name, title)
         cv2.imwrite(path, image)
 
 
@@ -57,7 +59,7 @@ def resize_when_too_big(img):
 
 def resize_to_ratio(img, ratio):
     """
-    Resize an image according to the given ration
+        Resize an image according to the given ration
     :param img: Image to be resized
     :param ratio: ratio used to resize the image
     :return: Image resized
@@ -78,9 +80,9 @@ def read_video(video_path):
     :return:
             name_video: list<numpy.ndarray>
     """
+    if not os.path.exists(video_path):
+        sys.exit('Error in reading file {}'.format(video_path))
     video = cv2.VideoCapture(video_path)
-    if video is None or not video.isOpened():
-        print('Error reading file {}'.format(video_path))
     print("Reading file: {}".format(video_path))
     # Reduce the number of frames captured
     fps = int(video.get(cv2.CAP_PROP_FPS)) / 1

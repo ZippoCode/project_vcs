@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-
+import sys
 
 def multiscale_retinex(image):
     """
@@ -14,10 +14,11 @@ def multiscale_retinex(image):
         Original Image with shape (H, W, C)
     :return:
     """
-    hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-
+    if len(image.shape) != 3:
+        sys.exit('Image need have shape (H, W, C)')
     H, W, C = image.shape
-    image = cv2.resize(image, (int(H / 8), int(W / 8)), interpolation=cv2.INTER_LINEAR)
+    print('\t> Improving quality ...')
+    image = cv2.resize(image, (int(H / 2), int(W / 2)), interpolation=cv2.INTER_AREA)
     sigma = [15, 80, 250]
     low_clip = 0.01
     high_clip = 0.99
@@ -38,7 +39,7 @@ def multiscale_retinex(image):
     total = retinex.shape[0] * retinex.shape[1]
     for c in range(retinex.shape[2]):
         unique, counts = np.unique(retinex[:, :, c], return_counts=True)
-        current = 0
+        current, high_val, low_val = 0, 0, 0
         for u, count in zip(unique, counts):
             if float(current) / total < low_clip:
                 low_val = u
@@ -56,6 +57,6 @@ def multiscale_retinex(image):
             out[y, x, 0] = A * image[y, x, 0]
             out[y, x, 1] = A * image[y, x, 1]
             out[y, x, 2] = A * image[y, x, 2]
-    out = cv2.resize(out, (W, H), interpolation=cv2.INTER_LINEAR)
-
+    out = cv2.resize(out, (W, H), interpolation=cv2.INTER_AREA)
+    print('\t> End improving quality')
     return np.uint8(out - 1.0)

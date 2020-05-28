@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 
 # Custom importing
-from parameters import *
 from improve_quality import multiscale_retinex
 from plotting import plt_images, draw_paintings
 
@@ -74,7 +73,7 @@ def edge_detection(im):
     images.append(im)
     titles.append('Mean Shift Filtering')
 
-    im = image_segmentation_version1(im)
+    im = image_segmentation_version(im)
     # im = image_segmentation_version2(im)
     images.append(im)
     titles.append('Connected components Image')
@@ -82,7 +81,7 @@ def edge_detection(im):
     return images, titles
 
 
-def image_segmentation_version1(im):
+def image_segmentation_version(im):
     images = []
     titles = []
     gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
@@ -128,64 +127,7 @@ def image_segmentation_version1(im):
     titles.append('Erosion and dilation')
     # Connected components
     im = connected_components_segmentation(im)
-    # plt_images(images, titles)
 
-    return im
-
-
-def image_segmentation_version2(im):
-    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-
-    # Erosion and dilation
-    #   KERNEL_HIGH_PASS_FILTER = np.asarray([[0, 1, 5], [-1, -5, -1], [0, -1, 0]], np.uint8)
-    KERNEL_HIGH_PASS_FILTER = np.asarray(
-        [[0, 0, 1, 0, 0], [0, 0, 1, 0, 0], [1, 1, 1, 1, 1], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0]], np.uint8)
-    im = cv2.erode(im, KERNEL_HIGH_PASS_FILTER)
-    im = cv2.dilate(im, np.ones(DILATE_KERNEL_SIZE,
-                                dtype=np.uint8), iterations=DILATE_ITERATIONS)
-    im = cv2.erode(im, KERNEL_HIGH_PASS_FILTER, iterations=EROSION_ITERATIONS)
-
-    # Apply difference Threshold of V dimension
-    hsv = cv2.cvtColor(im, cv2.COLOR_RGB2HSV)
-    H, S, V = np.arange(3)
-
-    # Apply Sobel to V-dimension of HSV color space
-    im = hsv[:, :, V]
-
-    # Blending the images (gray and hsv)
-    im = cv2.addWeighted(im, 0.35, gray, 0.65, 0)
-
-    scale = 1
-    delta = 0
-    ddepth = cv2.CV_16S
-    grad_x = cv2.Sobel(im, ddepth, 1, 0, ksize=5, scale=scale,
-                       delta=delta, borderType=cv2.BORDER_DEFAULT)
-    grad_y = cv2.Sobel(im, ddepth, 0, 1, ksize=5, scale=scale,
-                       delta=delta, borderType=cv2.BORDER_DEFAULT)
-    abs_grad_x = cv2.convertScaleAbs(grad_x)
-    abs_grad_y = cv2.convertScaleAbs(grad_y)
-    im = cv2.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
-
-    # average_mean_V = int(np.average(gray))
-    average_mean_V = int(np.average(hsv[:, :, V]))
-    ret, im = cv2.threshold(im, average_mean_V, 255,
-                            cv2.ADAPTIVE_THRESH_GAUSSIAN_C + cv2.THRESH_MASK)
-
-    # Connected components
-    im = connected_components_segmentation(im)
-
-    # Lines return images, titles
-    # im_lines = np.copy(im_original)
-    # contours, _ = cv2.findContours(im, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-    # for contour in contours:
-    #     epsilon = cv2.arcLength(contour, True) * 0.06
-    #     approx = cv2.approxPolyDP(contour, epsilon=epsilon, closed=True)
-    #     if len(approx) == 4 and cv2.contourArea(contour) > 5000:
-    #         x, y, w, h = cv2.boundingRect(contour)
-    #         #   cv2.drawContours(im_lines, contours, -1, (255, 0, 0), 4)
-    #         cv2.rectangle(im_lines, (x, y), (x + w, y + h), (0, 255, 0), 3)
-    #         list_painting.append((x, y, w, h))
     return im
 
 
@@ -219,12 +161,8 @@ def sorted_points(contour):
     :param contour:
     :return:
     """
-    middle_x = 0
-    middle_y = 0
-    upper_left = (0, 0)
-    upper_right = (0, 0)
-    down_left = (0, 0)
-    down_right = (0, 0)
+    middle_x, middle_y = 0, 0
+    upper_left, upper_right, down_left, down_right = (0, 0), (0, 0), (0, 0), (0, 0)
     for point in range(contour.shape[0]):
         #   print("X: {}, Y : {}".format(contour[point, 0, 1], contour[point, 0, 0]))
         middle_x += contour[point, 0, 1]
@@ -232,13 +170,13 @@ def sorted_points(contour):
     middle_x /= 4
     middle_y /= 4
     for point in range(contour.shape[0]):
-        if (contour[point, 0, 1] < middle_x and contour[point, 0, 0] < middle_y):
+        if contour[point, 0, 1] < middle_x and contour[point, 0, 0] < middle_y:
             upper_left = (contour[point, 0, 0], contour[point, 0, 1])
-        elif (contour[point, 0, 1] < middle_x and contour[point, 0, 0] > middle_y):
+        elif contour[point, 0, 1] < middle_x and contour[point, 0, 0] > middle_y:
             upper_right = (contour[point, 0, 0], contour[point, 0, 1])
-        elif (contour[point, 0, 1] > middle_x and contour[point, 0, 0] < middle_y):
+        elif contour[point, 0, 1] > middle_x and contour[point, 0, 0] < middle_y:
             down_left = (contour[point, 0, 0], contour[point, 0, 1])
-        elif (contour[point, 0, 1] > middle_x and contour[point, 0, 0] > middle_y):
+        elif contour[point, 0, 1] > middle_x and contour[point, 0, 0] > middle_y:
             down_right = (contour[point, 0, 0], contour[point, 0, 1])
         else:
             return
@@ -263,9 +201,8 @@ def get_bounding_boxes(image):
         approx = cv2.approxPolyDP(contour, epsilon=epsilon, closed=True)
         if len(approx) == 4 and cv2.contourArea(contour) > 5000:
             sorted_approx = sorted_points(approx)
-            if sorted_approx is not None:
-                if not (0, 0) in sorted_approx:
-                    list_bounding_boxes.append(sorted_approx)
+            if sorted_approx is not None and not (0, 0) in sorted_approx:
+                list_bounding_boxes.append(sorted_approx)
 
     return list_bounding_boxes
 
