@@ -28,7 +28,7 @@ def match_paitings(query_painting):
     database_features = dict()
     for path_image in images_name:
         image = cv2.imread(PATH + path_image, cv2.IMREAD_GRAYSCALE)
-        image = cv2.resize(image, query_painting.shape)
+        image = cv2.resize(image, query_painting.shape[:2])
         kp, des = detector.detectAndCompute(image, None)
         if kp is not None and des is not None:
             database_features[path_image] = (kp, des)

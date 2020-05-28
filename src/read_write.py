@@ -1,20 +1,43 @@
 import cv2
+import os
+from pathlib import Path
+
+# Custom importing
+from parameters import *
 
 
-# def read_single_image(input_filename, output_filename='../output/output.jpg'):
-#     image = cv2.imread(input_filename, cv2.IMREAD_COLOR)
-#     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-#     if image is None:
-#         print("Error reading image")
-#         return
-#     frame_retinex = multiscale_retinex(image)
-#     images, titles = edge_detection(frame_retinex)
-#     list_paintings = get_bounding_boxes(images[-1])
-#     out = draw_paintings(image, list_paintings)
-#     cv2.imwrite(output_filename, cv2.cvtColor(out, cv2.COLOR_BGR2RGB))
+def get_videos():
+    """
+        Look up all the video in the ROOT FOLDER and return a list of these
+    :return:
+    """
+    path_videos = list()
+    for folder in os.listdir(ROOT_PATH_VIDEOS):
+        if folder == '.DS_Store':
+            continue
+        path = os.path.join(ROOT_PATH_VIDEOS, folder)
+        for file in os.listdir(path):
+            if file.endswith(".mp4") or file.endswith(".MP4") or file.endswith(".MOV"):
+                video = os.path.join(path, file)
+                path_videos.append(video)
+
+    return path_videos
 
 
-def read_video(video_path, name_video):
+def save_paitings(dict_image, origin_path, folders=False):
+    file_name = origin_path.split('/')[-1]
+    file_name = file_name.split('.')[0]
+    if folders:
+        folder = origin_path.split('/')[-2]
+        output_path = ROOT_PATH_DETECTED + '{}/{}/'.format(folder, file_name)
+    else:
+        output_path = ROOT_PATH_DETECTED + file_name + '_'
+
+    for title, image in dict_image.items():
+        path = output_path + "{}.jpg".format(title)
+        cv2.imwrite(path, image)
+
+def read_video(video_path):
     """
         Given a path of video return a list of frame. One Frame each second.
         Each Frame is a image into RGB
