@@ -67,9 +67,11 @@ def edge_detection(im):
     """
     images = []
     titles = []
+    images.append(im)
+    titles.append('Original Image')
 
     # # PYR MEAN SHIFT FILTERING
-    im = cv2.pyrMeanShiftFiltering(im, sp=8, sr=8, maxLevel=3)
+    im = cv2.pyrMeanShiftFiltering(im, sp=4, sr=4, maxLevel=3)
     images.append(im)
     titles.append('Mean Shift Filtering')
 
@@ -95,8 +97,12 @@ def image_segmentation_version1(im):
 
     # Blending the images (gray and hsv)
     gray = cv2.addWeighted(hsv, 0.35, gray, 0.65, 0)
-    thresh, _ = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
-    mask = (gray < thresh).astype(np.uint8) * 255
+    # thresh, _ = cv2.threshold(gray, 120, 255, cv2.THRESH_OTSU)
+    # mask = (gray < thresh).astype(np.uint8) * 255
+
+    average_mean_V = int(np.average(gray))
+    ret, mask = cv2.threshold(gray, average_mean_V, 255,
+                              cv2.ADAPTIVE_THRESH_GAUSSIAN_C + cv2.THRESH_MASK)
 
     images.append(mask)
     titles.append('threshold')
@@ -239,6 +245,8 @@ def sorted_points(contour):
             return
     if (upper_right[0] - upper_left[0]) < 150 or (down_left[1] - upper_left[1]) < 150:
         return
+    if (down_right[0] - down_left[0]) < 150 or (down_right[1] - upper_right[1]) < 150:
+        return
     return upper_left, upper_right, down_left, down_right
 
 
@@ -272,7 +280,7 @@ def elaborate_edge_detection(frame, show_images=False):
     """
     frame_retinex = multiscale_retinex(frame)
     edit_images, edit_titles = edge_detection(frame_retinex)
-    plt_images(edit_images, edit_titles)
+    # plt_images(edit_images, edit_titles)
     list_bounding = get_bounding_boxes(edit_images[-1])
 
     if show_images:

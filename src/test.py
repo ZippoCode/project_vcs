@@ -11,6 +11,7 @@ from detection import elaborate_edge_detection
 from plotting import draw_paintings
 from rectification import rectification
 from paiting_retrieval import match_paitings
+from plotting import plt_images
 
 from parameters import *
 
@@ -35,6 +36,8 @@ def paiting_detection(num_example=1):
 
     path_videos = random.choices(
         path_videos, k=num_example if num_example > 0 else len(path_videos))
+    # path_videos = ['../data/videos/010/VID_20180529_112722.mp4']
+
     while len(path_videos) > 0:
         path_video = random.choice(path_videos)
         path_videos.remove(path_video)
@@ -53,7 +56,7 @@ def paiting_detection(num_example=1):
         frames = read_video(path_video, file_name)
 
         # Utils for choice a TOT frame because it is too slow
-        frames = random.choices(frames, k=1)
+        frames = random.choices(frames, k=10)
 
         for frame in frames:
             list_boundings = elaborate_edge_detection(frame, show_images=False)
@@ -73,7 +76,7 @@ def paiting_detection(num_example=1):
                 # output_name = path_output_paitings + "Painting #{}.jpg".format(num)
                 output_name = path_output_paitings.format(file_name, num)
                 cv2.imwrite(output_name, painting)
-            # plt_images(paintings, titles)
+            plt_images(paintings, titles)
 
         write_video(path_output_video.format(file_name), video_results)
     return
@@ -105,4 +108,4 @@ def painting_retrieval(num_example=1):
 
 if __name__ == '__main__':
     paiting_detection(num_example=3)
-    painting_retrieval(num_example=4)
+    # painting_retrieval(num_example=4)

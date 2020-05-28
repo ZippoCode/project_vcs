@@ -14,6 +14,31 @@ import cv2
 #     cv2.imwrite(output_filename, cv2.cvtColor(out, cv2.COLOR_BGR2RGB))
 
 
+def resize_when_too_big(img):
+    h = int(img.shape[0])
+    w = int(img.shape[1])
+    thr_w, thr_h = 1080, 1080
+    if h > thr_h or w > thr_w:
+        h_ratio = thr_h / h
+        w_ratio = thr_w / w
+        ratio = min(h_ratio, w_ratio)
+        img = resize_to_ratio(img, ratio)
+    return img
+
+
+def resize_to_ratio(img, ratio):
+    """
+    Resize an image according to the given ration
+    :param img: Image to be resized
+    :param ratio: ratio used to resize the image
+    :return: Image resized
+    """
+    assert ratio > 0, 'ratio_percent must be > 0'
+    w = int(img.shape[1] * ratio)
+    h = int(img.shape[0] * ratio)
+    return cv2.resize(img, (w, h), interpolation=cv2.INTER_AREA)
+
+
 def read_video(video_path, name_video):
     """
         Given a path of video return a list of frame. One Frame each second.
@@ -38,6 +63,7 @@ def read_video(video_path, name_video):
         video.set(1, count)
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = resize_when_too_big(frame)
             video_frames.append(frame)
         else:
             break
