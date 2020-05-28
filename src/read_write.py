@@ -1,6 +1,5 @@
 import cv2
 import os
-from pathlib import Path
 
 # Custom importing
 from parameters import *
@@ -31,10 +30,16 @@ def save_paitings(dict_image, origin_path, folders=False):
         folder = origin_path.split('/')[-2]
         output_path = ROOT_PATH_DETECTED + '{}/{}/'.format(folder, file_name)
     else:
-        output_path = ROOT_PATH_DETECTED + file_name + '_'
+        output_path = ROOT_PATH_DETECTED
+
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
 
     for title, image in dict_image.items():
-        path = output_path + "{}.jpg".format(title)
+        if folders:
+            path = output_path + "{}.jpg".format(title)
+        else:
+            path = output_path + '{}_{}.jpg'.format(file_name, title)
         cv2.imwrite(path, image)
 
 

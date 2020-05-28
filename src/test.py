@@ -9,7 +9,7 @@ from read_write import get_videos, write_video, read_video, save_paitings
 from detection import elaborate_edge_detection
 from plotting import draw_paintings
 from rectification import rectification
-from paiting_retrieval import match_paitings
+from painting_retrieval import match_paitings
 from plotting import plt_images
 
 from parameters import *
@@ -63,14 +63,12 @@ def paiting_detection(num_example=1):
 
 
 def painting_retrieval(num_example=1):
-    ROOT_PATH = "../output/paintings/"
-    path_paitings = [file for file in os.listdir(
-        ROOT_PATH) if file.endswith('.jpg')]
+    path_paitings = [file for file in os.listdir(ROOT_PATH_DETECTED) if file.endswith('.jpg')]
 
     paiting_choices = random.choices(
         path_paitings, k=num_example if num_example > 0 else len(path_paitings))
     for name_paiting in paiting_choices:
-        painting = cv2.imread(ROOT_PATH + name_paiting, cv2.IMREAD_COLOR)
+        painting = cv2.imread(ROOT_PATH_DETECTED + name_paiting, cv2.IMREAD_COLOR)
         list_retrieval = match_paitings(painting)
         if list_retrieval is not None and len(list_retrieval) > 0:
             best_match, similarity = list_retrieval[0]
@@ -89,5 +87,5 @@ def painting_retrieval(num_example=1):
 
 
 if __name__ == '__main__':
-    paiting_detection(num_example=3)
-    # painting_retrieval(num_example=4)
+    paiting_detection(num_example=1)
+    painting_retrieval(num_example=3)

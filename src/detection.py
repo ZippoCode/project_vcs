@@ -279,10 +279,7 @@ def elaborate_edge_detection(frame, show_images=False):
     """
     frame_retinex = multiscale_retinex(frame)
     edit_images, edit_titles = edge_detection(frame_retinex)
-<<<<<<< HEAD
     # plt_images(edit_images, edit_titles)
-=======
->>>>>>> 175bda2bea27e4b50a77ca310d6792c8d2351db4
     list_bounding = get_bounding_boxes(edit_images[-1])
 
     if show_images:
