@@ -2,6 +2,23 @@ import numpy as np
 import cv2
 import math
 
+from parameters import ENTROPY_THRESHOLD
+
+
+def is_painting(detected):
+    # Detect if it is a painting
+    color = ('B', 'G', 'G')
+    entropies = list()
+    for i, col in enumerate(color):
+        histr = cv2.calcHist([detected], [i], None, [256], [0, 256]) / detected.size
+        histr = histr[histr > 0]
+        entropies.append(-np.sum(histr * np.log2(histr)))
+
+    average_entropy = np.average(entropies)
+    print(average_entropy)
+    return average_entropy > ENTROPY_THRESHOLD
+
+
 def rectification(im, coordinate):
     upper_left, upper_right, down_left, down_right = coordinate
 
