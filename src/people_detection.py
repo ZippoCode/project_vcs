@@ -5,7 +5,8 @@ import numpy as np
 import os.path
 import matplotlib.pyplot as plt
 
-from read_write import get_videos, write_video, read_video, save_paitings
+from tool.utils import *
+from tool.darknet2pytorch import Darknet
 
 
 # Step 1: Initialize the parameters
@@ -14,30 +15,7 @@ nmsThreshold = 0.4   # Non-maximum suppression threshold
 inpWidth = 416       # Width of network's input image
 inpHeight = 416      # Height of network's input image
 
-
-class Args(object):
-    def __init__(self, **params):
-        self.video = params.get(
-            'video', '../data/videos/002/20180206_113059.mp4')
-
-
-args = Args()
-print(args.video)
-
-
-# Step 2: Load names of classes
 classesFile = "../yolo/coco.names"
-classes = None
-with open(classesFile, 'rt') as f:
-    classes = f.read().rstrip('\n').split('\n')
-
-# Give the configuration and weight files for the model and load the network using them.
-modelConfiguration = "../yolo/yolov3.cfg"
-modelWeights = "../yolo/yolov3.weights"
-
-net = cv2.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
-net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
 
 # Step 3: Define function
@@ -50,7 +28,7 @@ def getOutputsNames(net):
 
 
 # Draw the predicted bounding box
-def drawPred(frame, classId, conf, left, top, right, bottom):
+def drawPred(frame, classes, classId, conf, left, top, right, bottom):
     # Draw a bounding box.
     cv2.rectangle(frame, (left, top), (right, bottom), (255, 178, 50), 3)
 
@@ -72,7 +50,7 @@ def drawPred(frame, classId, conf, left, top, right, bottom):
 
 
 # Remove the bounding boxes with low confidence using non-maxima suppression
-def postprocess(frame, outs):
+def postprocess(frame, outs, classes):
     frameHeight = frame.shape[0]
     frameWidth = frame.shape[1]
 
@@ -110,70 +88,167 @@ def postprocess(frame, outs):
         top = box[1]
         width = box[2]
         height = box[3]
-        drawPred(frame, classIds[i], confidences[i],
+        drawPred(frame, classes, classIds[i], confidences[i],
                  left, top, left + width, top + height)
 
 
-# Step 4: Process inputs
-if (args.video):
-    # Open the video file
-    if not os.path.isfile(args.video):
-        print("Input video file ", args.video, " doesn't exist")
-        sys.exit(1)
-    cap = cv2.VideoCapture(args.video)
-    outputFile = '../yolo/'+args.video.split('/')[-1][:-4]+'_yolo_output.avi'
-else:
-    cap = cv2.VideoCapture(0)
-# Get the video writer initialized to save the output video
-vid_writer = cv2.VideoWriter(outputFile, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (round(
-    cap.get(cv2.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
+def detect_yolo_v3(cfgfile, weightfile, videofile):
+    # Load names of classes
+    classes = None
+    with open(classesFile, 'rt') as f:
+        classes = f.read().rstrip('\n').split('\n')
+        print(classes)
+
+    net = cv2.dnn.readNetFromDarknet(cfgfile, weightfile)
+    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+
+    # Process inputs
+    if (videofile):
+        # Open the video file
+        if not os.path.isfile(videofile):
+            print("Input video file ", videofile, " doesn't exist")
+            sys.exit(1)
+        cap = cv2.VideoCapture(videofile)
+        outputFile = '../yolo/' + \
+            videofile.split('/')[-1][:-4]+'_yolo_output.avi'
+    else:
+        cap = cv2.VideoCapture(0)
+    # Get the video writer initialized to save the output video
+    vid_writer = cv2.VideoWriter(outputFile, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (round(
+        cap.get(cv2.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
+
+    # Process each frame
+    try:
+        while True:
+
+            # get frame from the video
+            hasFrame, frame = cap.read()
+
+            # Stop the program if reached end of video
+            if not hasFrame:
+                print("Done processing !!!")
+                print("Output file is stored as ", outputFile)
+                print('Not HasFrame')
+                cv2.waitKey(3000)
+                # Release device
+                cap.release()
+                break
+
+            # Create a 4D blob from a frame.
+            blob = cv2.dnn.blobFromImage(
+                frame, 1/255, (inpWidth, inpHeight), [0, 0, 0], 1, crop=False)
+
+            # Sets the input to the network
+            net.setInput(blob)
+
+            # Runs the forward pass to get output of the output layers
+            outs = net.forward(getOutputsNames(net))
+
+            # Remove the bounding boxes with low confidence
+            postprocess(frame, outs, classes)
+
+            # Put efficiency information. The function getPerfProfile returns the overall time for inference(t) and the timings for each of the layers(in layersTimes)
+            t, _ = net.getPerfProfile()
+            label = 'Inference time: %.2f ms' % (
+                t * 1000.0 / cv2.getTickFrequency())
+            cv2.putText(frame, label, (0, 15),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
+
+            # Write the frame with the detection boxes
+            vid_writer.write(frame.astype(np.uint8))
+
+    except KeyboardInterrupt:
+        print('Stop processing')
+        pass
+    print('Done processing')
 
 
-# Step 5: Process each frame
-try:
-    while True:
+def detect_yolo_v4(cfgfile, weightfile, videofile, use_cuda=False):
+    num_classes = 1
+    m = Darknet(cfgfile)
 
-        # get frame from the video
-        hasFrame, frame = cap.read()
+    m.print_network()
+    m.load_weights(weightfile)
+    print('Loading weights from %s... Done!' % (weightfile))
 
-        # Stop the program if reached end of video
-        if not hasFrame:
-            print("Done processing !!!")
-            print("Output file is stored as ", outputFile)
-            print('Not HasFrame')
-            cv2.waitKey(3000)
-            # Release device
-            cap.release()
-            break
+    if use_cuda:
+        m.cuda()
 
-        # Create a 4D blob from a frame.
-        blob = cv2.dnn.blobFromImage(
-            frame, 1/255, (inpWidth, inpHeight), [0, 0, 0], 1, crop=False)
+    # Process inputs
+    if (videofile):
+        # Open the video file
+        if not os.path.isfile(videofile):
+            print("Input video file ", videofile, " doesn't exist")
+            sys.exit(1)
+        cap = cv2.VideoCapture(videofile)
+        outputFile = '../yolo/' + \
+            videofile.split('/')[-1][:-4]+'_yolo_output.avi'
+    else:
+        cap = cv2.VideoCapture(0)
+    # Get the video writer initialized to save the output video
+    vid_writer = cv2.VideoWriter(outputFile, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (round(
+        cap.get(cv2.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
 
-        # Sets the input to the network
-        net.setInput(blob)
+    # Process each frame
+    try:
+        while True:
+            # get frame from the video
+            hasFrame, frame = cap.read()
 
-        # Runs the forward pass to get output of the output layers
-        outs = net.forward(getOutputsNames(net))
+            # Stop the program if reached end of video
+            if not hasFrame:
+                print("Done processing !!!")
+                print("Output file is stored as ", outputFile)
+                print('Not HasFrame')
+                cv2.waitKey(3000)
+                # Release device
+                cap.release()
+                break
 
-        # Remove the bounding boxes with low confidence
-        postprocess(frame, outs)
+            # print(type(frame))
+            img = Image.fromarray(frame).convert('RGB')
+            sized = img.resize((m.width, m.height))
+            # sized = cv2.resize(frame, (m.width, m.height))
 
-        # Put efficiency information. The function getPerfProfile returns the overall time for inference(t) and the timings for each of the layers(in layersTimes)
-        t, _ = net.getPerfProfile()
-        label = 'Inference time: %.2f ms' % (
-            t * 1000.0 / cv2.getTickFrequency())
-        cv2.putText(frame, label, (0, 15),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
+            for i in range(2):
+                boxes = do_detect(m, sized, 0.5, num_classes, 0.4, use_cuda)
 
-        # Write the frame with the detection boxes
-        vid_writer.write(frame.astype(np.uint8))
+            class_names = load_class_names(classesFile)
+            result_frame = plot_boxes(img, boxes, None, class_names)
+            result_frame = np.array(result_frame)
+            # Write the frame with the detection boxes
+            vid_writer.write(result_frame.astype(np.uint8))
 
-        # matplot as background so we can draw one by one
-        # to break the loop, press ESC, then I twice
+    except KeyboardInterrupt:
+        print('Stop processing')
+        pass
+    print('Done processing')
 
-except KeyboardInterrupt:
-    print('Stop processing')
-    pass
 
-print('Done processing')
+def get_args():
+    parser = argparse.ArgumentParser(
+        'Test your image or video by trained model.')
+    parser.add_argument('-cfgfile', type=str,
+                        # default='../yolo/yolov4-custom.cfg',
+                        default='../yolo/yolov3.cfg',
+                        help='path of cfg file', dest='cfgfile')
+    parser.add_argument('-weightfile', type=str,
+                        default='../yolo/yolov3.weights',
+                        # default='../yolo/yolov4-custom_last.weights',
+                        help='path of trained model.', dest='weightfile')
+    parser.add_argument('-videofile', type=str,
+                        default='../data/videos/010/VID_20180529_112951.mp4',
+                        # default='../data/videos/002/20180206_113059.mp4',
+                        # default='../yolo/001.png',
+                        help='path of your image file.', dest='videofile')
+    args = parser.parse_args()
+
+    return args
+
+
+if __name__ == '__main__':
+    args = get_args()
+    if args.videofile:
+        detect_yolo_v3(args.cfgfile, args.weightfile, args.videofile)
+        # detect_yolo_v4(args.cfgfile, args.weightfile, args.videofile)
