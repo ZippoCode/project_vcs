@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import sys
 
+
 def multiscale_retinex(image):
     """
         Using the Multiscale Retinex with Color Restoration for image enhancement
@@ -54,9 +55,11 @@ def multiscale_retinex(image):
         for x in range(out.shape[1]):
             B = np.max(image[y, x])
             A = np.minimum(256.0 / B, retinex[y, x, 0] / intensity[y, x, 0])
+            # https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#filter2d
             out[y, x, 0] = A * image[y, x, 0]
             out[y, x, 1] = A * image[y, x, 1]
             out[y, x, 2] = A * image[y, x, 2]
+
     out = cv2.resize(out, (W, H), interpolation=cv2.INTER_AREA)
     print('\t> End improving quality')
     return np.uint8(out - 1.0)

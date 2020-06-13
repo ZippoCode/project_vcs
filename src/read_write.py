@@ -93,6 +93,7 @@ def read_video(video_path):
         count += fps
         video.set(1, count)
         if ret:
+            #cv2.imwrite('../output/frames/' + video_path.split("/")[-1] + "_{}.jpg".format(count), frame)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = resize_when_too_big(frame)
             video_frames.append(frame)

@@ -65,43 +65,23 @@ def edge_detection(im):
     """
     images = []
     titles = []
-    images.append(im)
-    titles.append('Original Image')
 
     # # PYR MEAN SHIFT FILTERING
-    im = cv2.pyrMeanShiftFiltering(im, sp=4, sr=4, maxLevel=3)
-    images.append(im)
+    msf_image = cv2.pyrMeanShiftFiltering(im, sp=8, sr=8, maxLevel=3)
+    images.append(msf_image)
     titles.append('Mean Shift Filtering')
 
-    im = image_segmentation_version(im)
-    # im = image_segmentation_version2(im)
-    images.append(im)
-    titles.append('Connected components Image')
+    hsv = cv2.cvtColor(msf_image, cv2.COLOR_RGB2HSV)
+    gray = cv2.cvtColor(msf_image, cv2.COLOR_BGR2GRAY)
 
-    return images, titles
-
-
-def image_segmentation_version(im):
-    images = []
-    titles = []
-    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-
-    # Apply difference Threshold of V dimension
-    hsv = cv2.cvtColor(im, cv2.COLOR_RGB2HSV)
     H, S, V = np.arange(3)
-
-    # Apply Sobel to V-dimension of HSV color space
-    hsv = hsv[:, :, V]
-
-    # Blending the images (gray and hsv)
-    gray = cv2.addWeighted(hsv, 0.35, gray, 0.65, 0)
+    gray = cv2.addWeighted(hsv[:, :, V], 0.35, gray, 0.65, 0)
     # thresh, _ = cv2.threshold(gray, 120, 255, cv2.THRESH_OTSU)
     # mask = (gray < thresh).astype(np.uint8) * 255
 
     average_mean_V = int(np.average(gray))
     ret, mask = cv2.threshold(gray, average_mean_V, 255,
                               cv2.ADAPTIVE_THRESH_GAUSSIAN_C + cv2.THRESH_MASK)
-
     images.append(mask)
     titles.append('threshold')
 
@@ -110,12 +90,11 @@ def image_segmentation_version(im):
     titles.append('Canny')
 
     # Erosion and dilation
-    gray = cv2.dilate(gray, np.ones((5, 5),
-                                    dtype=np.uint8), iterations=2)
-    gray = cv2.erode(gray, np.ones((3, 3),
-                                   dtype=np.uint8), iterations=3)
+    gray = cv2.dilate(gray, np.ones((5, 5), dtype=np.uint8), iterations=2)
+    gray = cv2.erode(gray, np.ones((3, 3), dtype=np.uint8), iterations=3)
     images.append(gray)
     titles.append('Erosion and dilation')
+
     # Connected components
     im = connected_components_segmentation(gray)
 
@@ -125,10 +104,13 @@ def image_segmentation_version(im):
                                dtype=np.uint8), iterations=3)
     images.append(gray)
     titles.append('Erosion and dilation')
+
     # Connected components
     im = connected_components_segmentation(im)
+    images.append(im)
+    titles.append('Connected components Image')
 
-    return im
+    return images, titles
 
 
 def connected_components_segmentation(im):
@@ -141,9 +123,7 @@ def connected_components_segmentation(im):
     for label in labels:
         mask = np.zeros_like(labeled_img, dtype=np.uint8)
         mask[labeled_img == label] = 255
-        contours, _ = cv2.findContours(
-            mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         hull = []
         for cnt in contours:
             hull.append(cv2.convexHull(cnt, False))
