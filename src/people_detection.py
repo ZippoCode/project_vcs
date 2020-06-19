@@ -62,7 +62,7 @@ def postprocess(frame, outs, classes):
                  left, top, left + width, top + height)
 
 
-def detect_person(cfgfile, weightfile, videofile):
+def detect_person(cfgfile, weightfile, videofile, use_cuda=False):
     with open(classesFile, 'rt') as f:
         classes = f.read().rstrip('\n').split('\n')
         print(classes)
