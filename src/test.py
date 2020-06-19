@@ -74,7 +74,6 @@ def painting_retrieval(num_example=1):
         if list_retrieval is not None and len(list_retrieval) > 0:
             best_match, similarity = list_retrieval[0]
             retrieval = cv2.imread(PATH + best_match, cv2.IMREAD_COLOR)
-            # TO DO: Improve Visualization
             HP, WP, CP = painting.shape
             HB, WB, CB = retrieval.shape
             result = np.empty((max(HP, HB), WP + WB, CP), np.uint8)
@@ -88,5 +87,5 @@ def painting_retrieval(num_example=1):
 
 
 if __name__ == '__main__':
-    paiting_detection(num_example=10)
-    #   painting_retrieval(num_example=1)
+    paiting_detection(num_example=3)
+    painting_retrieval(num_example=3)

@@ -13,6 +13,7 @@ def write_output(image, text, name_image, edit_name):
         cv2.imwrite(path_jpg, image)
         with open(path_txt, 'w') as file:
             file.write(text)
+            file.close()
     except OSError:
         sys.exit('Creation of the directory {} failed'.format(PATH_EDIT))
 
