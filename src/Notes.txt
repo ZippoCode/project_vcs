@@ -1,13 +1,13 @@
 Problems with video
-../data/videos/014/VID_20180529_112517.mp4 -- Correct
+../data/videos/014/VID_20180529_112517.mp4 -> Correct
 ../data/videos/009/IMG_2653.MOV -- rotation
 ../data/videos/009/IMG_2657.MOV -- rotation
-../data/videos/011/3.mp4 -- Correct
+../data/videos/011/3.mp4 -> Correct
 ../data/videos/003/GOPR1930.MP4 -- not too bad
-../data/videos/005/GOPR2045.MP4 -- Correct
+../data/videos/005/GOPR2045.MP4 -> Correct
 ../data/videos/001/GOPR5827.MP4 -- not too bad
-../data/videos/010/VID_20180529_112706.mp4 -- Correct
-../data/videos/010/VID_20180529_112722.mp4 -- Correct
+../data/videos/010/VID_20180529_112706.mp4 -> Correct
+../data/videos/010/VID_20180529_112722.mp4 -> Correct
 
 
 # Painting presents into paiting_db
