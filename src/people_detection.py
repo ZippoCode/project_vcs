@@ -7,6 +7,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 from parameters import *
+from read_write import get_videos
 
 
 def getOutputsNames(net):
@@ -62,7 +63,7 @@ def postprocess(frame, outs, classes):
                  left, top, left + width, top + height)
 
 
-def detect_person(cfgfile, weightfile, videofile, use_cuda=False):
+def detect_person(cfgfile, weightfile, listvideo, use_cuda=False):
     with open(classesFile, 'rt') as f:
         classes = f.read().rstrip('\n').split('\n')
         print(classes)
@@ -79,55 +80,57 @@ def detect_person(cfgfile, weightfile, videofile, use_cuda=False):
         net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
         net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
-    if videofile:
-        if not os.path.isfile(videofile):
-            print("Input video file ", videofile, " doesn't exist")
-            sys.exit(1)
-        cap = cv2.VideoCapture(videofile)
-        name_video = videofile.split('/')[-1][:-4]
-        if not os.path.exists(PATH_DESTINATION_PERSON_DETECTED):
-            Path(PATH_DESTINATION_PERSON_DETECTED).mkdir(
-                parents=True, exist_ok=True)
-        outputFile = os.path.join(
-            PATH_DESTINATION_PERSON_DETECTED, name_video + '.avi')
-    else:
-        cap = cv2.VideoCapture(0)
-        outputFile = '../yolo/default_camera.avi'
+    for videofile in listvideo:
+        print(videofile)
+        if videofile:
+            if not os.path.isfile(videofile):
+                print("Input video file ", videofile, " doesn't exist")
+                sys.exit(1)
+            cap = cv2.VideoCapture(videofile)
+            name_video = videofile.split('/')[-1][:-4]
+            if not os.path.exists(PATH_DESTINATION_PERSON_DETECTED):
+                Path(PATH_DESTINATION_PERSON_DETECTED).mkdir(
+                    parents=True, exist_ok=True)
+            outputFile = os.path.join(
+                PATH_DESTINATION_PERSON_DETECTED, name_video + '.avi')
+        else:
+            cap = cv2.VideoCapture(0)
+            outputFile = '../yolo/default_camera.avi'
 
-    codec = cv2.VideoWriter_fourcc(*'MJPG')
-    (h, w) = (round(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
-              round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-    vid_writer = cv2.VideoWriter(outputFile, codec, 30, (h, w))
+        codec = cv2.VideoWriter_fourcc(*'MJPG')
+        (h, w) = (round(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
+                  round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+        vid_writer = cv2.VideoWriter(outputFile, codec, 30, (h, w))
 
-    try:
-        while True:
-            time_start = cv2.getTickCount()
-            hasFrame, frame = cap.read()
-            if not hasFrame:
-                print("Done processing !!!\nOutput file is stored as {}.\nNot HasFrame".format(
-                    outputFile))
-                cap.release()
-                break
-            size = inpWidth, inpHeight
-            blob = cv2.dnn.blobFromImage(
-                frame, 1 / 255, size, [0, 0, 0], 1, crop=False)
-            net.setInput(blob)
-            outs = net.forward(getOutputsNames(net))
-            postprocess(frame, outs, classes)
-            t, _ = net.getPerfProfile()
-            label = 'Inference time: %.2f ms' % (
-                t * 1000.0 / cv2.getTickFrequency())
-            cv2.putText(frame, label, (0, 15),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
-            vid_writer.write(frame.astype(np.uint8))
-            time_end = cv2.getTickCount()
-            print('Elaborate frame in {} s'.format(
-                (time_end - time_start) / cv2.getTickFrequency()))
+        try:
+            while True:
+                time_start = cv2.getTickCount()
+                hasFrame, frame = cap.read()
+                if not hasFrame:
+                    print("Done processing !!!\nOutput file is stored as {}.\nNot HasFrame".format(
+                        outputFile))
+                    cap.release()
+                    break
+                size = inpWidth, inpHeight
+                blob = cv2.dnn.blobFromImage(
+                    frame, 1 / 255, size, [0, 0, 0], 1, crop=False)
+                net.setInput(blob)
+                outs = net.forward(getOutputsNames(net))
+                postprocess(frame, outs, classes)
+                t, _ = net.getPerfProfile()
+                label = 'Inference time: %.2f ms' % (
+                    t * 1000.0 / cv2.getTickFrequency())
+                cv2.putText(frame, label, (0, 15),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
+                vid_writer.write(frame.astype(np.uint8))
+                time_end = cv2.getTickCount()
+                print('Elaborate frame in {} s'.format(
+                    (time_end - time_start) / cv2.getTickFrequency()))
 
-    except KeyboardInterrupt:
-        print('Stop processing')
-        pass
-    print('Done processing')
+        except KeyboardInterrupt:
+            print('Stop processing')
+            pass
+        print('Done processing')
 
 
 def get_args():
@@ -137,8 +140,8 @@ def get_args():
                         help='Path of cfg file', dest='cfgfile')
     parser.add_argument('-weightfile', type=str, default=PATH_YOLO_WEIGHTS,
                         help='Path of trained model.', dest='weightfile')
-    parser.add_argument('-videofile', type=str, default='../data/videos/001/GOPR5818.MP4',
-                        help='Path of your video file.', dest='videofile')
+    # parser.add_argument('-videofile', type=str, default='../data/videos/001/GOPR5818.MP4',
+    #                     help='Path of your video file.', dest='videofile')
     args = parser.parse_args()
 
     return args
@@ -146,5 +149,6 @@ def get_args():
 
 if __name__ == '__main__':
     args = get_args()
-    if args.videofile:
-        detect_person(args.cfgfile, args.weightfile, args.videofile)
+    list_video = get_videos()
+    # if args.videofile:
+    detect_person(args.cfgfile, args.weightfile, list_video)
