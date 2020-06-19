@@ -92,7 +92,7 @@ def postprocess(frame, outs, classes):
                  left, top, left + width, top + height)
 
 
-def detect_yolo_v3(cfgfile, weightfile, videofile):
+def detect_yolo_v3(cfgfile, weightfile, videofile, use_cuda=False):
     # Load names of classes
     classes = None
     with open(classesFile, 'rt') as f:
@@ -100,8 +100,16 @@ def detect_yolo_v3(cfgfile, weightfile, videofile):
         print(classes)
 
     net = cv2.dnn.readNetFromDarknet(cfgfile, weightfile)
-    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+
+    # check if we are going to use GPU
+    if use_cuda:
+        # set CUDA as the preferable backend and target
+        print("[INFO] setting preferable backend and target to CUDA...")
+        net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+    else:
+        net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+        net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
     # Process inputs
     if (videofile):
@@ -231,14 +239,14 @@ def get_args():
         'Test your image or video by trained model.')
     parser.add_argument('-cfgfile', type=str,
                         # default='../yolo/yolov4-custom.cfg',
-                        default='../yolo/yolov3.cfg',
+                        default='../yolo/cfg/yolov3.cfg',
                         help='path of cfg file', dest='cfgfile')
     parser.add_argument('-weightfile', type=str,
-                        default='../yolo/yolov3.weights',
+                        default='../yolo/backup/yolov3_final.weights',
                         # default='../yolo/yolov4-custom_last.weights',
                         help='path of trained model.', dest='weightfile')
     parser.add_argument('-videofile', type=str,
-                        default='../data/videos/010/VID_20180529_112951.mp4',
+                        default='../data/videos/004/IMG_3800.MOV',
                         # default='../data/videos/002/20180206_113059.mp4',
                         # default='../yolo/001.png',
                         help='path of your image file.', dest='videofile')

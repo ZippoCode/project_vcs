@@ -17,7 +17,7 @@ def get_videos():
             continue
         path = os.path.join(ROOT_PATH_VIDEOS, folder)
         for file in os.listdir(path):
-            if file.endswith(".mp4") or file.endswith(".MP4") or file.endswith(".MOV"):
+            if file.endswith(".mp4") or file.endswith(".MP4") or file.endswith(".MOV") or file.endswith(".jpg"):
                 video = os.path.join(path, file)
                 path_videos.append(video)
 
@@ -41,7 +41,8 @@ def save_paitings(dict_image, origin_path, folders=False):
         if folders:
             path = output_path + "{}.jpg".format(title)
         else:
-            path = output_path + '{}_{}_{}.jpg'.format(folder, file_name, title)
+            path = output_path + \
+                '{}_{}_{}.jpg'.format(folder, file_name, title)
         cv2.imwrite(path, image)
 
 
