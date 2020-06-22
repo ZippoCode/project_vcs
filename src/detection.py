@@ -123,7 +123,8 @@ def connected_components_segmentation(im):
     for label in labels:
         mask = np.zeros_like(labeled_img, dtype=np.uint8)
         mask[labeled_img == label] = 255
-        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(
+            mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         hull = []
         for cnt in contours:
             hull.append(cv2.convexHull(cnt, False))
@@ -142,7 +143,8 @@ def sorted_points(contour):
     :return:
     """
     middle_x, middle_y = 0, 0
-    upper_left, upper_right, down_left, down_right = (0, 0), (0, 0), (0, 0), (0, 0)
+    upper_left, upper_right, down_left, down_right = (
+        0, 0), (0, 0), (0, 0), (0, 0)
     for point in range(contour.shape[0]):
         #   print("X: {}, Y : {}".format(contour[point, 0, 1], contour[point, 0, 0]))
         middle_x += contour[point, 0, 1]
