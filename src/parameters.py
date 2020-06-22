@@ -4,6 +4,7 @@ ROOT_PATH_VIDEOS = '../data/videos/'
 ROOT_PATH_DETECTED = '../output/paintings/'
 PATH_KEYPOINTS_DB = '../output/key-points.pck'
 PATH_DESTINATION_PERSON_DETECTED = '../output/person_detected/'
+PATH_DATA_CSV = '../data/data.csv'
 
 # Yolo
 PATH_YOLO_CFG = '../yolo/cfg/yolov3-obj-test.cfg'

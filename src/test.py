@@ -11,7 +11,7 @@ from plotting import draw_paintings, plt_images
 from rectification import rectification, is_painting
 from painting_retrieval import match_paitings
 from parameters import *
-from people_localization import match_keypoint, draw_matches
+from people_localization import room_dict
 
 
 def paiting_detection(num_example=1):
@@ -36,6 +36,8 @@ def paiting_detection(num_example=1):
         frames = random.choices(frames, k=1)
 
         for frame in frames:
+            frame = cv2.imread(
+                '../data/video_painting/20180206_113800_34.jpg', cv2.IMREAD_COLOR)
             list_boundings = elaborate_edge_detection(frame, show_images=True)
             good_boundings = list()
 
@@ -92,59 +94,33 @@ def painting_retrieval(num_example=1):
 
 
 def localization(num_example=1):
-    img1 = cv2.imread(
+    frame = cv2.imread(
         '../data/video_painting/20180206_113600_11.jpg', cv2.IMREAD_COLOR)
+    list_boundings = elaborate_edge_detection(frame, show_images=False)
 
-    list_boundings = elaborate_edge_detection(img1, show_images=False)
     paintings = []
     titles = []
     detected_paiting = dict()
     for bounding, num in zip(list_boundings, range(len(list_boundings))):
                 # Affine Transformation for painting
-        painting = rectification(img1, bounding)
+        painting = rectification(frame, bounding)
         if is_painting(painting):
-            paintings.append(painting)
-            titles.append("Painting #{}".format(num))
-            result = match_keypoint()
-
-            plt.imshow(result)
-            plt.show()
-
-    # list_boundings = elaborate_edge_detection(frame, show_images=False)
-    # # good_boundings = list()
-
-    # paintings = []
-    # titles = []
-    # detected_paiting = dict()
-    # for bounding, num in zip(list_boundings, range(len(list_boundings))):
-    #             # Affine Transformation for painting
-    #     painting = rectification(frame, bounding)
-    #     if is_painting(painting):
-    #         paintings.append(painting)
-    #         titles.append("Painting #{}".format(num))
-    #         painting_gray = cv2.cvtColor(painting, cv2.COLOR_BGR2GRAY)
-    #         detected_paiting["Painting #{}".format(num)] = painting
-    #         # good_boundings.append(bounding)
-    #         list_retrieval = match_paitings(painting_gray)
-    #         if list_retrieval is not None and len(list_retrieval) > 0:
-    #             best_match, similarity = list_retrieval[0]
-    #             print('best_match', best_match)
-    #             retrieval = cv2.imread(
-    #                 PATH + best_match, cv2.IMREAD_COLOR)
-    #             HP, WP, CP = painting.shape
-    #             HB, WB, CB = retrieval.shape
-    #             result = np.empty((max(HP, HB), WP + WB, CP), np.uint8)
-    #             result[:HP, :WP, :] = painting
-    #             result[:HB, WP:WP + WB, :] = retrieval
-    #             result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-    #             plt.imshow(result)
-    #             plt.show()
-    #         else:
-    #             print("Nothing match found")
-    # # return
+            painting_gray = cv2.cvtColor(painting, cv2.COLOR_BGR2GRAY)
+            list_retrieval = match_paitings(painting_gray)
+            if list_retrieval is not None and len(list_retrieval) > 0:
+                best_match, similarity = list_retrieval[0]
+                if similarity < 11:
+                    print("Nothing match found")
+                else:
+                    location = room_dict(best_match)
+                    plt.imshow(location)
+                    plt.show()
+            else:
+                print("Nothing match found")
+    return
 
 
 if __name__ == '__main__':
-    # paiting_detection(num_example=3)
-    # painting_retrieval(num_example=1)
+    paiting_detection(num_example=1)
+    painting_retrieval(num_example=1)
     localization(num_example=1)
