@@ -25,11 +25,11 @@ def room_dict(img_name):
 
 
 def rooms_map_highlight(room, color):
-    rooms_roi = pd.read_csv("../data/rooms_roi.csv")
+    rooms_roi = pd.read_csv(PATH_ROOMS_ROI_CSV)
     header = rooms_roi.columns.values
 
     curr_roi = rooms_roi[rooms_roi["room"] == room]
-    map = cv2.imread('../data/map.png')
+    map = cv2.imread(PATH_MAP)
 
     cv2.rectangle(map, (curr_roi['x'], curr_roi['y']),
                   (curr_roi['x']+curr_roi['w'], curr_roi['y']+curr_roi['h']), color, 3)

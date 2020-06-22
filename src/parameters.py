@@ -5,6 +5,8 @@ ROOT_PATH_DETECTED = '../output/paintings/'
 PATH_KEYPOINTS_DB = '../output/key-points.pck'
 PATH_DESTINATION_PERSON_DETECTED = '../output/person_detected/'
 PATH_DATA_CSV = '../data/data.csv'
+PATH_ROOMS_ROI_CSV = '../data/rooms_roi.csv'
+PATH_MAP = '../data/map.png'
 
 # Yolo
 PATH_YOLO_CFG = '../yolo/cfg/yolov3-obj-test.cfg'
