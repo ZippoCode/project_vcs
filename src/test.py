@@ -11,7 +11,7 @@ from plotting import draw_paintings, plt_images
 from rectification import rectification, is_painting
 from painting_retrieval import match_paitings
 from parameters import *
-from people_localization import room_dict
+from people_localization import room_dict, roi_labeling
 
 
 def paiting_detection(num_example=1):
@@ -102,7 +102,7 @@ def localization(num_example=1):
     titles = []
     detected_paiting = dict()
     for bounding, num in zip(list_boundings, range(len(list_boundings))):
-                # Affine Transformation for painting
+        # Affine Transformation for painting
         painting = rectification(frame, bounding)
         if is_painting(painting):
             painting_gray = cv2.cvtColor(painting, cv2.COLOR_BGR2GRAY)
@@ -110,13 +110,19 @@ def localization(num_example=1):
             if list_retrieval is not None and len(list_retrieval) > 0:
                 best_match, similarity = list_retrieval[0]
                 if similarity < 11:
+                    frame = roi_labeling(num, frame, bounding)
                     print("Nothing match found")
                 else:
                     location = room_dict(best_match)
+                    frame = roi_labeling(num, frame, bounding, best_match)
                     plt.imshow(location)
                     plt.show()
             else:
                 print("Nothing match found")
+
+    plt.imshow(frame)
+    plt.show()
+
     return
 
 
