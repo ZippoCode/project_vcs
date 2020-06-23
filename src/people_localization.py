@@ -45,7 +45,7 @@ def roi_labeling(id, image, coordinate, image_name=None):
     data = pd.read_csv(PATH_DATA_CSV, sep=",")
     if image_name is None:
         image_name = "Unknown"
-        cv2.putText(image, 'ID: ' + str(id), (x_min, y_max + 30),
+        cv2.putText(image, 'ID: ' + str(id) + ' - Unknown', (x_min, y_max + 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (36, 255, 12), 2)
     else:
         curr_row = data[data["Image"] == image_name]
