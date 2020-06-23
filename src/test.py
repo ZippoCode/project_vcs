@@ -22,9 +22,8 @@ def paiting_detection(num_example=1):
     :return:
     """
     path_videos = get_videos()
-    path_videos = random.choices(
-        path_videos, k=num_example if num_example > 0 else len(path_videos))
-    #path_videos = ['../data/videos/003/GOPR1923.MP4']
+    path_videos = random.choices(path_videos, k=num_example if num_example > 0 else len(path_videos))
+    # path_videos = ['../data/videos/003/GOPR1923.MP4']
 
     while len(path_videos) > 0:
         path_video = random.choice(path_videos)
@@ -33,38 +32,42 @@ def paiting_detection(num_example=1):
         video_results = list()
         frames = read_video(path_video)
         # Choice a TOT frame because it is too slow
-        frames = random.choices(frames, k=1)
+        #   frames = random.choices(frames, k=1)
 
-        for frame in frames:
-            frame = cv2.imread(
-                '../data/video_painting/20180206_113800_34.jpg', cv2.IMREAD_COLOR)
-            list_boundings = elaborate_edge_detection(frame, show_images=True)
-            good_boundings = list()
+        try:
+            for frame in frames:
+                # frame = cv2.imread('../data/video_painting/20180206_113800_34.jpg', cv2.IMREAD_COLOR)
+                list_boundings = elaborate_edge_detection(frame, show_images=False)
+                good_boundings = list()
 
-            paintings = []
-            titles = []
-            detected_paiting = dict()
-            for bounding, num in zip(list_boundings, range(len(list_boundings))):
-                # Affine Transformation for painting
-                painting = rectification(frame, bounding)
-                if is_painting(painting):
-                    paintings.append(painting)
-                    titles.append("Painting #{}".format(num))
-                    painting = cv2.cvtColor(painting, cv2.COLOR_BGR2RGB)
-                    detected_paiting["Painting #{}".format(num)] = painting
-                    good_boundings.append(bounding)
+                paintings = []
+                titles = []
+                detected_paiting = dict()
+                for bounding, num in zip(list_boundings, range(len(list_boundings))):
+                    # Affine Transformation for painting
+                    painting = rectification(frame, bounding)
+                    if is_painting(painting):
+                        paintings.append(painting)
+                        titles.append("Painting #{}".format(num))
+                        painting = cv2.cvtColor(painting, cv2.COLOR_BGR2RGB)
+                        detected_paiting["Painting #{}".format(num)] = painting
+                        good_boundings.append(bounding)
 
-            result = draw_paintings(frame, good_boundings)
-            video_results.append(result)
-            titles.append("Detection Frame")
-            paintings.append(result)
+                result = draw_paintings(frame, good_boundings)
+                video_results.append(cv2.cvtColor(result, cv2.COLOR_RGB2BGR))
+                titles.append("Detection Frame")
+                paintings.append(result)
 
-            save_paitings(detected_paiting, path_video, folders=False)
-            #plt_images(paintings, titles)
+                save_paitings(detected_paiting, path_video, folders=False)
+                # plt_images(paintings, titles)
+
+        except KeyboardInterrupt:
+            print('Stop processing')
+            pass
 
         file_name = path_video.split('/')[-1]
-        path_output_video = '../output/videos/{}'
-        write_video(path_output_video.format(file_name), video_results)
+        path_output_video = '../output/videos/'
+        write_video(file_name, video_results, path=path_output_video)
     return
 
 
@@ -95,7 +98,7 @@ def painting_retrieval(num_example=1):
 
 def localization(num_example=1):
     frame = cv2.imread(
-        '../data/video_painting/20180206_113600_11.jpg', cv2.IMREAD_COLOR)
+        '../data/video_painting/GOPR5824_24.jpg', cv2.IMREAD_COLOR)
     list_boundings = elaborate_edge_detection(frame, show_images=False)
 
     paintings = []
@@ -128,5 +131,5 @@ def localization(num_example=1):
 
 if __name__ == '__main__':
     paiting_detection(num_example=1)
-    painting_retrieval(num_example=1)
-    localization(num_example=1)
+    # painting_retrieval(num_example=1)
+    # localization(num_example=1)

@@ -1,8 +1,5 @@
-import sys
 import cv2
-import numpy as np
 import pandas as pd
-import os
 
 # Custom importing
 from parameters import *

@@ -1,6 +1,7 @@
 import cv2
 import os
 import sys
+from pathlib import Path
 
 # Custom importing
 from parameters import *
@@ -42,7 +43,7 @@ def save_paitings(dict_image, origin_path, folders=False):
             path = output_path + "{}.jpg".format(title)
         else:
             path = output_path + \
-                '{}_{}_{}.jpg'.format(folder, file_name, title)
+                   '{}_{}_{}.jpg'.format(folder, file_name, title)
         cv2.imwrite(path, image)
 
 
@@ -94,7 +95,7 @@ def read_video(video_path):
         count += fps
         video.set(1, count)
         if ret:
-            #cv2.imwrite('../output/frames/' + video_path.split("/")[-1] + "_{}.jpg".format(count), frame)
+            # cv2.imwrite('../output/frames/' + video_path.split("/")[-1] + "_{}.jpg".format(count), frame)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = resize_when_too_big(frame)
             video_frames.append(frame)
@@ -105,23 +106,30 @@ def read_video(video_path):
     return video_frames
 
 
-def write_video(name, frames):
+def write_video(name, frames, fps=30, fourcc_name='mp4v', path=PATH_OUTPUT):
     """
         Store the video on the file system
 
     :param name: string - The name of video
     :param frames: list<numpy.ndarray> - The list of frame
+    :param fps: int - Frame per Seconds
+    :param fourcc_name: string - The name of fourcc codec
+    :param path: string - Destination of saving
     :return:
     """
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    height, width, channel = frames[0].shape
-    output = cv2.VideoWriter(name, fourcc, 15.0, (width, height))
-    print('Storage video {}'.format(name))
+    if frames is None:
+        print("Frames is None. Return")
+        return
+    if not os.path.exists(path):
+        Path(path).mkdir(parents=True, exist_ok=True)
+    height, width = frames[0].shape[0], frames[0].shape[1]
+    codec = cv2.VideoWriter_fourcc(*fourcc_name)
+    output = cv2.VideoWriter(path + name, codec, fps, (width, height))
+    print('Storage video {} into folder {}'.format(name, path))
     if not output.isOpened():
         print("Error Output Video")
         return
     for frame in frames:
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         output.write(frame)
     output.release()
     print('Ending storage.')

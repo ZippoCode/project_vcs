@@ -13,19 +13,18 @@ for path_video in path_videos:
     frameRate = cap.get(5)  # frame rate
     count = 0
     print(path_video_arr[3] + '/' + path_video_arr[-1])
-    while(cap.isOpened()):
+    while (cap.isOpened()):
         frameId = cap.get(1)  # current frame number
         ret, frame = cap.read()
         if (ret != True):
             break
         if (frameId % math.floor(frameRate) == 0):
             filename = imagesFolder + '/' + \
-                path_video_arr[-1][:-4] + '_' + str(count) + ".jpg"
+                       path_video_arr[-1][:-4] + '_' + str(count) + ".jpg"
             count = count + 1
             cv2.imwrite(filename, frame)
     cap.release()
     print("Done!")
-
 
 # Delete image
 # count = 1
