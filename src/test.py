@@ -31,9 +31,6 @@ def paiting_detection(num_example=1):
 
         video_results = list()
         frames = read_video(path_video)
-        # Choice a TOT frame because it is too slow
-        #   frames = random.choices(frames, k=1)
-
         try:
             for frame in frames:
                 # frame = cv2.imread('../data/video_painting/20180206_113800_34.jpg', cv2.IMREAD_COLOR)
@@ -54,11 +51,10 @@ def paiting_detection(num_example=1):
                         good_boundings.append(bounding)
 
                 result = draw_paintings(frame, good_boundings)
-                video_results.append(cv2.cvtColor(result, cv2.COLOR_RGB2BGR))
                 titles.append("Detection Frame")
                 paintings.append(result)
 
-                save_paitings(detected_paiting, path_video, folders=False)
+                save_paitings(detected_paiting, path_video, folders=True)
                 # plt_images(paintings, titles)
 
         except KeyboardInterrupt:
@@ -66,8 +62,7 @@ def paiting_detection(num_example=1):
             pass
 
         file_name = path_video.split('/')[-1]
-        path_output_video = '../output/videos/'
-        write_video(file_name, video_results, path=path_output_video)
+        write_video(file_name, video_results, path=PATH_DESTINATION_PAINTING_DETECTED)
     return
 
 
@@ -77,13 +72,11 @@ def painting_retrieval(num_example=1):
     paiting_choices = random.choices(
         path_paitings, k=num_example if num_example > 0 else len(path_paitings))
     for name_paiting in paiting_choices:
-        painting = cv2.imread(ROOT_PATH_DETECTED +
-                              name_paiting, cv2.IMREAD_COLOR)
-
+        painting = cv2.imread(ROOT_PATH_DETECTED + name_paiting, cv2.IMREAD_COLOR)
         list_retrieval = match_paitings(painting)
         if list_retrieval is not None and len(list_retrieval) > 0:
             best_match, similarity = list_retrieval[0]
-            retrieval = cv2.imread(PATH + best_match, cv2.IMREAD_COLOR)
+            retrieval = cv2.imread(PATH_PAINTINGS_DB + best_match, cv2.IMREAD_COLOR)
             HP, WP, CP = painting.shape
             HB, WB, CB = retrieval.shape
             result = np.empty((max(HP, HB), WP + WB, CP), np.uint8)
@@ -97,8 +90,7 @@ def painting_retrieval(num_example=1):
 
 
 def localization(num_example=1):
-    frame = cv2.imread(
-        '../data/video_painting/GOPR5824_24.jpg', cv2.IMREAD_COLOR)
+    frame = cv2.imread('../data/video_painting/GOPR1927_0.jpg', cv2.IMREAD_COLOR)
     list_boundings = elaborate_edge_detection(frame, show_images=False)
 
     paintings = []
@@ -132,4 +124,4 @@ def localization(num_example=1):
 if __name__ == '__main__':
     paiting_detection(num_example=1)
     # painting_retrieval(num_example=1)
-    # localization(num_example=1)
+    #localization(num_example=1)

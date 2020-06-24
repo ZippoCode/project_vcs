@@ -6,6 +6,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from editing import *
 
+
 def create_images(images, labels):
     for path_image, path_labels in zip(images, labels):
         name_image = path_image.split('.')[0]

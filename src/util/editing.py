@@ -20,7 +20,8 @@ def get_bbox(image, text):
 def save_edit_value_pixel(image, bboxs, name_image):
     # NORMALIZED
     norm_image = cv2.normalize(image, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
-    write_output(norm_image, bbox, name_image, '_norm')
+    write_output(norm_image, bboxs, name_image, '_norm')
+
 
 def save_filter(image, labels, name_image):
     # CONTRAST AND BRIGHTNESS ADJUSTMENT

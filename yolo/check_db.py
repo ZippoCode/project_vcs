@@ -4,14 +4,7 @@ from os.path import join
 PATH_TRAIN = '/content/gdrive/My Drive/VCS Project/Darknet/custom_data/'
 
 if __name__ == '__main__':
-    PATH = '/home/zippo/Scaricati/with_statues/'
-
-    opts, args = getopt.getopt(sys.argv[1:], "sp:")
-    for opt in opts:
-        if '-p' in opt:
-            command, PATH = opt
-            if not os.path.exists(PATH):
-                sys.exit('PATH NOT EXIST')
+    PATH = 'obj/'
 
     path_images = []
     for path, sub_dirs, files in os.walk(PATH):
@@ -38,11 +31,12 @@ if __name__ == '__main__':
         if pi != pl:
             print(pi, pl)
 
-    # print("Saving ...")
-    # train = open('train.txt', 'w')
-    # for imgs in path_images:
-    #     train.write(PATH_TRAIN + imgs + '.jpg\n')
-    # train.close()
+    print("Saving train file ...")
+    train = open('train.txt', 'w')
+    for imgs in path_images:
+        train.write(PATH_TRAIN + imgs + '.jpg\n')
+    train.close()
+    print('End.')
 
 
 # def create_database():

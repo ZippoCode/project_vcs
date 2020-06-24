@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 # Custom importing
 from parameters import *
-from read_write import get_videos, write_video
+from read_write import get_videos, read_video, write_video
 
 
 def getOutputsNames(net):
@@ -64,7 +64,7 @@ def postprocess(frame, outs, classes):
 
 
 def detect_person(cfgfile, weightfile, listvideo, use_cuda=False):
-    with open(classesFile, 'rt') as f:
+    with open(PATH_COCO_NAMES, 'rt') as f:
         classes = f.read().rstrip('\n').split('\n')
         print(classes)
 
@@ -81,7 +81,6 @@ def detect_person(cfgfile, weightfile, listvideo, use_cuda=False):
         net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
     for videofile in listvideo:
-        print(videofile)
         if videofile:
             if not os.path.isfile(videofile):
                 print("Input video file ", videofile, " doesn't exist")
@@ -98,34 +97,30 @@ def detect_person(cfgfile, weightfile, listvideo, use_cuda=False):
         # (h, w) = (round(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
         # vid_writer = cv2.VideoWriter(outputFile, codec, 30, (h, w))
 
+        frames = read_video(videofile, reduce_size=False)
         frames_detected = []
         try:
-            while True:
+            for num, frame in enumerate(frames):
                 time_start = cv2.getTickCount()
-                hasFrame, frame = cap.read()
-                if not hasFrame:
-                    print("Done processing !!!\nOutput file is stored as {}.\nNot HasFrame".format(output_name))
-                    cap.release()
-                    break
                 size = inpWidth, inpHeight
                 blob = cv2.dnn.blobFromImage(frame, 1 / 255, size, [0, 0, 0], 1, crop=False)
                 net.setInput(blob)
                 outs = net.forward(getOutputsNames(net))
                 postprocess(frame, outs, classes)
-
                 t, _ = net.getPerfProfile()
                 label = 'Inference time: %.2f ms' % (t * 1000.0 / cv2.getTickFrequency())
                 cv2.putText(frame, label, (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
                 frames_detected.append(frame.astype(np.uint8))
                 time_end = cv2.getTickCount()
                 time_elaboration = (time_end - time_start) / cv2.getTickFrequency()
-                print('\t> Elaborate frame in {} s'.format(time_elaboration))
+                print('\t> Elaborate {}/{} frame in {} s'.format(num + 1, len(frames), time_elaboration))
 
         except KeyboardInterrupt:
             print('Stop processing')
             pass
 
         write_video(output_name, frames_detected, fps=30, path=path)
+        cap.release()
         print('Done processing')
 
 
@@ -147,5 +142,6 @@ if __name__ == '__main__':
     args = get_args()
     list_video = get_videos()
     list_video = random.choices(list_video)
+    print(list_video)
     # if args.videofile:
     detect_person(args.cfgfile, args.weightfile, list_video)
