@@ -1,4 +1,4 @@
-import argparse
+import argparse, random
 import cv2
 import os.path
 import sys
@@ -6,8 +6,9 @@ import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 
+# Custom importing
 from parameters import *
-from read_write import get_videos
+from read_write import get_videos, read_video, write_video
 
 
 def getOutputsNames(net):
@@ -59,18 +60,17 @@ def postprocess(frame, outs, classes):
         i = i[0]
         box = boxes[i]
         left, top, width, height = box[0], box[1], box[2], box[3]
-        drawPred(frame, classes, classIds[i], confidences[i],
-                 left, top, left + width, top + height)
+        drawPred(frame, classes, classIds[i], confidences[i], left, top, left + width, top + height)
 
 
 def detect_person(cfgfile, weightfile, listvideo, use_cuda=False):
-    with open(classesFile, 'rt') as f:
+    with open(PATH_COCO_NAMES, 'rt') as f:
         classes = f.read().rstrip('\n').split('\n')
         print(classes)
 
     net = cv2.dnn.readNetFromDarknet(cfgfile, weightfile)
 
-    # check if we are going to use GPU
+    # Check if we are going to use GPU
     if use_cuda:
         # set CUDA as the preferable backend and target
         print("[INFO] setting preferable backend and target to CUDA...")
@@ -81,55 +81,46 @@ def detect_person(cfgfile, weightfile, listvideo, use_cuda=False):
         net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
     for videofile in listvideo:
-        print(videofile)
         if videofile:
             if not os.path.isfile(videofile):
                 print("Input video file ", videofile, " doesn't exist")
                 sys.exit(1)
             cap = cv2.VideoCapture(videofile)
-            name_video = videofile.split('/')[-1][:-4]
-            if not os.path.exists(PATH_DESTINATION_PERSON_DETECTED):
-                Path(PATH_DESTINATION_PERSON_DETECTED).mkdir(
-                    parents=True, exist_ok=True)
-            outputFile = os.path.join(
-                PATH_DESTINATION_PERSON_DETECTED, name_video + '.avi')
+            path = PATH_DESTINATION_PERSON_DETECTED
+            output_name = videofile.split('/')[-1][:-4] + '.avi'
         else:
             cap = cv2.VideoCapture(0)
-            outputFile = '../yolo/default_camera.avi'
+            path = PATH_OUTPUT
+            output_name = 'default_camera.avi'
 
-        codec = cv2.VideoWriter_fourcc(*'MJPG')
-        (h, w) = (round(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
-                  round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-        vid_writer = cv2.VideoWriter(outputFile, codec, 30, (h, w))
+        # codec = cv2.VideoWriter_fourcc(*'MJPG')
+        # (h, w) = (round(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+        # vid_writer = cv2.VideoWriter(outputFile, codec, 30, (h, w))
 
+        frames = read_video(videofile, reduce_size=False)
+        frames_detected = []
         try:
-            while True:
+            for num, frame in enumerate(frames):
                 time_start = cv2.getTickCount()
-                hasFrame, frame = cap.read()
-                if not hasFrame:
-                    print("Done processing !!!\nOutput file is stored as {}.\nNot HasFrame".format(
-                        outputFile))
-                    cap.release()
-                    break
                 size = inpWidth, inpHeight
-                blob = cv2.dnn.blobFromImage(
-                    frame, 1 / 255, size, [0, 0, 0], 1, crop=False)
+                blob = cv2.dnn.blobFromImage(frame, 1 / 255, size, [0, 0, 0], 1, crop=False)
                 net.setInput(blob)
                 outs = net.forward(getOutputsNames(net))
                 postprocess(frame, outs, classes)
                 t, _ = net.getPerfProfile()
-                label = 'Inference time: %.2f ms' % (
-                    t * 1000.0 / cv2.getTickFrequency())
-                cv2.putText(frame, label, (0, 15),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
-                vid_writer.write(frame.astype(np.uint8))
+                label = 'Inference time: %.2f ms' % (t * 1000.0 / cv2.getTickFrequency())
+                cv2.putText(frame, label, (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
+                frames_detected.append(frame.astype(np.uint8))
                 time_end = cv2.getTickCount()
-                print('Elaborate frame in {} s'.format(
-                    (time_end - time_start) / cv2.getTickFrequency()))
+                time_elaboration = (time_end - time_start) / cv2.getTickFrequency()
+                print('\t> Elaborate {}/{} frame in {} s'.format(num + 1, len(frames), time_elaboration))
 
         except KeyboardInterrupt:
             print('Stop processing')
             pass
+
+        write_video(output_name, frames_detected, fps=30, path=path)
+        cap.release()
         print('Done processing')
 
 
@@ -150,5 +141,7 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
     list_video = get_videos()
+    list_video = random.choices(list_video)
+    print(list_video)
     # if args.videofile:
     detect_person(args.cfgfile, args.weightfile, list_video)

@@ -1,26 +1,31 @@
 import cv2
 import os
 import sys
+from pathlib import Path
 
 # Custom importing
 from parameters import *
 
 
-def get_videos():
+def get_videos(folder_video=ROOT_PATH_VIDEOS):
     """
         Look up all the video in the ROOT FOLDER and return a list of these
     :return:
     """
     path_videos = list()
-    for folder in os.listdir(ROOT_PATH_VIDEOS):
-        if folder == '.DS_Store':
-            continue
-        path = os.path.join(ROOT_PATH_VIDEOS, folder)
-        for file in os.listdir(path):
-            if file.endswith(".mp4") or file.endswith(".MP4") or file.endswith(".MOV") or file.endswith(".jpg"):
-                video = os.path.join(path, file)
-                path_videos.append(video)
-
+    try:
+        for folder in os.listdir(folder_video):
+            if folder == '.DS_Store':
+                continue
+            path = os.path.join(folder_video, folder)
+            for file in os.listdir(path):
+                if file.endswith(".mp4") or file.endswith(".MP4") or file.endswith(".MOV") or file.endswith(".jpg"):
+                    path_video = os.path.join(path, file)
+                    path_videos.append(path_video)
+    except FileNotFoundError:
+        print('File not found into {}\nExit ...'.format(folder_video))
+        sys.exit()
+    print("Found {} videos".format(len(path_videos)))
     return path_videos
 
 
@@ -42,42 +47,16 @@ def save_paitings(dict_image, origin_path, folders=False):
             path = output_path + "{}.jpg".format(title)
         else:
             path = output_path + \
-                '{}_{}_{}.jpg'.format(folder, file_name, title)
+                   '{}_{}_{}.jpg'.format(folder, file_name, title)
         cv2.imwrite(path, image)
 
 
-def resize_when_too_big(img):
-    h = int(img.shape[0])
-    w = int(img.shape[1])
-    thr_w, thr_h = 1080, 1080
-    if h > thr_h or w > thr_w:
-        h_ratio = thr_h / h
-        w_ratio = thr_w / w
-        ratio = min(h_ratio, w_ratio)
-        img = resize_to_ratio(img, ratio)
-    return img
-
-
-def resize_to_ratio(img, ratio):
-    """
-        Resize an image according to the given ration
-    :param img: Image to be resized
-    :param ratio: ratio used to resize the image
-    :return: Image resized
-    """
-    assert ratio > 0, 'ratio_percent must be > 0'
-    w = int(img.shape[1] * ratio)
-    h = int(img.shape[0] * ratio)
-    return cv2.resize(img, (w, h), interpolation=cv2.INTER_AREA)
-
-
-def read_video(video_path):
+def read_video(video_path, reduce_size=True):
     """
         Given a path of video return a list of frame. One Frame each second.
         Each Frame is a image into RGB
-    :param
-        video_path: string
-    :param
+    :param video_path: string - Path of video
+    :param reduce_size: bool - If it is True the algorithm reduce the size of frame
     :return:
             name_video: list<numpy.ndarray>
     """
@@ -85,43 +64,56 @@ def read_video(video_path):
         sys.exit('Error in reading file {}'.format(video_path))
     video = cv2.VideoCapture(video_path)
     print("Reading file: {}".format(video_path))
-    # Reduce the number of frames captured
-    fps = int(video.get(cv2.CAP_PROP_FPS)) / 1
-    count = 0
     video_frames = list()
-    while video.isOpened():
-        ret, frame = video.read()
-        count += fps
-        video.set(1, count)
-        if ret:
-            #cv2.imwrite('../output/frames/' + video_path.split("/")[-1] + "_{}.jpg".format(count), frame)
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame = resize_when_too_big(frame)
-            video_frames.append(frame)
-        else:
-            break
+    try:
+        while video.isOpened():
+            ret, frame = video.read()
+            if ret:
+                # cv2.imwrite('../output/frames/' + video_path.split("/")[-1] + "_{}.jpg".format(count), frame)
+                if reduce_size:
+                    h, w = int(frame.shape[0]), int(frame.shape[1])
+                    thr_w, thr_h = 1080, 1080
+                    if h > thr_h or w > thr_w:
+                        h_ratio = thr_h / h
+                        w_ratio = thr_w / w
+                        w = int(frame.shape[1] * min(h_ratio, w_ratio))
+                        h = int(frame.shape[0] * min(h_ratio, w_ratio))
+                        frame = cv2.resize(frame, (w, h), interpolation=cv2.INTER_AREA)
+                video_frames.append(frame)
+            else:
+                break
+    except KeyboardInterrupt:
+        print('Exception Keyboard interrupt ...\n')
+
     video.release()
     print("End. Read {} frames".format(len(video_frames)))
     return video_frames
 
 
-def write_video(name, frames):
+def write_video(name, frames, fps=30, fourcc_name='mp4v', path=PATH_OUTPUT):
     """
         Store the video on the file system
 
     :param name: string - The name of video
     :param frames: list<numpy.ndarray> - The list of frame
+    :param fps: int - Frame per Seconds
+    :param fourcc_name: string - The name of fourcc codec
+    :param path: string - Destination of saving
     :return:
     """
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    height, width, channel = frames[0].shape
-    output = cv2.VideoWriter(name, fourcc, 15.0, (width, height))
-    print('Storage video {}'.format(name))
+    if frames is None or len(frames) == 0:
+        print("Frames is not found. Return")
+        return
+    if not os.path.exists(path):
+        Path(path).mkdir(parents=True, exist_ok=True)
+    height, width = frames[0].shape[0], frames[0].shape[1]
+    codec = cv2.VideoWriter_fourcc(*fourcc_name)
+    output = cv2.VideoWriter(path + name, codec, fps, (width, height))
+    print('Storage video {} into folder {}'.format(name, path))
     if not output.isOpened():
         print("Error Output Video")
         return
     for frame in frames:
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         output.write(frame)
     output.release()
     print('Ending storage.')

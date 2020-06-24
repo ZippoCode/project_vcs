@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import sys
 
 # Custom importing
 from improve_quality import multiscale_retinex
@@ -196,6 +197,8 @@ def elaborate_edge_detection(frame, show_images=False):
     :return:
         - A list of bounding boxes (x, y, w, h)
     """
+    if frame is None:
+        sys.exit('Frame not found')
     frame_retinex = multiscale_retinex(frame)
     edit_images, edit_titles = edge_detection(frame_retinex)
     # plt_images(edit_images, edit_titles)

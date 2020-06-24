@@ -3,14 +3,15 @@ import os
 import _pickle as pickle
 
 # Custom importing
-from parameters import *
+from parameters import PATH_PAINTINGS_DB, PATH_KEYPOINTS_DB
+from parameters import RATIO, FLANN_INDEX_KDTREE
 
 
 def save_keypoints(images_name, detector):
     print('\t> Save key-points')
     database_features = dict()
     for path_image in images_name:
-        image = cv2.imread(PATH + path_image, cv2.IMREAD_GRAYSCALE)
+        image = cv2.imread(PATH_PAINTINGS_DB + path_image, cv2.IMREAD_GRAYSCALE)
         kp, des = detector.detectAndCompute(image, None)
         if kp is not None and des is not None:
             database_features[path_image] = des
@@ -38,7 +39,7 @@ def match_paitings(query_painting):
     :return: a list of (string, similarity)
     """
     print('Start Retrieval ...')
-    images_name = [file for file in os.listdir(PATH)]
+    images_name = [file for file in os.listdir(PATH_PAINTINGS_DB)]
 
     # Init detector and matcher
     detector = cv2.xfeatures2d.SIFT_create()
