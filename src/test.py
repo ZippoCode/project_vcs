@@ -36,8 +36,6 @@ def paiting_detection(num_example=1):
         frames = random.choices(frames, k=1)
 
         for frame in frames:
-            frame = cv2.imread(
-                '../data/video_painting/20180206_113800_34.jpg', cv2.IMREAD_COLOR)
             list_boundings = elaborate_edge_detection(frame, show_images=True)
             good_boundings = list()
 
@@ -95,8 +93,10 @@ def painting_retrieval(num_example=1):
 
 def localization(num_example=1):
     frame = cv2.imread(
-        '../data/video_painting/20180206_113600_11.jpg', cv2.IMREAD_COLOR)
-    list_boundings = elaborate_edge_detection(frame, show_images=False)
+        # '../data/video_painting/20180206_113800_34.jpg', cv2.IMREAD_COLOR)
+        '../data/video_painting/00frame.jpg', cv2.IMREAD_COLOR)
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    list_boundings = elaborate_edge_detection(frame, show_images=True)
 
     paintings = []
     titles = []
@@ -119,7 +119,7 @@ def localization(num_example=1):
                     plt.show()
             else:
                 print("Nothing match found")
-
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     plt.imshow(frame)
     plt.show()
 
@@ -127,6 +127,6 @@ def localization(num_example=1):
 
 
 if __name__ == '__main__':
-    paiting_detection(num_example=1)
-    painting_retrieval(num_example=1)
+    # paiting_detection(num_example=1)
+    # painting_retrieval(num_example=1)
     localization(num_example=1)
