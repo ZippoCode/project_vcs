@@ -6,9 +6,9 @@ from matplotlib import pyplot as plt
 
 # Custom importing
 from read_write import get_videos, write_video, read_video, save_paitings
-from detection import elaborate_edge_detection
+from painting_detection import elaborate_edge_detection
 from plotting import draw_paintings, plt_images
-from rectification import rectification, is_painting
+from painting_rectification import rectification, is_painting
 from painting_retrieval import match_paitings
 from parameters import *
 from people_localization import room_dict, roi_labeling

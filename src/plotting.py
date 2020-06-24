@@ -49,6 +49,7 @@ def draw_paintings(image, list_painting):
     color_yellow = (0, 255, 255)
 
     for painting in list_painting:
+        print(painting)
         upper_left, upper_right, down_left, down_right = painting
         cv2.line(image_painting, upper_left, upper_right, color_green, 3)
         cv2.line(image_painting, upper_left, down_left, color_green, 3)

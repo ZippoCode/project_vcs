@@ -10,7 +10,8 @@ def is_painting(detected):
     # Detect if it is a painting
     detected = cv2.cvtColor(detected, cv2.COLOR_RGB2HSV)
     H, L, S = np.arange(3)
-    hist = cv2.calcHist([detected[:, :, H]], [0], None, [180], [0, 180]) / detected.size
+    hist = cv2.calcHist([detected[:, :, H]], [0], None,
+                        [180], [0, 180]) / detected.size
     hist = hist[hist > 0]
     entropy = -np.sum(hist * np.log2(hist))
     return True

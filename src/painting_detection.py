@@ -199,8 +199,8 @@ def elaborate_edge_detection(frame, show_images=False):
     """
     if frame is None:
         sys.exit('Frame not found')
-    frame_retinex = multiscale_retinex(frame)
-    edit_images, edit_titles = edge_detection(frame_retinex)
+    # frame_retinex = multiscale_retinex(frame)
+    edit_images, edit_titles = edge_detection(frame)
     # plt_images(edit_images, edit_titles)
     list_bounding = get_bounding_boxes(edit_images[-1])
 
@@ -211,8 +211,8 @@ def elaborate_edge_detection(frame, show_images=False):
         images.append(frame)
         titles.append("Original Frame")
         # Append frame with Retinex elaboration
-        images.append(frame_retinex)
-        titles.append('Multiscale retinex')
+        # images.append(frame_retinex)
+        # titles.append('Multiscale retinex')
         # Append all images from elaboration
         for image in edit_images:
             images.append(image)
