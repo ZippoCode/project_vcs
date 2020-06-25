@@ -1,10 +1,31 @@
 import cv2
-import os
 import sys
-from pathlib import Path
+import _pickle as pickle
 
 # Custom importing
 from parameters import *
+
+
+def save_bounding_boxes(bounding_boxes_dict, name_file, path=PATH_OUTPUT_DETECTED_BBOX):
+    if not os.path.exists(path):
+        print('\t> Creating folder ...')
+        Path(path).mkdir(parents=True, exist_ok=True)
+    with open(PATH_OUTPUT_DETECTED_BBOX + name_file + '.pck', 'wb') as file:
+        pickle.dump(bounding_boxes_dict, file)
+    print('\t> File storage ...')
+
+
+def read_bounding_boxes(filename, path=PATH_OUTPUT_DETECTED_BBOX):
+    complete_path = path + filename + '.pck'
+    if not os.path.exists(complete_path):
+        sys.exit('File not found')
+    print("\t> Reading file {}".format(filename))
+    with open(complete_path, 'rb') as file:
+        database = pickle.load(file)
+    bounding_boxes = dict()
+    for frame in database:
+        bounding_boxes[frame] = database[frame]
+    return bounding_boxes
 
 
 def get_videos(folder_video=ROOT_PATH_VIDEOS):
@@ -51,7 +72,7 @@ def save_paitings(dict_image, origin_path, folders=False):
         cv2.imwrite(path, image)
 
 
-def read_video(video_path, reduce_size=True):
+def read_video(video_path, reduce_size=True, path=ROOT_PATH_VIDEOS):
     """
         Given a path of video return a list of frame. One Frame each second.
         Each Frame is a image into RGB
@@ -72,7 +93,7 @@ def read_video(video_path, reduce_size=True):
                 # cv2.imwrite('../output/frames/' + video_path.split("/")[-1] + "_{}.jpg".format(count), frame)
                 if reduce_size:
                     h, w = int(frame.shape[0]), int(frame.shape[1])
-                    thr_w, thr_h = 1080, 1080
+                    thr_w, thr_h = 500, 500
                     if h > thr_h or w > thr_w:
                         h_ratio = thr_h / h
                         w_ratio = thr_w / w

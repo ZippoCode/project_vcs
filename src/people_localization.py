@@ -1,10 +1,30 @@
 import cv2
 import pandas as pd
+import sys
+
 import numpy as np
 import argparse, random
 
 # Custom importing
 from parameters import *
+from read_write import read_video, read_bounding_boxes
+
+
+def people_localization(video_name):
+    # frames = read_video(video_name)
+    video_name = video_name.split('/')[-1].split('.')[-2]
+    print(video_name)
+    bbox = read_bounding_boxes(video_name)
+    real_person = False
+    for num_frame, classes_name in bbox.items():
+        if 'real person' in classes_name:
+            print('\t> Real person founded.')
+            real_person = True
+            break
+    if not real_person:
+        print('Real person not found. Return ...')
+        return
+
 
 def room_dict(image_name):
     if image_name is None:
@@ -53,4 +73,3 @@ def roi_labeling(id, image, coordinate, image_name=None):
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2, cv2.LINE_AA)
 
     return image
-

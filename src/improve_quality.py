@@ -23,8 +23,7 @@ def multiscale_retinex(image):
         print('Image need have shape (H, W, C)')
         return
     H, W, C = image.shape
-    print('\t> Improving quality ...')
-    image = cv2.resize(image, (int(H / 8), int(W / 8)), interpolation=cv2.INTER_AREA)
+    image = cv2.resize(image, (int(H / 2), int(W / 2)), interpolation=cv2.INTER_AREA)
     low_clip = 0.01
     high_clip = 0.99
     image = image.astype(np.float64) + 1.0
@@ -65,5 +64,4 @@ def multiscale_retinex(image):
 
     out = cv2.resize(out, (W, H), interpolation=cv2.INTER_AREA)
 
-    print('\t> End improving quality')
     return np.uint8(out - 1.0)

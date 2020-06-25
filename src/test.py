@@ -11,7 +11,7 @@ from plotting import draw_paintings, plt_images
 from painting_rectification import rectification, is_painting
 from painting_retrieval import match_paitings
 from parameters import *
-from people_localization import room_dict, roi_labeling
+from people_localization import room_dict, roi_labeling, people_localization
 
 
 def paiting_detection(num_example=1):
@@ -32,7 +32,7 @@ def paiting_detection(num_example=1):
         video_results = list()
         frames = read_video(path_video)
         try:
-            for frame in frames:
+            for num_frame, frame in enumarate(frames):
                 # frame = cv2.imread('../data/video_painting/20180206_113800_34.jpg', cv2.IMREAD_COLOR)
                 list_boundings = elaborate_edge_detection(frame, show_images=False)
                 good_boundings = list()
@@ -55,6 +55,7 @@ def paiting_detection(num_example=1):
                 paintings.append(result)
 
                 save_paitings(detected_paiting, path_video, folders=True)
+                print("Elaborate {} of {} frames".format(num_frame, len(frames)))
                 # plt_images(paintings, titles)
 
         except KeyboardInterrupt:
@@ -127,4 +128,5 @@ def localization(num_example=1):
 if __name__ == '__main__':
     # paiting_detection(num_example=1)
     # painting_retrieval(num_example=1)
-    localization(num_example=1)
+    #   localization(num_example=1)
+    people_localization('/data/videos/002/20180206_113059.mp4')

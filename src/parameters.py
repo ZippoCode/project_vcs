@@ -13,6 +13,8 @@ PATH_KEYPOINTS_DB = os.path.join(__location__, 'output/key-points.pck')
 PATH_OUTPUT = os.path.join(__location__, 'output/')
 PATH_DESTINATION_PERSON_DETECTED = os.path.join(__location__, 'output/person_detected/')
 PATH_DESTINATION_PAINTING_DETECTED = os.path.join(__location__, 'output/painting_detected/')
+PATH_OUTPUT_DETECTED_BBOX = os.path.join(__location__, 'output/bbox/')
+
 # Yolo
 PATH_YOLO_CFG = os.path.join(__location__, 'yolo/cfg/yolov3-obj-test.cfg')
 PATH_YOLO_WEIGHTS = os.path.join(__location__, 'yolo/yolov3-obj-train_last.weights')
