@@ -143,7 +143,7 @@ if __name__ == '__main__':
     list_video = get_videos()
     list_video = random.choices(list_video)
     # list_video = ['../data/videos/003/GOPR1940.MP4']
-    list_video = ['../data/videos/002/20180206_114604.mp4']
+    list_video = ['../data/videos/002/20180206_113059.mp4']
     print(list_video)
     # if args.videofile:
     detect_person(args.cfgfile, args.weightfile, list_video)

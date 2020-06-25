@@ -1,9 +1,10 @@
 import cv2
 import pandas as pd
+import numpy as np
+import argparse, random
 
 # Custom importing
 from parameters import *
-
 
 def room_dict(image_name):
     if image_name is None:
@@ -52,3 +53,4 @@ def roi_labeling(id, image, coordinate, image_name=None):
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2, cv2.LINE_AA)
 
     return image
+
