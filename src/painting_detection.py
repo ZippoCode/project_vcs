@@ -163,9 +163,9 @@ def sorted_points(contour):
             down_right = (contour[point, 0, 0], contour[point, 0, 1])
         else:
             return
-    if (upper_right[0] - upper_left[0]) < 150 or (down_left[1] - upper_left[1]) < 150:
+    if (upper_right[0] - upper_left[0]) < 75 or (down_left[1] - upper_left[1]) < 75:
         return
-    if (down_right[0] - down_left[0]) < 150 or (down_right[1] - upper_right[1]) < 150:
+    if (down_right[0] - down_left[0]) < 75 or (down_right[1] - upper_right[1]) < 75:
         return
     return upper_left, upper_right, down_left, down_right
 
