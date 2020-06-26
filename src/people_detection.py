@@ -29,7 +29,6 @@ def drawPred(frame, classes, classId, conf, left, top, right, bottom):
 def postprocess(frame, outs, classes):
     frameHeight, frameWidth = frame.shape[0], frame.shape[1]
     classIds, confidences, boxes = [], [], []
-    real_person = False
     for out in outs:
         for detection in out:
             scores = detection[5:]
@@ -77,7 +76,6 @@ def detect_person(frames, net, classes):
             outputs_names = [layersNames[i[0] - 1] for i in net.getUnconnectedOutLayers()]
             outs = net.forward(outputs_names)
             detected_object_dict[num] = postprocess(frame, outs, classes)
-            # detected_object_dict[num] = bbox.items()
             t, _ = net.getPerfProfile()
             label = 'Inference time: %.2f ms' % (t * 1000.0 / cv2.getTickFrequency())
             cv2.putText(frame, label, (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
@@ -126,7 +124,7 @@ if __name__ == '__main__':
         print("Classes {}".format(classes))
 
     list_videos = get_videos()
-    list_videos = ['../data/videos/002/20180206_113059.mp4']
+    list_videos = ['../data/videos/003/GOPR1940.MP4']
     # Video with real person 003/GOPR1940.MP4 - 002/20180206_113059.mp4
     list_videos = random.choices(list_videos, k=1)
     for video_name in list_videos:

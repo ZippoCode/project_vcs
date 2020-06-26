@@ -15,7 +15,10 @@ from painting_retrieval import match_paitings
 def people_localization(video_name):
     filename = video_name.split('/')[-1].split('.')[-2]
     bbox = read_bounding_boxes(filename)
-    real_person = [True if 'real person' in classes_founded else False for classes_founded in bbox.values()]
+    real_person = False
+    for classes_found in bbox.values():
+        if 'real person' in classes_found:
+            real_person = True
     if not real_person:
         print('Real person not found. Return ...')
         return
@@ -27,6 +30,8 @@ def people_localization(video_name):
 
     unique_paintings = dict()
     list_retrieval = dict()
+    for b in bbox.items():
+        print(b)
     for frame, (num_frames, classes_founded) in zip(frames, bbox.items()):
         if 'real person' in classes_founded and 'painted person' in classes_founded:
             bounding_boxes_rp = classes_founded['real person']

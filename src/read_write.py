@@ -72,7 +72,7 @@ def save_paitings(dict_image, origin_path, folders=False):
         cv2.imwrite(path, image)
 
 
-def read_video(video_path, reduce_size=True, path=ROOT_PATH_VIDEOS):
+def read_video(video_path, reduce_size=False, path=ROOT_PATH_VIDEOS):
     """
         Given a path of video return a list of frame. One Frame each second.
         Each Frame is a image into RGB
@@ -83,8 +83,10 @@ def read_video(video_path, reduce_size=True, path=ROOT_PATH_VIDEOS):
     """
     if not os.path.exists(video_path):
         sys.exit('[ERROR] File {} not found'.format(video_path))
-    video = cv2.VideoCapture(video_path, cv2.CAP_FFMPEG)
+    video = cv2.VideoCapture(video_path)
     print("Reading file: {}".format(video_path))
+    if reduce_size:
+        print("[INFO] Reduce size of frames")
     video_frames = list()
     try:
         while video.isOpened():
@@ -127,11 +129,11 @@ def write_video(name, frames, fps=30, fourcc_name='mp4v', path=PATH_OUTPUT):
         return
     if not os.path.exists(path):
         Path(path).mkdir(parents=True, exist_ok=True)
-    size = (frames[0].shape[0], frames[0].shape[1])
+    height, width = frames[0].shape[0], frames[0].shape[1]
     codec = cv2.VideoWriter_fourcc(*fourcc_name)
-    output = cv2.VideoWriter(path + name, codec, fps, size)
+    output = cv2.VideoWriter(path + name, codec, fps, (width, height))
     print('\t> Storage video {} into folder {}'.format(name, path))
-    print('\t> Codec: {} - Size: {}'.format(codec, size))
+    print('\t> Codec: {} - Size: {}'.format(codec, (width, height)))
     if not output.isOpened():
         print("Error Output Video")
         return
