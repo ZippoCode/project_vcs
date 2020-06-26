@@ -57,6 +57,8 @@ def match_paitings(query_painting):
     database_matches = dict()
     print('\t> Matching key-points ...')
     for image, des_t in database_features.items():
+        if des_q is None or des_t is None:
+            return []
         raw_matches_one = matcher.knnMatch(des_q, des_t, k=2)
         good_matches_one = []
         for m in raw_matches_one:

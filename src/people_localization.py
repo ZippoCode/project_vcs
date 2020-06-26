@@ -1,5 +1,6 @@
 import cv2
 import pandas as pd
+import matplotlib.pyplot as plt
 import sys
 
 import numpy as np
@@ -8,37 +9,62 @@ import argparse, random
 # Custom importing
 from parameters import *
 from read_write import read_video, read_bounding_boxes
+from painting_retrieval import match_paitings
 
 
 def people_localization(video_name):
-    # frames = read_video(video_name)
-    video_name = video_name.split('/')[-1].split('.')[-2]
-    print(video_name)
-    bbox = read_bounding_boxes(video_name)
-    real_person = False
-    for num_frame, classes_name in bbox.items():
-        if 'real person' in classes_name:
-            print('\t> Real person founded.')
-            real_person = True
-            break
+    filename = video_name.split('/')[-1].split('.')[-2]
+    bbox = read_bounding_boxes(filename)
+    real_person = [True if 'real person' in classes_founded else False for classes_founded in bbox.values()]
     if not real_person:
         print('Real person not found. Return ...')
         return
-
-
-def room_dict(image_name):
-    if image_name is None:
+    print('\t> Real person found')
+    frames = read_video(video_name, reduce_size=False)
+    if len(frames) != len(bbox.keys()):
+        print("The video and bounding boxes don\'t have same size. Return!")
         return
 
+    unique_paintings = dict()
+    list_retrieval = dict()
+    for frame, (num_frames, classes_founded) in zip(frames, bbox.items()):
+        if 'real person' in classes_founded and 'painted person' in classes_founded:
+            bounding_boxes_rp = classes_founded['real person']
+            bounding_boxes_pp = classes_founded['painted person']
+            for x, y, width, height in bounding_boxes_pp:
+                unique_found = False
+                x_center = int(x + width / 2)
+                y_center = int(y + height / 2)
+                for x, y in unique_paintings.keys():
+                    distance = np.sqrt((x - x_center) ** 2 + (y - y_center) ** 2)
+                    if distance < 100:
+                        unique_found = True
+                if not unique_found:
+                    print('Found new unique detected painting ...')
+                    unique_paintings[(x_center, y_center)] = (x, y, width, height)
+                    result_retrieval_frame = match_paitings(frame[y: y + height, x: x + width, :])
+                    for name_painting, sim in result_retrieval_frame:
+                        if name_painting in list_retrieval:
+                            list_retrieval[name_painting] += sim
+                        else:
+                            list_retrieval[name_painting] = sim
+
+    total_retrieval = sorted(list_retrieval.items(), key=lambda x: x[1], reverse=True)
+    best_locations = dict()
     data = pd.read_csv(PATH_DATA_CSV, sep=",")
-    curr_row = data[data["Image"] == image_name]
+    for image_name, sim in total_retrieval[:5]:
+        curr_row = data[data["Image"] == image_name]
+        room = curr_row["Room"].values[0]
+        if room in best_locations:
+            best_locations[room] += 1
+        else:
+            best_locations[room] = 1
 
-    room = curr_row["Room"].values[0]
-
-    room_paintings = data[data["Room"] == room]["Image"].values
-
-    location = rooms_map_highlight(room=room, color=(0, 255, 0))
-    return location
+    best_locations = sorted(best_locations.items(), key=lambda x: x[1], reverse=True)
+    room, sim = best_locations[0]
+    location = rooms_map_highlight(room, (0, 255, 0))
+    plt.imshow(location)
+    plt.show()
 
 
 def rooms_map_highlight(room, color):

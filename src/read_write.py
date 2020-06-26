@@ -19,12 +19,12 @@ def read_bounding_boxes(filename, path=PATH_OUTPUT_DETECTED_BBOX):
     complete_path = path + filename + '.pck'
     if not os.path.exists(complete_path):
         sys.exit('File not found')
-    print("\t> Reading file {}".format(filename))
     with open(complete_path, 'rb') as file:
         database = pickle.load(file)
     bounding_boxes = dict()
     for frame in database:
         bounding_boxes[frame] = database[frame]
+    print("\t> Reading file {} with {} frames".format(filename, len(bounding_boxes)))
     return bounding_boxes
 
 
@@ -82,8 +82,8 @@ def read_video(video_path, reduce_size=True, path=ROOT_PATH_VIDEOS):
             name_video: list<numpy.ndarray>
     """
     if not os.path.exists(video_path):
-        sys.exit('Error in reading file {}'.format(video_path))
-    video = cv2.VideoCapture(video_path)
+        sys.exit('[ERROR] File {} not found'.format(video_path))
+    video = cv2.VideoCapture(video_path, cv2.CAP_FFMPEG)
     print("Reading file: {}".format(video_path))
     video_frames = list()
     try:
@@ -127,10 +127,11 @@ def write_video(name, frames, fps=30, fourcc_name='mp4v', path=PATH_OUTPUT):
         return
     if not os.path.exists(path):
         Path(path).mkdir(parents=True, exist_ok=True)
-    height, width = frames[0].shape[0], frames[0].shape[1]
+    size = (frames[0].shape[0], frames[0].shape[1])
     codec = cv2.VideoWriter_fourcc(*fourcc_name)
-    output = cv2.VideoWriter(path + name, codec, fps, (width, height))
-    print('Storage video {} into folder {}'.format(name, path))
+    output = cv2.VideoWriter(path + name, codec, fps, size)
+    print('\t> Storage video {} into folder {}'.format(name, path))
+    print('\t> Codec: {} - Size: {}'.format(codec, size))
     if not output.isOpened():
         print("Error Output Video")
         return
