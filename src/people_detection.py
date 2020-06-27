@@ -124,7 +124,7 @@ if __name__ == '__main__':
         print("Classes {}".format(classes))
 
     list_videos = get_videos()
-    list_videos = ['../data/videos/003/GOPR1940.MP4']
+    list_videos = ['../data/videos/002/20180206_114604.mp4']
     # Video with real person 003/GOPR1940.MP4 - 002/20180206_113059.mp4
     list_videos = random.choices(list_videos, k=1)
     for video_name in list_videos:
