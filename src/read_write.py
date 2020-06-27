@@ -85,7 +85,7 @@ def read_video(video_path, reduce_size=False, path=ROOT_PATH_VIDEOS):
     if not os.path.exists(video_path):
         sys.exit('[ERROR] File {} not found'.format(video_path))
     videodata = skvideo.io.vread(video_path)
-    print("[INFO] Read {} frames".format(len(videodata)))
+    print("[INFO] Read {} frames from {}".format(len(videodata), video_path))
     if reduce_size:
         reduce_videodata = []
         for frame in videodata:
@@ -119,8 +119,6 @@ def write_video(name, frames, fps=30, fourcc_name='MJPG', path=PATH_OUTPUT):
         return
     if not os.path.exists(path):
         Path(path).mkdir(parents=True, exist_ok=True)
-    writer = skvideo.io.FFmpegWriter(filename=path + name)
-
     height, width = frames[0].shape[0], frames[0].shape[1]
     codec = cv2.VideoWriter_fourcc(*fourcc_name)
     output = cv2.VideoWriter(path + name, codec, fps, (width, height))
@@ -129,5 +127,7 @@ def write_video(name, frames, fps=30, fourcc_name='MJPG', path=PATH_OUTPUT):
     if not output.isOpened():
         print("Error Output Video")
         return
+    for frame in frames:
+        output.write(frame)
     output.release()
     print('Ending storage.')
