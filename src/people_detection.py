@@ -3,7 +3,6 @@ import cv2
 import sys
 import numpy as np
 import torch
-
 import matplotlib.pyplot as plt
 
 # Custom importing
@@ -22,8 +21,7 @@ def drawPred(frame, classes, classId, conf, left, top, right, bottom):
     point_one = (left, top - round(1.5 * labelSize[1]))
     point_two = (left + round(1.5 * labelSize[0]), top + baseLine)
     cv2.rectangle(frame, point_one, point_two, (255, 255, 255), cv2.FILLED)
-    cv2.putText(frame, label, (left, top),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 1)
+    cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 1)
 
 
 def postprocess(frame, outs, classes):
@@ -52,9 +50,17 @@ def postprocess(frame, outs, classes):
         box = boxes[i]
         class_name = classes[classIds[i]]
         x, y, width, height = box[0], box[1], box[2], box[3]
+        if x < 0:
+            x = 0
+        if y < 0:
+            y = 0
+        if width > frameWidth:
+            width = frameWidth
+        if height > frameHeight:
+            height = frameHeight
         if class_name in founded_bbox:
             founded_bbox[class_name].append((x, y, width, height))
-        else: 
+        else:
             founded_bbox[class_name] = [(x, y, width, height)]
         drawPred(frame, classes, classIds[i], confidences[i], x, y, x + width, y + height)
     return founded_bbox
@@ -79,7 +85,7 @@ def detect_person(frames, net, classes):
             t, _ = net.getPerfProfile()
             label = 'Inference time: %.2f ms' % (t * 1000.0 / cv2.getTickFrequency())
             cv2.putText(frame, label, (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
-            frames_detected.append(frame.astype(np.uint8))
+            frames_detected.append(cv2.cvtColor(frame.astype(np.uint8), cv2.COLOR_RGB2BGR))
             time_end = cv2.getTickCount()
             time_elaboration = (time_end - time_start) / cv2.getTickFrequency()
             print('\t> Elaborate {}/{} frame in {} s'.format(num + 1, len(frames), time_elaboration))
@@ -124,8 +130,8 @@ if __name__ == '__main__':
         print("Classes {}".format(classes))
 
     list_videos = get_videos()
-    list_videos = ['../data/videos/003/GOPR1940.MP4']
-    # Video with real person 003/GOPR1940.MP4 - 002/20180206_113059.mp4
+    list_videos = ['../data/videos/004/IMG_3803.MOV']
+    # Video with real person 003/GOPR1940.MP4 - 002/20180206_113059.mp4 - 002/20180206_114604.mp4
     list_videos = random.choices(list_videos, k=1)
     for video_name in list_videos:
         if not os.path.isfile(video_name):

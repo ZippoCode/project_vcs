@@ -94,5 +94,5 @@ if __name__ == '__main__':
     # paiting_detection(num_example=1)
     # painting_retrieval(num_example=1)
     #   localization(num_example=1)
-    people_localization('../output/person detection/VID_20180529_112722.mp4')
+    people_localization('../output/person_detected/20180206_114306.avi')
     #people_localization("../output/person_detected/GOPR1940.avi")

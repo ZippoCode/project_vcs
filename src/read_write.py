@@ -1,6 +1,8 @@
 import cv2
 import sys
 import _pickle as pickle
+import skvideo.io
+import matplotlib.pyplot as plt
 
 # Custom importing
 from parameters import *
@@ -67,8 +69,7 @@ def save_paitings(dict_image, origin_path, folders=False):
         if folders:
             path = output_path + "{}.jpg".format(title)
         else:
-            path = output_path + \
-                   '{}_{}_{}.jpg'.format(folder, file_name, title)
+            path = output_path + '{}_{}_{}.jpg'.format(folder, file_name, title)
         cv2.imwrite(path, image)
 
 
@@ -83,37 +84,26 @@ def read_video(video_path, reduce_size=False, path=ROOT_PATH_VIDEOS):
     """
     if not os.path.exists(video_path):
         sys.exit('[ERROR] File {} not found'.format(video_path))
-    video = cv2.VideoCapture(video_path)
-    print("Reading file: {}".format(video_path))
+    videodata = skvideo.io.vread(video_path)
+    print("[INFO] Read {} frames".format(len(videodata)))
     if reduce_size:
-        print("[INFO] Reduce size of frames")
-    video_frames = list()
-    try:
-        while video.isOpened():
-            ret, frame = video.read()
-            if ret:
-                # cv2.imwrite('../output/frames/' + video_path.split("/")[-1] + "_{}.jpg".format(count), frame)
-                if reduce_size:
-                    h, w = int(frame.shape[0]), int(frame.shape[1])
-                    thr_w, thr_h = 500, 500
-                    if h > thr_h or w > thr_w:
-                        h_ratio = thr_h / h
-                        w_ratio = thr_w / w
-                        w = int(frame.shape[1] * min(h_ratio, w_ratio))
-                        h = int(frame.shape[0] * min(h_ratio, w_ratio))
-                        frame = cv2.resize(frame, (w, h), interpolation=cv2.INTER_AREA)
-                video_frames.append(frame)
-            else:
-                break
-    except KeyboardInterrupt:
-        print('Exception Keyboard interrupt ...\n')
-
-    video.release()
-    print("End. Read {} frames".format(len(video_frames)))
-    return video_frames
+        reduce_videodata = []
+        for frame in videodata:
+            h, w = int(frame.shape[0]), int(frame.shape[1])
+            thr_w, thr_h = 500, 500
+            if h > thr_h or w > thr_w:
+                h_ratio = thr_h / h
+                w_ratio = thr_w / w
+                w = int(frame.shape[1] * min(h_ratio, w_ratio))
+                h = int(frame.shape[0] * min(h_ratio, w_ratio))
+                frame = cv2.resize(frame, (w, h), interpolation=cv2.INTER_AREA)
+            reduce_videodata.append(frame)
+            print("[INFO] Reduce size of frames")
+            return reduce_videodata
+    return videodata
 
 
-def write_video(name, frames, fps=30, fourcc_name='mp4v', path=PATH_OUTPUT):
+def write_video(name, frames, fps=30, fourcc_name='MJPG', path=PATH_OUTPUT):
     """
         Store the video on the file system
 
@@ -129,15 +119,15 @@ def write_video(name, frames, fps=30, fourcc_name='mp4v', path=PATH_OUTPUT):
         return
     if not os.path.exists(path):
         Path(path).mkdir(parents=True, exist_ok=True)
+    writer = skvideo.io.FFmpegWriter(filename=path + name)
+
     height, width = frames[0].shape[0], frames[0].shape[1]
     codec = cv2.VideoWriter_fourcc(*fourcc_name)
     output = cv2.VideoWriter(path + name, codec, fps, (width, height))
-    print('\t> Storage video {} into folder {}'.format(name, path))
-    print('\t> Codec: {} - Size: {}'.format(codec, (width, height)))
+    print("[INFO] Storage video {} into folder {}".format(name, path))
+    print("[INFO] Codec: {} - Size: {}".format(fourcc_name, (height, width)))
     if not output.isOpened():
         print("Error Output Video")
         return
-    for frame in frames:
-        output.write(frame)
     output.release()
     print('Ending storage.')
