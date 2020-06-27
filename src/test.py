@@ -23,7 +23,7 @@ def paiting_detection(num_example=1):
     """
     path_videos = get_videos()
     path_videos = random.choices(path_videos, k=num_example if num_example > 0 else len(path_videos))
-    # path_videos = ['../data/videos/003/GOPR1923.MP4']
+    path_videos = ['../data/videos/006/IMG_9622.MOV']
 
     while len(path_videos) > 0:
         path_video = random.choice(path_videos)
@@ -32,9 +32,13 @@ def paiting_detection(num_example=1):
         video_results = list()
         frames = read_video(path_video)
         try:
+<<<<<<< HEAD
             for num_frame, frame in enumarate(frames):
                 frame = cv2.imread('../data/video_painting/20180206_113800_34.jpg', cv2.IMREAD_COLOR)
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+=======
+            for num_frame, frame in enumerate(frames):
+>>>>>>> 2f17b00ebd4ead94678850d33ab17f81bba0c32e
                 list_boundings = elaborate_edge_detection(frame, show_images=False)
                 good_boundings = list()
 
@@ -54,17 +58,17 @@ def paiting_detection(num_example=1):
                 result = draw_paintings(frame, good_boundings)
                 titles.append("Detection Frame")
                 paintings.append(result)
-
+                video_results.append(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
                 save_paitings(detected_paiting, path_video, folders=True)
-                print("Elaborate {} of {} frames".format(num_frame, len(frames)))
-                # plt_images(paintings, titles)
+                print("[INFO] Elaborate {} of {} frames".format(num_frame + 1, len(frames)))
 
         except KeyboardInterrupt:
             print('Stop processing')
             pass
 
         file_name = path_video.split('/')[-1]
-        write_video(file_name, video_results, path=PATH_DESTINATION_PAINTING_DETECTED)
+        file_name = file_name.split('.')[0]
+        write_video(file_name + '.avi', video_results, path=PATH_DESTINATION_PAINTING_DETECTED)
     return
 
 
@@ -127,7 +131,13 @@ def localization(num_example=1):
 
 
 if __name__ == '__main__':
-    # paiting_detection(num_example=1)
+    paiting_detection(num_example=1)
     # painting_retrieval(num_example=1)
+<<<<<<< HEAD
     #   localization(num_example=1)
     people_localization('/data/videos/002/20180206_113059.mp4')
+=======
+    # localization(num_example=1)
+    # people_localization('../output/person_detected/20180206_114306.avi')
+    # people_localization("../output/person_detected/GOPR1940.avi")
+>>>>>>> 2f17b00ebd4ead94678850d33ab17f81bba0c32e
