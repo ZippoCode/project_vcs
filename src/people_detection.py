@@ -130,13 +130,8 @@ if __name__ == '__main__':
         print("Classes {}".format(classes))
 
     list_videos = get_videos()
-<<<<<<< HEAD
     list_videos = ['../data/videos/002/20180206_114604.mp4']
     # Video with real person 003/GOPR1940.MP4 - 002/20180206_113059.mp4
-=======
-    list_videos = ['../data/videos/004/IMG_3803.MOV']
-    # Video with real person 003/GOPR1940.MP4 - 002/20180206_113059.mp4 - 002/20180206_114604.mp4
->>>>>>> 2f17b00ebd4ead94678850d33ab17f81bba0c32e
     list_videos = random.choices(list_videos, k=1)
     for video_name in list_videos:
         if not os.path.isfile(video_name):

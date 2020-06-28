@@ -32,14 +32,10 @@ def paiting_detection(num_example=1):
         video_results = list()
         frames = read_video(path_video)
         try:
-<<<<<<< HEAD
-            for num_frame, frame in enumarate(frames):
+            for num_frame, frame in enumerate(frames):
                 frame = cv2.imread('../data/video_painting/20180206_113800_34.jpg', cv2.IMREAD_COLOR)
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-=======
-            for num_frame, frame in enumerate(frames):
->>>>>>> 2f17b00ebd4ead94678850d33ab17f81bba0c32e
-                list_boundings = elaborate_edge_detection(frame, show_images=False)
+                list_boundings = elaborate_edge_detection(frame, show_images=True)
                 good_boundings = list()
 
                 paintings = []
@@ -96,9 +92,7 @@ def painting_retrieval(num_example=1):
 
 
 def localization(num_example=1):
-    frame = cv2.imread(
-        # '../data/video_painting/20180206_113800_34.jpg', cv2.IMREAD_COLOR)
-        '../data/video_painting/00frame.jpg', cv2.IMREAD_COLOR)
+    frame = cv2.imread('../data/video_painting/20180206_113800_34.jpg', cv2.IMREAD_COLOR)
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     list_boundings = elaborate_edge_detection(frame, show_images=True)
 
@@ -131,13 +125,8 @@ def localization(num_example=1):
 
 
 if __name__ == '__main__':
-    paiting_detection(num_example=1)
+    # paiting_detection(num_example=1)
     # painting_retrieval(num_example=1)
-<<<<<<< HEAD
-    #   localization(num_example=1)
-    people_localization('/data/videos/002/20180206_113059.mp4')
-=======
-    # localization(num_example=1)
-    # people_localization('../output/person_detected/20180206_114306.avi')
+    localization(num_example=1)
+    # people_localization('../output/person_detected/20180206_114604.avi')
     # people_localization("../output/person_detected/GOPR1940.avi")
->>>>>>> 2f17b00ebd4ead94678850d33ab17f81bba0c32e

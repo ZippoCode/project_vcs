@@ -42,6 +42,7 @@ def people_localization(video_name):
                 x_center = int(x + width / 2)
                 y_center = int(y + height / 2)
                 for x, y in unique_paintings.keys():
+                    print(num_frames, unique_paintings.keys())
                     distance = np.sqrt((x - x_center) ** 2 + (y - y_center) ** 2)
                     if distance < 100:
                         unique_found = True
@@ -71,6 +72,20 @@ def people_localization(video_name):
     location = rooms_map_highlight(room, (0, 255, 0))
     plt.imshow(location)
     plt.show()
+
+def room_dict(image_name):
+    if image_name is None:
+        return
+
+    data = pd.read_csv(PATH_DATA_CSV, sep=",")
+    curr_row = data[data["Image"] == image_name]
+
+    room = curr_row["Room"].values[0]
+
+    room_paintings = data[data["Room"] == room]["Image"].values
+
+    location = rooms_map_highlight(room=room, color=(0, 255, 0))
+    return location
 
 
 def rooms_map_highlight(room, color):
