@@ -31,7 +31,9 @@
 ```
   Output video: `./output/painting_detected/` folder
 ![Figure 1](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/final-result.png)
+![Figure 2](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/painting3.png)
 ![Figure 2](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/painting4.png)
+![Figure 3](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/painting7.png)
 ![Figure 3](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/painting9.png)
 
 ## Retrieval Painting
