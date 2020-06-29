@@ -32,9 +32,9 @@
   Output video: `./output/painting_detected/` folder
 ![Figure 1](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/final-result.png)
 ![Figure 2](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/painting3.png)
-![Figure 2](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/painting4.png)
-![Figure 3](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/painting7.png)
-![Figure 3](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/painting9.png)
+![Figure 4](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/painting4.png)
+![Figure 5](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/painting7.png)
+![Figure 6](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/painting9.png)
 
 ## Retrieval Painting
 The task's goal is given a query image find the same similar images in the set. This is called Image Retrieval. The first step is detected the features of query image and these of image contains in the database and then matches these. 
