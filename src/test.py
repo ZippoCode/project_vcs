@@ -11,7 +11,7 @@ from plotting import draw_paintings, plt_images
 from painting_rectification import rectification, is_painting
 from painting_retrieval import match_paitings
 from parameters import *
-from people_localization import room_dict, roi_labeling, people_localization
+from people_localization import room_dict, roi_labeling
 
 
 def paiting_detection(num_example=1):
@@ -23,7 +23,7 @@ def paiting_detection(num_example=1):
     """
     path_videos = get_videos()
     path_videos = random.choices(path_videos, k=num_example if num_example > 0 else len(path_videos))
-    path_videos = ['../data/videos/006/IMG_9622.MOV']
+    path_videos = ['../data/videos/002/20180206_113800.mp4']
 
     while len(path_videos) > 0:
         path_video = random.choice(path_videos)
@@ -33,9 +33,9 @@ def paiting_detection(num_example=1):
         frames = read_video(path_video)
         try:
             for num_frame, frame in enumerate(frames):
-                frame = cv2.imread('../data/video_painting/20180206_113800_34.jpg', cv2.IMREAD_COLOR)
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                list_boundings = elaborate_edge_detection(frame, show_images=True)
+                # frame = cv2.imread('../data/video_painting/20180206_113800_34.jpg', cv2.IMREAD_COLOR)
+                # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                list_boundings = elaborate_edge_detection(frame, show_images=False)
                 good_boundings = list()
 
                 paintings = []
@@ -91,8 +91,8 @@ def painting_retrieval(num_example=1):
             print("Nothing match found")
 
 
-def localization(num_example=1):
-    frame = cv2.imread('../data/video_painting/20180206_113800_34.jpg', cv2.IMREAD_COLOR)
+def localization(image_name):
+    frame = cv2.imread(image_name, cv2.IMREAD_COLOR)
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     list_boundings = elaborate_edge_detection(frame, show_images=True)
 
@@ -125,8 +125,6 @@ def localization(num_example=1):
 
 
 if __name__ == '__main__':
-    # paiting_detection(num_example=1)
-    # painting_retrieval(num_example=1)
-    localization(num_example=1)
-    # people_localization('../output/person_detected/20180206_114604.avi')
-    # people_localization("../output/person_detected/GOPR1940.avi")
+    paiting_detection(num_example=3)
+    painting_retrieval(num_example=3)
+    localization('../data/video_painting/20180206_113800_34.jpg')

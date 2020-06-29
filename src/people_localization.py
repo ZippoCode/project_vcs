@@ -120,3 +120,16 @@ def roi_labeling(id, image, coordinate, image_name=None):
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2, cv2.LINE_AA)
 
     return image
+
+def get_args():
+    parser = argparse.ArgumentParser(
+        'Test your image or video by trained model.')
+    parser.add_argument('-video', type=str, default="../output/person_detected/20180206_113059.avi",
+                        help='Path of cfg file', dest='video')
+    args = parser.parse_args()
+    return args
+
+if __name__ == '__main__':
+    args = get_args()
+    if args.video:
+        people_localization(args.video)

@@ -69,8 +69,8 @@ def edge_detection(im):
 
     # # PYR MEAN SHIFT FILTERING
     msf_image = cv2.pyrMeanShiftFiltering(im, sp=8, sr=8, maxLevel=3)
-    images.append(msf_image)
-    titles.append('Mean Shift Filtering')
+    # images.append(msf_image)
+    # titles.append('Mean Shift Filtering')
 
     hsv = cv2.cvtColor(msf_image, cv2.COLOR_RGB2HSV)
     gray = cv2.cvtColor(msf_image, cv2.COLOR_BGR2GRAY)
@@ -200,7 +200,7 @@ def elaborate_edge_detection(frame, show_images=False):
     if frame is None:
         sys.exit('Frame not found')
     frame_retinex = multiscale_retinex(frame)
-    edit_images, edit_titles = edge_detection(frame_retinex)
+    edit_images, edit_titles = edge_detection(frame)
     # plt_images(edit_images, edit_titles)
     list_bounding = get_bounding_boxes(edit_images[-1])
 

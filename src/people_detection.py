@@ -104,8 +104,6 @@ def get_args():
                         help='Path of cfg file', dest='cfgfile')
     parser.add_argument('-weightfile', type=str, default=PATH_YOLO_WEIGHTS,
                         help='Path of trained model.', dest='weightfile')
-    # parser.add_argument('-videofile', type=str, default='../data/videos/001/GOPR5818.MP4',
-    #                     help='Path of your video file.', dest='videofile')
     args = parser.parse_args()
     return args
 
@@ -130,7 +128,7 @@ if __name__ == '__main__':
         print("Classes {}".format(classes))
 
     list_videos = get_videos()
-    list_videos = ['../data/videos/002/20180206_114604.mp4']
+    list_videos = ['../data/videos/002/20180206_113059.mp4']
     # Video with real person 003/GOPR1940.MP4 - 002/20180206_113059.mp4
     list_videos = random.choices(list_videos, k=1)
     for video_name in list_videos:
