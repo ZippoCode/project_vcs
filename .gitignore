@@ -1,7 +1,7 @@
-./data
-./output
-./yolo/obj
-./src/__pycache__/*
+data/*
+output/*
+yolo/obj/*
+src/__pycache__/*
 *.xml
 *.iml
 *.weights
