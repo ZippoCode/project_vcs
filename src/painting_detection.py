@@ -3,55 +3,10 @@ import cv2
 import sys
 
 # Custom importing
+from parameters import PATH_DESTINATION_PAINTING_DETECTED
 from improve_quality import multiscale_retinex
 from plotting import plt_images, draw_paintings
-
-
-# def eight_directional_sobel_filter(image, stride=1):
-#     """
-#         Run a Multi-direction Sobel Operator
-#
-#     :param image:
-#     :param stride:
-#     :return:
-#     """
-#     height, width = image.shape
-#     image = cv2.resize(image, None, fx=0.1, fy=0.1,
-#                        interpolation=cv2.INTER_CUBIC)
-#     S_h = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
-#     S_v = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
-#     S_dl = np.array([[0, 1, 2], [-1, 0, 1], [-2, -1, 0]])
-#     S_dr = np.array([[2, 1, 0], [1, 0, -1], [0, -1, -2]])
-#
-#     kH, kW = S_h.shape
-#
-#     oH = int((image.shape[0] - (kH - 1) - 1) / stride) + 1
-#     oW = int((image.shape[1] - (kW - 1) - 1) / stride) + 1
-#
-#     out = np.zeros((oH, oW), )
-#     Hor = np.zeros((oH, oW), )
-#     Ver = np.zeros((oH, oW), )
-#
-#     for col in range(oH):
-#         for row in range(oW):
-#             Gx = np.sum(image[col * stride: col * stride + kH,
-#                         row * stride: row * stride + kW] * S_h)
-#             Gy = np.sum(image[col * stride: col * stride + kH,
-#                         row * stride: row * stride + kW] * S_v)
-#             G_dl = np.sum(image[col * stride: col * stride +
-#                                               kH, row * stride: row * stride + kW] * S_dl)
-#             G_dr = np.sum(image[col * stride: col * stride +
-#                                               kH, row * stride: row * stride + kW] * S_dr)
-#             M = np.sqrt(Gx ** 2 + Gy ** 2)
-#
-#             Hor[col, row] = Gx
-#             Ver[col, row] = Gy
-#             out[col, row] = M
-#
-#     # Normalize Magnitude and Direction
-#     out = cv2.normalize(out, None, 0, 255, cv2.NORM_MINMAX)
-#     out = cv2.resize(out, (width, height), interpolation=cv2.INTER_CUBIC)
-#     return out.astype(np.uint8)
+from read_write import read_video, store_video, save_paitings
 
 
 def edge_detection(im):
@@ -145,7 +100,7 @@ def sorted_points(contour):
     """
     middle_x, middle_y = 0, 0
     upper_left, upper_right, down_left, down_right = (
-        0, 0), (0, 0), (0, 0), (0, 0)
+                                                         0, 0), (0, 0), (0, 0), (0, 0)
     for point in range(contour.shape[0]):
         #   print("X: {}, Y : {}".format(contour[point, 0, 1], contour[point, 0, 0]))
         middle_x += contour[point, 0, 1]
@@ -190,39 +145,47 @@ def get_bounding_boxes(image):
     return list_bounding_boxes
 
 
-def elaborate_edge_detection(frame, show_images=False):
+def elaborate_edge_detection(frames, show_images=False):
     """
-        Elaborate an frame with Edge Detection and Rectification
-    :param frame: numpy.ndarray with shape (H, W, C)
+        Elaborate an video with Edge Detection
+    :param path_video: path of original video
     :return:
         - A list of bounding boxes (x, y, w, h)
     """
-    if frame is None:
-        sys.exit('Frame not found')
-    frame_retinex = multiscale_retinex(frame)
-    edit_images, edit_titles = edge_detection(frame)
-    # plt_images(edit_images, edit_titles)
-    list_bounding = get_bounding_boxes(edit_images[-1])
+    if frames is None or len(frames) == 0:
+        print("[ERROR] Frames ...")
+    print("Elaborating Edge Detection ...")
+    frame_results = []
+    try:
+        for num_frame, frame in enumerate(frames):
+            frame_retinex = multiscale_retinex(frame)
+            edit_images, edit_titles = edge_detection(frame_retinex)
+            list_bounding = get_bounding_boxes(edit_images[-1])
+            paintings = []
+            titles = []
+            result = draw_paintings(frame, list_bounding)
+            if show_images:
+                images = []
+                titles = []
+                images.append(frame)
+                titles.append("Original Frame")
+                images.append(frame_retinex)
+                titles.append('Multiscale retinex')
+                for image, title in zip(edit_images, edit_titles):
+                    images.append(image)
+                    titles.append(title)
+                result = draw_paintings(frame, list_bounding)
+                images.append(result)
+                titles.append('Final result')
+                plt_images(images, titles)
+            titles.append("Detection Frame")
+            paintings.append(result)
+            frame_results.append(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
+            print("[INFO] Elaborate {} of {} frames".format(num_frame + 1, len(frames)))
 
-    if show_images:
-        images = []
-        titles = []
-        # Append original frame
-        images.append(frame)
-        titles.append("Original Frame")
-        # Append frame with Retinex elaboration
-        images.append(frame_retinex)
-        titles.append('Multiscale retinex')
-        # Append all images from elaboration
-        for image in edit_images:
-            images.append(image)
-        for title in edit_titles:
-            titles.append(title)
-        # Drawing image with the rectangle, points and line
-        result = draw_paintings(frame, list_bounding)
-        images.append(result)
-        titles.append('Final result')
-        # Show the steps of image elaboration
-        plt_images(images, titles)
+    except KeyboardInterrupt:
+        print('Stop processing')
+        pass
 
-    return list_bounding
+
+    return frame_results

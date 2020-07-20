@@ -73,7 +73,7 @@ def save_paitings(dict_image, origin_path, folders=False):
         cv2.imwrite(path, image)
 
 
-def read_video(video_path, reduce_size=False, path=ROOT_PATH_VIDEOS):
+def read_video(video_path, reduce_size=False):
     """
         Given a path of video return a list of frame. One Frame each second.
         Each Frame is a image into RGB
@@ -85,7 +85,7 @@ def read_video(video_path, reduce_size=False, path=ROOT_PATH_VIDEOS):
     if not os.path.exists(video_path):
         sys.exit('[ERROR] File {} not found'.format(video_path))
     videodata = skvideo.io.vread(video_path)
-    print("[INFO] Read {} frames from {}".format(len(videodata), video_path))
+    print("[INFO] Read {} frames from {}".format(len(videodata), video_path.split('/')[-1]))
     if reduce_size:
         reduce_videodata = []
         for frame in videodata:
@@ -103,7 +103,7 @@ def read_video(video_path, reduce_size=False, path=ROOT_PATH_VIDEOS):
     return videodata
 
 
-def write_video(name, frames, fps=30, fourcc_name='MJPG', path=PATH_OUTPUT):
+def store_video(name, frames, fps=30, fourcc_name='MJPG', path=PATH_OUTPUT):
     """
         Store the video on the file system
 

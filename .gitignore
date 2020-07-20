@@ -2,6 +2,7 @@ data/*
 output/*
 yolo/obj/*
 src/__pycache__/*
+*.pyc
 *.xml
 *.iml
 *.weights
