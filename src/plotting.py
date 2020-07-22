@@ -10,22 +10,20 @@ def plt_images(images, titles):
     :param titles
     :return:
     """
-    if len(images) != len(titles) or len(images) > 12:
+    if len(images) != len(titles) or len(images) > 20:
         print("Too images. Edit this file")
         return
-    fig = plt.figure(figsize=(150, 200))
-    nrows = 4
-    ncols = 3
+    rows = int(len(images) / 3)
+    cols = int(len(images) / rows) if len(images) % 3 == 0 else int(len(images) / rows) + 1
+    fig, axes = plt.subplots(rows, cols)
+    ax = axes.ravel()
     for img in range(len(images)):
-        fig.add_subplot(nrows, ncols, img + 1)
-        if (len(images[img].shape) < 3):
-            plt.imshow(images[img], cmap='gray')
+        if len(images[img].shape) < 3:
+            ax[img].imshow(images[img], cmap='gray')
         else:
-            plt.imshow(images[img])
-        plt.title(titles[img])
-        plt.xticks([])
-        plt.yticks([])
-
+            ax[img].imshow(images[img])
+        #ax[img].set_title(titles[img])
+        plt.tight_layout()
     plt.show()
 
 

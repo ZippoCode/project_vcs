@@ -2,7 +2,6 @@ import cv2
 import sys
 import _pickle as pickle
 import skvideo.io
-import matplotlib.pyplot as plt
 
 # Custom importing
 from parameters import *
@@ -10,23 +9,23 @@ from parameters import *
 
 def save_bounding_boxes(bounding_boxes_dict, name_file, path=PATH_OUTPUT_DETECTED_BBOX):
     if not os.path.exists(path):
-        print('\t> Creating folder ...')
+        print('[INFO] Creating folder ...')
         Path(path).mkdir(parents=True, exist_ok=True)
-    with open(PATH_OUTPUT_DETECTED_BBOX + name_file + '.pck', 'wb') as file:
+    with open(path + name_file + '.pck', 'wb') as file:
         pickle.dump(bounding_boxes_dict, file)
-    print('\t> File storage ...')
+    print('File storage ...')
 
 
 def read_bounding_boxes(filename, path=PATH_OUTPUT_DETECTED_BBOX):
     complete_path = path + filename + '.pck'
     if not os.path.exists(complete_path):
-        sys.exit('File not found')
+        sys.exit('[ERROR] File not found')
     with open(complete_path, 'rb') as file:
         database = pickle.load(file)
     bounding_boxes = dict()
     for frame in database:
         bounding_boxes[frame] = database[frame]
-    print("\t> Reading file {} with {} frames".format(filename, len(bounding_boxes)))
+    print("[INFO] Reading file {} with {} frames".format(filename, len(bounding_boxes)))
     return bounding_boxes
 
 
@@ -79,16 +78,16 @@ def read_video(video_path, reduce_size=False):
         Each Frame is a image into RGB
     :param video_path: string - Path of video
     :param reduce_size: bool - If it is True the algorithm reduce the size of frame
+
     :return:
             name_video: list<numpy.ndarray>
     """
     if not os.path.exists(video_path):
         sys.exit('[ERROR] File {} not found'.format(video_path))
-    videodata = skvideo.io.vread(video_path)
-    print("[INFO] Read {} frames from {}".format(len(videodata), video_path.split('/')[-1]))
-    if reduce_size:
-        reduce_videodata = []
-        for frame in videodata:
+    videodata = skvideo.io.vreader(video_path)
+    frames = []
+    for frame in videodata:
+        if reduce_size:
             h, w = int(frame.shape[0]), int(frame.shape[1])
             thr_w, thr_h = 500, 500
             if h > thr_h or w > thr_w:
@@ -97,10 +96,9 @@ def read_video(video_path, reduce_size=False):
                 w = int(frame.shape[1] * min(h_ratio, w_ratio))
                 h = int(frame.shape[0] * min(h_ratio, w_ratio))
                 frame = cv2.resize(frame, (w, h), interpolation=cv2.INTER_AREA)
-            reduce_videodata.append(frame)
-            print("[INFO] Reduce size of frames")
-            return reduce_videodata
-    return videodata
+        frames.append(frame)
+    print("[INFO] Read {} frames from {}".format(len(frames), video_path.split('/')[-1]))
+    return frames
 
 
 def store_video(name, frames, fps=30, fourcc_name='MJPG', path=PATH_OUTPUT):

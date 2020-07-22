@@ -1,10 +1,7 @@
-import numpy as np
-import cv2
-import sys
+import numpy as np, cv2
 
 # Custom importing
 from parameters import SIGMA
-
 
 def multiscale_retinex(image):
     """
@@ -22,8 +19,6 @@ def multiscale_retinex(image):
     if len(image.shape) != 3:
         print('Image need have shape (H, W, C)')
         return
-    H, W, C = image.shape
-    image = cv2.resize(image, (int(H / 2), int(W / 2)), interpolation=cv2.INTER_AREA)
     low_clip = 0.01
     high_clip = 0.99
     image = image.astype(np.float64) + 1.0
@@ -61,7 +56,5 @@ def multiscale_retinex(image):
             out[y, x, 0] = A * image[y, x, 0]
             out[y, x, 1] = A * image[y, x, 1]
             out[y, x, 2] = A * image[y, x, 2]
-
-    out = cv2.resize(out, (W, H), interpolation=cv2.INTER_AREA)
 
     return np.uint8(out - 1.0)

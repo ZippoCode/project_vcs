@@ -14,6 +14,7 @@ PATH_OUTPUT = os.path.join(__location__, 'output/')
 PATH_DESTINATION_PERSON_DETECTED = os.path.join(__location__, 'output/person_detected/')
 PATH_DESTINATION_PAINTING_DETECTED = os.path.join(__location__, 'output/painting_detected/')
 PATH_OUTPUT_DETECTED_BBOX = os.path.join(__location__, 'output/bbox/')
+DESTINATION_PAINTING_BBOX = os.path.join(__location__, 'output/bbox/painting/')
 
 # Yolo
 PATH_YOLO_CFG = os.path.join(__location__, 'yolo/cfg/yolov3-obj-test.cfg')
@@ -29,6 +30,8 @@ EROSION_ITERATIONS = 3
 
 # MULTI-SCALE RETINEX
 SIGMA = [15, 80, 250]
+
+# PAINTING DETECTION
 
 # Rectification
 ENTROPY_THRESHOLD = 2.0
