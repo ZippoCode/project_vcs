@@ -3,7 +3,7 @@ import random, argparse, cv2, os, numpy as np, sys
 import matplotlib.pyplot as plt
 
 from painting_retrieval import match_paitings
-from parameters import ROOT_PATH_DETECTED, PATH_PAINTINGS_DB
+from parameters import DESTINATION_PAINTINGS_RECTIFIED, PATH_PAINTINGS_DB
 
 
 def arg_parse():
@@ -22,7 +22,7 @@ args = arg_parse()
 num_example = args.num_example
 
 path_paitings =[]
-for root, dirnames, filenames in os.walk(ROOT_PATH_DETECTED):
+for root, dirnames, filenames in os.walk(DESTINATION_PAINTINGS_RECTIFIED):
     for filename in filenames:
         if filename.endswith('.jpg'):
             path_paitings.append(os.path.join(root, filename))

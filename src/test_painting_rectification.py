@@ -1,10 +1,8 @@
-import random, argparse, cv2
-
-import matplotlib.pyplot as plt
+import random, argparse, cv2, os
 
 from read_write import get_videos, read_video, save_paitings, read_bounding_boxes
 from painting_rectification import rectification
-from parameters import DESTINATION_PAINTING_BBOX, PATH_DESTINATION_PAINTING_DETECTED
+from parameters import DESTINATION_PAINTING_BBOX, DESTINATION_VIDEOS_PAINTINGS_DETECTED
 
 
 def arg_parse():
@@ -15,7 +13,7 @@ def arg_parse():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--num", dest='num_example', help='The number of video which do you want detect',
-                        default=1, type=int)
+                        default=-1, type=int)
     parser.add_argument("--show", dest='show_images', help='If True you can see the results of frame',
                         default=False, type=bool)
     parser.add_argument("--resize", dest='resize_frame', help='If True the algorithm reduce the size of frames',
@@ -31,34 +29,61 @@ show_images = args.show_images
 resize_frame = args.resize_frame
 folder = args.folder
 
-path_videos = get_videos()
-path_videos = random.choices(path_videos, k=num_example if num_example > 0 else len(path_videos))
-
-path_videos = ['../data/videos/003/GOPR1930.MP4']
-
 print("Start Processing ...")
-print("[INFO] Number of video which will be elaborated: {}".format(len(path_videos)))
-print("[INFO] Show frame elaboration: {}".format(show_images))
-print("[INFO] Reduce size of image: {}".format(resize_frame))
+# print("[INFO] Number of video which will be elaborated: {}".format(len(path_videos)))
+# print("[INFO] Show frame elaboration: {}".format(show_images))
+# print("[INFO] Reduce size of image: {}".format(resize_frame))
+
+file_name = None
+path_video = None
+height, width = (0, 0)
+total_frame = 0
+bounding_boxes_dict = dict()
+
+# path_videos = get_videos(folder_video=DESTINATION_VIDEOS_PAINTINGS_DETECTED)
+# path_videos = random.choices(path_videos, k=num_example if num_example > 0 else len(path_videos))
+
+# path_videos = ['../data/videos/002/20180206_112306.mp4']
+
+path_result = [file for file in os.listdir(folder) if os.path.isfile(os.path.join(folder, file))]
 
 try:
-    while len(path_videos) > 0:
-        path_video = random.choice(path_videos)
-        path_videos.remove(path_video)
-        file_name = path_video.split('/')[-1]
+    while len(path_result) > 0:
+        path_pickle_file = random.choice(path_result)
+        path_result.remove(path_pickle_file)
+        file_name = path_pickle_file.split('/')[-1]
         file_name = file_name.split('.')[0]
-        bounding_boxes_dict = read_bounding_boxes(file_name, path=folder)
-        frames = read_video(path_video, reduce_size=resize_frame)
+        pickle_file = read_bounding_boxes(file_name, path=folder)
+        if 'Name file' in pickle_file:
+            print('[INFO] Elaborated file {}'.format(pickle_file['Name file']))
+        if 'Path video' in pickle_file:
+            path_video = pickle_file['Path video']
+            print('[INFO] Path: {}'.format(path_video))
+        if 'Total frame' in pickle_file:
+            print('[INFO] Total Number frame: {}'.format(pickle_file['Total frame']))
+        if 'Resolution frame' in pickle_file:
+            height, width = pickle_file['Resolution frame']
+            print('[INFO] Frame Resolution: {}'.format((height, width)))
+        if 'Bounding boxes' in pickle_file:
+            bounding_boxes_dict = pickle_file['Bounding boxes']
+        frames = read_video(video_path=path_video)
         titles = []
-        paintings_rectified = dict()
         for frame, (num_frame, bounding_boxes_frame) in zip(frames, bounding_boxes_dict.items()):
+            paintings_rectified = dict()
             for num, bounding_boxes in enumerate(bounding_boxes_frame):
-                painting = rectification(frame, bounding_boxes)
+                height_frame, width_frame = frame.shape[:2]
+                upper_left, upper_right, down_left, down_right = bounding_boxes
+                scale = round(height_frame / height)
+                upper_left = (upper_left[0] * scale, upper_left[1] * scale)
+                upper_right =  (upper_right[0] * scale, upper_right[1] * scale)
+                down_left = (down_left[0] * scale, down_left[1] * scale)
+                down_right = (down_right[0] * scale, down_right[1] * scale)
+                painting = rectification(frame, (upper_left, upper_right, down_left, down_right))
                 painting = cv2.cvtColor(painting, cv2.COLOR_BGR2RGB)
-                name = "Painting #{} Frame{}".format(num, num_frame)
+                name = "Frame{} Painting #{} ".format(num_frame, num)
                 paintings_rectified[name] = painting
-        print("Saving painting rectified")
-        save_paitings(paintings_rectified, path_video, folders=True)
+            save_paitings(paintings_rectified, folder=True, filename=file_name)
+        print("[INFO] Elaborated {} frames".format(num_frame))
 
 except KeyboardInterrupt:
     print('Stop processing')

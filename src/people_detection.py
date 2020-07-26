@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 # Custom importing
 from parameters import *
-from read_write import get_videos, read_video, write_video, save_bounding_boxes
+from read_write import get_videos, read_video, store_video, save_bounding_boxes
 
 
 def drawPred(frame, classes, classId, conf, left, top, right, bottom):
@@ -67,7 +67,7 @@ def postprocess(frame, outs, classes):
 
 
 def detect_person(frames, net, classes):
-    if frames is None or len(frames) == 0:
+    if frames is None:
         print('Frames not found. Return ...')
         return
     frames_detected = []
@@ -88,7 +88,7 @@ def detect_person(frames, net, classes):
             frames_detected.append(cv2.cvtColor(frame.astype(np.uint8), cv2.COLOR_RGB2BGR))
             time_end = cv2.getTickCount()
             time_elaboration = (time_end - time_start) / cv2.getTickFrequency()
-            print('\t> Elaborate {}/{} frame in {} s'.format(num + 1, len(frames), time_elaboration))
+            print('Elaborate {} frame in {} s'.format(num + 1, time_elaboration))
 
     except KeyboardInterrupt:
         print('Stop processing')
@@ -135,10 +135,10 @@ if __name__ == '__main__':
         if not os.path.isfile(video_name):
             print("Input video file ", video_name, " doesn't exist")
             sys.exit(1)
-        frames = read_video(video_name, reduce_size=False)
+        frames = read_video(video_name)
         print("Start processing")
         people_detected, frame_with_bbox_dict = detect_person(frames, net, classes)
         output_name = video_name.split('/')[-1][:-4]
-        write_video(output_name + '.avi', people_detected, fps=30, path=PATH_DESTINATION_PERSON_DETECTED)
+        store_video(output_name + '.avi', people_detected, fps=30, path=PATH_DESTINATION_PERSON_DETECTED)
         save_bounding_boxes(frame_with_bbox_dict, output_name)
         print('Done processing')

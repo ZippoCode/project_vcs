@@ -1,18 +1,27 @@
 Problems with video
-../data/videos/014/VID_20180529_112517.mp4 -> Correct
-../data/videos/009/IMG_2653.MOV (rotation) -> Correct
-../data/videos/009/IMG_2657.MOV (rotation) -> Correct
-../data/videos/011/3.mp4 -> Correct
-../data/videos/003/GOPR1930.MP4 -- not too bad
-../data/videos/005/GOPR2045.MP4 -> Correct
+
 ../data/videos/001/GOPR5827.MP4 -- not too bad
+../data/videos/003/GOPR1938.MP4 -> BAD RESULT
+../data/videos/003/GOPR1925.MP4 -> TOO MANY LIGHT
+../data/videos/003/GOPR1932.MP4 -> BAD RESULT
+../data/videos/003/GOPR1933.MP4 -> BAD RESULT
+../data/videos/004/IMG_3816.MOV -> BAD RESULT
+../data/videos/004/IMG_3802.MOV -> The painting is a circle
+../data/videos/005/GOPR2051.MP4 -> CIRCLE PAINTING
+../data/videos/005/GOPR2052.MP4 (Bad Result)
+../data/videos/005/GOPR2045.MP4 -> Correct
+../data/videos/007/IMG_7857.MOV -> Perfect
+../data/videos/009/IMG_2656.MOV -> Perfect
+../data/videos/009/IMG_2653.MOV (rotation) -> Correct
+../data/videos/009/IMG_2662.MOV
+../data/videos/009/IMG_2657.MOV (rotation) -> Correct
 ../data/videos/010/VID_20180529_112706.mp4 -- Correct
 ../data/videos/010/VID_20180529_112722.mp4 -- Correct
-../data/videos/003/GOPR1923.MP4 -> Error
-../data/videos/004/IMG_3802.MOV -> The painting is a circle
+../data/videos/010/VID_20180529_112614.mp4 (Bad result. There is a octagon painting)
+../data/videos/011/3.mp4 -> Correct
+../data/videos/012/IMG_4082.MOV -> NOT PERFECT
+../data/videos/014/VID_20180529_112517.mp4 -> Correct
 ../data/videos/014/VID_20180529_112517.mp4
-../data/videos/009/IMG_2662.MOV
-../data/videos/003/GOPR1938.MP4 -> BAD RESULT
 
 # Painting presents into paiting_db
 IMG_3814_#1.jpg -> Correct

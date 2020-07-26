@@ -77,7 +77,6 @@ def match_paitings(query_painting):
                     database_matches[image] += 1
 
     print('\t> Sorting ....')
-    sorted_matches = sorted(database_matches.items(),
-                            key=lambda x: x[1], reverse=True)
+    sorted_matches = sorted(database_matches.items(), key=lambda x: x[1], reverse=True)
     print('End matching')
     return sorted_matches

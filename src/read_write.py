@@ -18,15 +18,18 @@ def save_bounding_boxes(bounding_boxes_dict, name_file, path=PATH_OUTPUT_DETECTE
 
 def read_bounding_boxes(filename, path=PATH_OUTPUT_DETECTED_BBOX):
     complete_path = path + filename + '.pck'
+    bounding_boxes = dict()
     if not os.path.exists(complete_path):
-        sys.exit('[ERROR] File not found')
+        print('[ERROR] File not found')
+        return bounding_boxes
     with open(complete_path, 'rb') as file:
         database = pickle.load(file)
-    bounding_boxes = dict()
     for frame in database:
         bounding_boxes[frame] = database[frame]
-    print("[INFO] Reading file {} with {} frames".format(filename, len(bounding_boxes)))
     return bounding_boxes
+
+
+ext = (".mp4", ".mov", ".avi")
 
 
 def get_videos(folder_video=ROOT_PATH_VIDEOS):
@@ -36,13 +39,10 @@ def get_videos(folder_video=ROOT_PATH_VIDEOS):
     """
     path_videos = list()
     try:
-        for folder in os.listdir(folder_video):
-            if folder == '.DS_Store':
-                continue
-            path = os.path.join(folder_video, folder)
-            for file in os.listdir(path):
-                if file.endswith(".mp4") or file.endswith(".MP4") or file.endswith(".MOV") or file.endswith(".jpg"):
-                    path_video = os.path.join(path, file)
+        for folder, subfolder, filenames in os.walk(folder_video):
+            for file in filenames:
+                if file.lower().endswith(tuple(ext)):
+                    path_video = os.path.join(folder, file)
                     path_videos.append(path_video)
     except FileNotFoundError:
         print('File not found into {}\nExit ...'.format(folder_video))
@@ -51,28 +51,29 @@ def get_videos(folder_video=ROOT_PATH_VIDEOS):
     return path_videos
 
 
-def save_paitings(dict_image, origin_path, folders=False):
-    file_name = origin_path.split('/')[-1]
-    file_name = file_name.split('.')[0]
-    folder = origin_path.split('/')[-2]
+def save_paitings(dict_image, destination_path=DESTINATION_PAINTINGS_RECTIFIED, folder=False, filename=None):
+    """
 
-    if folders:
-        output_path = ROOT_PATH_DETECTED + '{}/{}/'.format(folder, file_name)
-    else:
-        output_path = ROOT_PATH_DETECTED
-
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
-
+    :param dict_image:
+    :param destination_path:
+    :param folder:
+    :param filename:
+    :return:
+    """
+    if folder and filename is None:
+        print("If you want save a specific format you need pass the filename")
+        return False
+    if folder:
+        destination_path = destination_path + '{}/'.format(filename)
+    if not os.path.exists(destination_path):
+        os.makedirs(destination_path)
     for title, image in dict_image.items():
-        if folders:
-            path = output_path + "{}.jpg".format(title)
-        else:
-            path = output_path + '{}_{}_{}.jpg'.format(folder, file_name, title)
+        path = destination_path + '{}.jpg'.format(title)
         cv2.imwrite(path, image)
+    return True
 
 
-def read_video(video_path, reduce_size=False):
+def read_video(video_path):
     """
         Given a path of video return a list of frame. One Frame each second.
         Each Frame is a image into RGB
@@ -83,22 +84,11 @@ def read_video(video_path, reduce_size=False):
             name_video: list<numpy.ndarray>
     """
     if not os.path.exists(video_path):
-        sys.exit('[ERROR] File {} not found'.format(video_path))
+        print('[ERROR] File {} not found'.format(video_path))
+        return []
     videodata = skvideo.io.vreader(video_path)
-    frames = []
-    for frame in videodata:
-        if reduce_size:
-            h, w = int(frame.shape[0]), int(frame.shape[1])
-            thr_w, thr_h = 500, 500
-            if h > thr_h or w > thr_w:
-                h_ratio = thr_h / h
-                w_ratio = thr_w / w
-                w = int(frame.shape[1] * min(h_ratio, w_ratio))
-                h = int(frame.shape[0] * min(h_ratio, w_ratio))
-                frame = cv2.resize(frame, (w, h), interpolation=cv2.INTER_AREA)
-        frames.append(frame)
-    print("[INFO] Read {} frames from {}".format(len(frames), video_path.split('/')[-1]))
-    return frames
+    print('Video readed.')
+    return videodata
 
 
 def store_video(name, frames, fps=30, fourcc_name='MJPG', path=PATH_OUTPUT):

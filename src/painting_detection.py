@@ -1,8 +1,6 @@
 import numpy as np
 import cv2
 
-from parameters import *
-
 
 def edge_detection(im):
     """
@@ -23,30 +21,40 @@ def edge_detection(im):
     images.append(msf_image)
     titles.append("Mean Shift Filtering")
 
+    # Apply Threshold on S-Channel
     hsv = cv2.cvtColor(msf_image, cv2.COLOR_RGB2HSV)
-    gray = cv2.cvtColor(msf_image, cv2.COLOR_BGR2GRAY)
+    h_space, s_space, v_space = cv2.split(hsv)
+    s_space_threshold = cv2.adaptiveThreshold(v_space, maxValue=np.max(s_space),
+                                              adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                              thresholdType=cv2.THRESH_BINARY_INV, blockSize=11, C=2)
+    images.append(s_space_threshold)
+    titles.append('Threshold S-channel in HSV space')
 
-    H, S, V = np.arange(3)
-    gray = cv2.addWeighted(hsv[:, :, V], 0.35, gray, 0.65, 0)
-    # thresh, _ = cv2.threshold(gray, 120, 255, cv2.THRESH_OTSU)
-    # mask = (gray < thresh).astype(np.uint8) * 255
-
-    average_mean_V = int(np.average(gray))
-    ret, mask = cv2.threshold(gray, average_mean_V, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C + cv2.THRESH_MASK)
-    # mask = 255 - mask
-    mask = cv2.bitwise_not(mask)
-    images.append(mask)
-    titles.append('Threshold on V')
-
-    # Erosion and dilation
-    img_dilate = cv2.dilate(mask, np.ones((5, 5), dtype=np.uint8), iterations=2)
-    img_erode = cv2.erode(img_dilate, np.ones((3, 3), dtype=np.uint8), iterations=3)
-    images.append(img_erode)
+    # # Erosion and dilation
+    img_dilate = cv2.dilate(s_space_threshold, np.ones((3, 3), dtype=np.uint8), iterations=1)
+    img_erose = cv2.dilate(img_dilate, np.ones((3, 3), dtype=np.uint8), iterations=1)
+    images.append(img_erose)
     titles.append('Erosion and dilation')
 
+    # Distance Transform
+    image_dist = cv2.distanceTransform(img_erose, distanceType=cv2.DIST_C, maskSize=3)
+    cv2.normalize(image_dist, image_dist, alpha=0.0, beta=1.0, norm_type=cv2.NORM_MINMAX)
+    _, image_dist = cv2.threshold(image_dist, 0.2, 1.0, cv2.THRESH_BINARY)
+    image_dist = cv2.dilate(image_dist, kernel=np.ones((3, 3), dtype=np.uint8))
+    image_dist = image_dist.astype('uint8')
+    images.append(image_dist)
+    titles.append('Image Transform')
+
+    # Apply Canny on V-Channel Space
+    # img_canny = cv2.Canny(img_erose, threshold1=np.mean(msf_image), threshold2=np.max(msf_image))
+    # images.append(img_canny)
+    # titles.append('Canny Edge Detection')
+
     # Connected components
-    im = connected_components_segmentation(mask)
-    images.append(im)
+    im_ccs = connected_components_segmentation(image_dist)
+    images.append(im_ccs)
+
+
     titles.append('Connected components Image')
 
     return images, titles
@@ -65,8 +73,7 @@ def connected_components_segmentation(im):
     for label in labels:
         mask = np.zeros_like(labeled_img, dtype=np.uint8)
         mask[labeled_img == label] = 255
-        contours, _ = cv2.findContours(
-            mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         hull = []
         for cnt in contours:
             hull.append(cv2.convexHull(cnt, False))
@@ -75,56 +82,3 @@ def connected_components_segmentation(im):
             hull_mask = cv2.drawContours(hull_mask, hull, i, 255, -1, 8)
         im = np.clip(im + hull_mask, 0, 255)
     return im
-
-
-def sorted_points(contour):
-    """
-        Given a contour with shape (4, 1, 2) and return the sorted points
-        Upper Left, Upper Right, Down Left, Down Right.
-    :param contour:
-    :return:
-    """
-    middle_x, middle_y = 0, 0
-    upper_left, upper_right, down_left, down_right = (0, 0), (0, 0), (0, 0), (0, 0)
-    for point in range(contour.shape[0]):
-        #   print("X: {}, Y : {}".format(contour[point, 0, 1], contour[point, 0, 0]))
-        middle_x += contour[point, 0, 1]
-        middle_y += contour[point, 0, 0]
-    middle_x /= 4
-    middle_y /= 4
-    for point in range(contour.shape[0]):
-        if contour[point, 0, 1] < middle_x and contour[point, 0, 0] < middle_y:
-            upper_left = (contour[point, 0, 0], contour[point, 0, 1])
-        elif contour[point, 0, 1] < middle_x and contour[point, 0, 0] > middle_y:
-            upper_right = (contour[point, 0, 0], contour[point, 0, 1])
-        elif contour[point, 0, 1] > middle_x and contour[point, 0, 0] < middle_y:
-            down_left = (contour[point, 0, 0], contour[point, 0, 1])
-        elif contour[point, 0, 1] > middle_x and contour[point, 0, 0] > middle_y:
-            down_right = (contour[point, 0, 0], contour[point, 0, 1])
-        else:
-            return
-    if (upper_right[0] - upper_left[0]) < 75 or (down_left[1] - upper_left[1]) < 75:
-        return
-    if (down_right[0] - down_left[0]) < 75 or (down_right[1] - upper_right[1]) < 75:
-        return
-    return upper_left, upper_right, down_left, down_right
-
-
-def get_bounding_boxes(image):
-    """
-        Given an image it looks for the paintings and returns a list of bounding boxes
-
-    :param image:
-    :return: list of bounding boxes (x, y, w, h)
-    """
-    list_bounding_boxes = []
-    contours, hierarchy = cv2.findContours(image, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_TC89_L1)
-    for contour in contours:
-        epsilon = cv2.arcLength(contour, True) * 0.06
-        approx = cv2.approxPolyDP(contour, epsilon=epsilon, closed=True)
-        if len(approx) == 4 and cv2.contourArea(contour) > 5000:
-            sorted_approx = sorted_points(approx)
-            if sorted_approx is not None and not (0, 0) in sorted_approx:
-                list_bounding_boxes.append(sorted_approx)
-
-    return list_bounding_boxes

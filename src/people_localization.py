@@ -25,11 +25,11 @@ def people_localization(video_name):
         print('Real person not found. Return ...')
         return
     print('\t> Real person found')
-    frames = read_video(video_name, reduce_size=False)
+    frames = read_video(video_name)
 
-    if len(frames) != len(bbox.keys()):
-        print("The video and bounding boxes don\'t have same size. Return!")
-        return
+    # if len(frames) != len(bbox.keys()):
+    #     print("The video and bounding boxes don\'t have same size. Return!")
+    #     return
 
     unique_paintings = dict()
     list_retrieval = dict()
@@ -42,7 +42,6 @@ def people_localization(video_name):
                 x_center = int(x + width / 2)
                 y_center = int(y + height / 2)
                 for x, y in unique_paintings.keys():
-                    print(num_frames, unique_paintings.keys())
                     distance = np.sqrt((x - x_center) ** 2 + (y - y_center) ** 2)
                     if distance < 100:
                         unique_found = True
@@ -72,6 +71,7 @@ def people_localization(video_name):
     location = rooms_map_highlight(room, (0, 255, 0))
     plt.imshow(location)
     plt.show()
+
 
 def room_dict(image_name):
     if image_name is None:
@@ -121,13 +121,14 @@ def roi_labeling(id, image, coordinate, image_name=None):
 
     return image
 
+
 def get_args():
-    parser = argparse.ArgumentParser(
-        'Test your image or video by trained model.')
+    parser = argparse.ArgumentParser('Test your image or video by trained model.')
     parser.add_argument('-video', type=str, default="../output/person_detected/20180206_113059.avi",
                         help='Path of cfg file', dest='video')
     args = parser.parse_args()
     return args
+
 
 if __name__ == '__main__':
     args = get_args()
