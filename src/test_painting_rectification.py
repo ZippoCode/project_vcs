@@ -1,8 +1,8 @@
 import random, argparse, cv2, os
 
-from read_write import get_videos, read_video, save_paitings, read_bounding_boxes
-from painting_rectification import rectification
-from parameters import DESTINATION_PAINTING_BBOX, DESTINATION_VIDEOS_PAINTINGS_DETECTED
+from read_write import read_video, save_paitings, read_bounding_boxes
+from painting_rectification.painting_rectification import rectification
+from constants.parameters import DESTINATION_PAINTINGS_DETECTED, DESTINATION_PAINTINGS_RECTIFIED
 
 
 def arg_parse():
@@ -18,8 +18,12 @@ def arg_parse():
                         default=False, type=bool)
     parser.add_argument("--resize", dest='resize_frame', help='If True the algorithm reduce the size of frames',
                         default=True, type=bool)
-    parser.add_argument("--folder", dest='folder', help='The folder where the list of bounding boxes will be saved',
-                        default=DESTINATION_PAINTING_BBOX, type=str)
+    parser.add_argument("--source", dest='source_folder',
+                        help='The source folder of painting detected',
+                        default=DESTINATION_PAINTINGS_DETECTED, type=str)
+    parser.add_argument("--dest", dest='destination_folder',
+                        help='The folder where the list of bounding boxes will be saved',
+                        default=DESTINATION_PAINTINGS_RECTIFIED, type=str)
     return parser.parse_args()
 
 
@@ -27,7 +31,8 @@ args = arg_parse()
 num_example = args.num_example
 show_images = args.show_images
 resize_frame = args.resize_frame
-folder = args.folder
+source_folder = args.source_folder
+destination_folder = args.destination_folder
 
 print("Start Processing ...")
 # print("[INFO] Number of video which will be elaborated: {}".format(len(path_videos)))
@@ -45,15 +50,22 @@ bounding_boxes_dict = dict()
 
 # path_videos = ['../data/videos/002/20180206_112306.mp4']
 
-path_result = [file for file in os.listdir(folder) if os.path.isfile(os.path.join(folder, file))]
+pickles = []
+for root, _, file_names in os.walk(source_folder):
+    for filename in file_names:
+        if filename.lower().endswith('.pck'):
+            pickles.append(os.path.join(root, filename))
+
+pickles = random.choices(pickles, k=num_example if num_example > 0 else len(pickles))
+print("[INFO] Number of video which will be elaborated: {}".format(len(pickles)))
 
 try:
-    while len(path_result) > 0:
-        path_pickle_file = random.choice(path_result)
-        path_result.remove(path_pickle_file)
+    while len(pickles) > 0:
+        path_pickle_file = random.choice(pickles)
+        pickles.remove(path_pickle_file)
         file_name = path_pickle_file.split('/')[-1]
         file_name = file_name.split('.')[0]
-        pickle_file = read_bounding_boxes(file_name, path=folder)
+        pickle_file = read_bounding_boxes(file_name, path=source_folder)
         if 'Name file' in pickle_file:
             print('[INFO] Elaborated file {}'.format(pickle_file['Name file']))
         if 'Path video' in pickle_file:
@@ -75,15 +87,14 @@ try:
                 upper_left, upper_right, down_left, down_right = bounding_boxes
                 scale = round(height_frame / height)
                 upper_left = (upper_left[0] * scale, upper_left[1] * scale)
-                upper_right =  (upper_right[0] * scale, upper_right[1] * scale)
+                upper_right = (upper_right[0] * scale, upper_right[1] * scale)
                 down_left = (down_left[0] * scale, down_left[1] * scale)
                 down_right = (down_right[0] * scale, down_right[1] * scale)
                 painting = rectification(frame, (upper_left, upper_right, down_left, down_right))
                 painting = cv2.cvtColor(painting, cv2.COLOR_BGR2RGB)
-                name = "Frame{} Painting #{} ".format(num_frame, num)
+                name = "{}_frame{}_painting{}".format(file_name, num_frame, num)
                 paintings_rectified[name] = painting
             save_paitings(paintings_rectified, folder=True, filename=file_name)
-        print("[INFO] Elaborated {} frames".format(num_frame))
 
 except KeyboardInterrupt:
     print('Stop processing')

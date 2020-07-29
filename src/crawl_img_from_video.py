@@ -1,6 +1,5 @@
 import cv2
 import math
-import os
 
 # # Custom importing
 from read_write import get_videos

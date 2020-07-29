@@ -37,24 +37,18 @@ def edge_detection(im):
     titles.append('Erosion and dilation')
 
     # Distance Transform
-    image_dist = cv2.distanceTransform(img_erose, distanceType=cv2.DIST_C, maskSize=3)
+    image_dist = cv2.distanceTransform(img_erose, distanceType=cv2.DIST_L1, maskSize=3)
     cv2.normalize(image_dist, image_dist, alpha=0.0, beta=1.0, norm_type=cv2.NORM_MINMAX)
-    _, image_dist = cv2.threshold(image_dist, 0.2, 1.0, cv2.THRESH_BINARY)
+    threshold_dilate = 0.25
+    _, image_dist = cv2.threshold(image_dist, threshold_dilate, 1.0, cv2.THRESH_BINARY)
     image_dist = cv2.dilate(image_dist, kernel=np.ones((3, 3), dtype=np.uint8))
     image_dist = image_dist.astype('uint8')
     images.append(image_dist)
     titles.append('Image Transform')
 
-    # Apply Canny on V-Channel Space
-    # img_canny = cv2.Canny(img_erose, threshold1=np.mean(msf_image), threshold2=np.max(msf_image))
-    # images.append(img_canny)
-    # titles.append('Canny Edge Detection')
-
     # Connected components
     im_ccs = connected_components_segmentation(image_dist)
     images.append(im_ccs)
-
-
     titles.append('Connected components Image')
 
     return images, titles

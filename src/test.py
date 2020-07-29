@@ -4,32 +4,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # Custom importing
-from painting_rectification import rectification, is_painting
 from painting_retrieval import match_paitings
-from parameters import *
-from people_localization import room_dict, roi_labeling
-
-
-
-def painting_retrieval(num_example=1):
-    path_paitings = [file for file in os.listdir(ROOT_PATH_DETECTED) if file.endswith('.jpg')]
-    paiting_choices = random.choices(path_paitings, k=num_example if num_example > 0 else len(path_paitings))
-    for name_paiting in paiting_choices:
-        painting = cv2.imread(ROOT_PATH_DETECTED + name_paiting, cv2.IMREAD_COLOR)
-        list_retrieval = match_paitings(painting)
-        if list_retrieval is not None and len(list_retrieval) > 0:
-            best_match, similarity = list_retrieval[0]
-            retrieval = cv2.imread(PATH_PAINTINGS_DB + best_match, cv2.IMREAD_COLOR)
-            HP, WP, CP = painting.shape
-            HB, WB, CB = retrieval.shape
-            result = np.empty((max(HP, HB), WP + WB, CP), np.uint8)
-            result[:HP, :WP, :] = painting
-            result[:HB, WP:WP + WB, :] = retrieval
-            result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-            plt.imshow(result)
-            plt.show()
-        else:
-            print("Nothing match found")
+from constants.parameters import *
 
 
 # def localization(image_name):

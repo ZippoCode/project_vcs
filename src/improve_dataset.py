@@ -1,10 +1,8 @@
-import os, warnings, sys
+import warnings, sys
 from os.path import isfile, join
-import matplotlib.pyplot as plt
+from data_augmentation.editing import *
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
-
-from editing import *
 
 
 def create_images(images, labels):

@@ -25,26 +25,26 @@ def find_vertical_seam(img, energy):
 
     # Dynamic programming; iterate using double loop and compute
     # the paths efficiently
-    for row in range(rows-1):
+    for row in range(rows - 1):
         for col in range(cols):
             if col != 0:
-                if dist_to[row+1, col-1] > dist_to[row, col] + energy[row+1, col-1]:
-                    dist_to[row+1, col-1] = dist_to[row, col] + \
-                        energy[row+1, col-1]
-                    edge_to[row+1, col-1] = 1
-            if dist_to[row+1, col] > dist_to[row, col] + energy[row+1, col]:
-                dist_to[row+1, col] = dist_to[row, col] + energy[row+1, col]
-                edge_to[row+1, col] = 0
-            if col != cols-1:
-                if dist_to[row+1, col+1] > dist_to[row, col] + energy[row+1, col+1]:
-                    dist_to[row+1, col+1] = dist_to[row, col] + \
-                        energy[row+1, col+1]
-                    edge_to[row+1, col+1] = -1
+                if dist_to[row + 1, col - 1] > dist_to[row, col] + energy[row + 1, col - 1]:
+                    dist_to[row + 1, col - 1] = dist_to[row, col] + \
+                                                energy[row + 1, col - 1]
+                    edge_to[row + 1, col - 1] = 1
+            if dist_to[row + 1, col] > dist_to[row, col] + energy[row + 1, col]:
+                dist_to[row + 1, col] = dist_to[row, col] + energy[row + 1, col]
+                edge_to[row + 1, col] = 0
+            if col != cols - 1:
+                if dist_to[row + 1, col + 1] > dist_to[row, col] + energy[row + 1, col + 1]:
+                    dist_to[row + 1, col + 1] = dist_to[row, col] + \
+                                                energy[row + 1, col + 1]
+                    edge_to[row + 1, col + 1] = -1
 
     # Retracing the path
-    seam[rows-1] = np.argmin(dist_to[rows-1, :])
+    seam[rows - 1] = np.argmin(dist_to[rows - 1, :])
     for i in (x for x in reversed(range(rows)) if x > 0):
-        seam[i-1] = seam[i] + edge_to[i, int(seam[i])]
+        seam[i - 1] = seam[i] + edge_to[i, int(seam[i])]
 
     return seam
 
@@ -58,11 +58,11 @@ def add_vertical_seam(img, seam, num_iter):
 
     for row in range(rows):
         for col in range(cols, int(seam[row]), -1):
-            img_extended[row, col] = img[row, col-1]
+            img_extended[row, col] = img[row, col - 1]
         for i in range(3):
-            v1 = img_extended[row, int(seam[row])-1, i]
-            v2 = img_extended[row, int(seam[row])+1, i]
-            img_extended[row, int(seam[row]), i] = (int(v1)+int(v2))/2
+            v1 = img_extended[row, int(seam[row]) - 1, i]
+            v2 = img_extended[row, int(seam[row]) + 1, i]
+            img_extended[row, int(seam[row]), i] = (int(v1) + int(v2)) / 2
     return img_extended
 
 
@@ -70,9 +70,9 @@ def add_vertical_seam(img, seam, num_iter):
 def remove_vertical_seam(img, seam):
     rows, cols = img.shape[:2]
     for row in range(rows):
-        for col in range(int(seam[row]), cols-1):
-            img[row, col] = img[row, col+1]
-    img = img[:, 0:cols-1]
+        for col in range(int(seam[row]), cols - 1):
+            img[row, col] = img[row, col + 1]
+    img = img[:, 0:cols - 1]
     return img
 
 

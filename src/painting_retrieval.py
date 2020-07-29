@@ -3,12 +3,12 @@ import os
 import _pickle as pickle
 
 # Custom importing
-from parameters import PATH_PAINTINGS_DB, PATH_KEYPOINTS_DB
-from parameters import RATIO, FLANN_INDEX_KDTREE
+from constants.parameters import PATH_PAINTINGS_DB, PATH_KEYPOINTS_DB
+from constants.parameters import RATIO, FLANN_INDEX_KDTREE
 
 
 def save_keypoints(images_name, detector):
-    print('\t> Save key-points')
+    print('[INFO] Key-points not found. Need to save key-points')
     database_features = dict()
     for path_image in images_name:
         image = cv2.imread(PATH_PAINTINGS_DB + path_image, cv2.IMREAD_GRAYSCALE)
@@ -21,7 +21,7 @@ def save_keypoints(images_name, detector):
 
 
 def read_keypoints():
-    print('\t> Read key-points ...')
+    print('[INFO] Key-points found ...')
     database_features = dict()
     with open(PATH_KEYPOINTS_DB, 'rb') as file:
         database = pickle.load(file)
@@ -55,7 +55,7 @@ def match_paitings(query_painting):
         database_features = read_keypoints()
 
     database_matches = dict()
-    print('\t> Matching key-points ...')
+    print('Matching key-points ...')
     for image, des_t in database_features.items():
         if des_q is None or des_t is None:
             return []
@@ -76,7 +76,8 @@ def match_paitings(query_painting):
                 if match_one.queryIdx == match_two.trainIdx and match_one.trainIdx == match_two.queryIdx:
                     database_matches[image] += 1
 
-    print('\t> Sorting ....')
+    print('Sorting ....')
+    database_matches = {name : similarity for name, similarity in database_matches.items() if similarity != 0}
     sorted_matches = sorted(database_matches.items(), key=lambda x: x[1], reverse=True)
     print('End matching')
     return sorted_matches

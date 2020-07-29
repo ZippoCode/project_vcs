@@ -1,13 +1,12 @@
 import cv2
 import pandas as pd
 import matplotlib.pyplot as plt
-import sys
 
 import numpy as np
-import argparse, random
+import argparse
 
 # Custom importing
-from parameters import *
+from constants.parameters import *
 from read_write import read_video, read_bounding_boxes
 from painting_retrieval import match_paitings
 

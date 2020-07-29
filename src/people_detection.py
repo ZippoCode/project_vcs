@@ -3,11 +3,11 @@ import cv2
 import sys
 import numpy as np
 import torch
-import matplotlib.pyplot as plt
 
 # Custom importing
-from parameters import *
-from read_write import get_videos, read_video, store_video, save_bounding_boxes
+from constants.parameters import *
+from constants.colors import *
+from util.read_write import get_videos, read_video, save_bounding_boxes
 
 
 def drawPred(frame, classes, classId, conf, left, top, right, bottom):
@@ -66,12 +66,65 @@ def postprocess(frame, outs, classes):
     return founded_bbox
 
 
-def detect_person(frames, net, classes):
+def get_args():
+    parser = argparse.ArgumentParser(
+        'Test your image or video by trained model.')
+    parser.add_argument('--cfgfile', type=str, default=PATH_YOLO_CFG,
+                        help='Path of cfg file', dest='cfgfile')
+    parser.add_argument('--weightfile', type=str, default=PATH_YOLO_WEIGHTS,
+                        help='Path of trained model.', dest='weightfile')
+    parser.add_argument('--destination', type=str, default=DESTINATION_PEOPLE_DETECTED,
+                        help='Path of trained model.', dest='path')
+    args = parser.parse_args()
+    return args
+
+
+args = get_args()
+path = args.path
+
+# Configure Network
+net = cv2.dnn.readNetFromDarknet(args.cfgfile, args.weightfile)
+if torch.cuda.is_available():  # Check if we are going to use GPU
+    # set CUDA as the preferable backend and target
+    print("[INFO] Setting preferable backend and target to CUDA ...")
+    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+else:
+    print("[INFO] Setting preferable backend and target without CUDA ...")
+    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+
+# Read classes
+with open(PATH_COCO_NAMES, 'rt') as f:
+    classes = f.read().rstrip('\n').split('\n')
+    print("Classes {}".format(classes))
+
+list_videos = get_videos(folder_video='')
+list_videos = ['../data/videos/000/VIRB0396.MP4', '../data/videos/003/GOPR1940.MP4',
+               '../data/videos/002/20180206_113059.mp4']
+
+list_videos = random.choices(list_videos, k=2)
+
+detected_object_dict = dict()
+output_name = ''
+
+for video_name in list_videos:
+    if not os.path.isfile(video_name):
+        print("Input video file ", video_name, " doesn't exist")
+        sys.exit(1)
+    frames = read_video(video_name)
+    print("Start processing {}".format(video_name))
+
+    output_name = video_name.split('/')[-1][:-4]
+    output_path = path + output_name + '.avi'
+    four_cc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
+    FPS = 30.0
+    resolution = (1280, 720)
+    writer = cv2.VideoWriter(output_path, four_cc, FPS, resolution)
+
     if frames is None:
-        print('Frames not found. Return ...')
-        return
-    frames_detected = []
-    detected_object_dict = dict()
+        print(f'{FAIL}[ERROR] Frames not found. Return ...')
+        continue
     try:
         for num, frame in enumerate(frames):
             time_start = cv2.getTickCount()
@@ -85,60 +138,16 @@ def detect_person(frames, net, classes):
             t, _ = net.getPerfProfile()
             label = 'Inference time: %.2f ms' % (t * 1000.0 / cv2.getTickFrequency())
             cv2.putText(frame, label, (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
-            frames_detected.append(cv2.cvtColor(frame.astype(np.uint8), cv2.COLOR_RGB2BGR))
+            writer.write(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
             time_end = cv2.getTickCount()
             time_elaboration = (time_end - time_start) / cv2.getTickFrequency()
             print('Elaborate {} frame in {} s'.format(num + 1, time_elaboration))
 
     except KeyboardInterrupt:
-        print('Stop processing')
+        print(f'{FAIL}Stop processing{ENDC}')
         pass
 
-    return frames_detected, detected_object_dict
-
-
-def get_args():
-    parser = argparse.ArgumentParser(
-        'Test your image or video by trained model.')
-    parser.add_argument('-cfgfile', type=str, default=PATH_YOLO_CFG,
-                        help='Path of cfg file', dest='cfgfile')
-    parser.add_argument('-weightfile', type=str, default=PATH_YOLO_WEIGHTS,
-                        help='Path of trained model.', dest='weightfile')
-    args = parser.parse_args()
-    return args
-
-
-if __name__ == '__main__':
-    args = get_args()
-
-    # Configure Network
-    net = cv2.dnn.readNetFromDarknet(args.cfgfile, args.weightfile)
-    if torch.cuda.is_available():  # Check if we are going to use GPU
-        # set CUDA as the preferable backend and target
-        print("[INFO] setting preferable backend and target to CUDA...")
-        net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
-    else:
-        net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-        net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
-
-    # Read classes
-    with open(PATH_COCO_NAMES, 'rt') as f:
-        classes = f.read().rstrip('\n').split('\n')
-        print("Classes {}".format(classes))
-
-    list_videos = get_videos()
-    list_videos = ['../data/videos/002/20180206_113059.mp4']
-    # Video with real person 003/GOPR1940.MP4 - 002/20180206_113059.mp4
-    list_videos = random.choices(list_videos, k=1)
-    for video_name in list_videos:
-        if not os.path.isfile(video_name):
-            print("Input video file ", video_name, " doesn't exist")
-            sys.exit(1)
-        frames = read_video(video_name)
-        print("Start processing")
-        people_detected, frame_with_bbox_dict = detect_person(frames, net, classes)
-        output_name = video_name.split('/')[-1][:-4]
-        store_video(output_name + '.avi', people_detected, fps=30, path=PATH_DESTINATION_PERSON_DETECTED)
-        save_bounding_boxes(frame_with_bbox_dict, output_name)
-        print('Done processing')
+    writer.release()
+    save_bounding_boxes(detected_object_dict, output_name, path=path)
+    print('Done processing')

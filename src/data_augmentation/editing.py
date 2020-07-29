@@ -1,7 +1,7 @@
 import random, numpy as np, cv2, math
 
-from parameters import *
-from save_image import write_output, rotating_and_saving
+from constants.parameters import *
+from data_augmentation.save_image import write_output, rotating_and_saving
 
 
 def get_bbox(image, text):

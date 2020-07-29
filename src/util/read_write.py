@@ -1,10 +1,9 @@
-import cv2
-import sys
+import cv2, sys, json
 import _pickle as pickle
 import skvideo.io
 
 # Custom importing
-from parameters import *
+from constants.parameters import *
 
 
 def save_bounding_boxes(bounding_boxes_dict, name_file, path=PATH_OUTPUT_DETECTED_BBOX):
@@ -32,12 +31,15 @@ def read_bounding_boxes(filename, path=PATH_OUTPUT_DETECTED_BBOX):
 ext = (".mp4", ".mov", ".avi")
 
 
-def get_videos(folder_video=ROOT_PATH_VIDEOS):
+def get_videos(folder_video):
     """
         Look up all the video in the ROOT FOLDER and return a list of these
     :return:
     """
     path_videos = list()
+    if not os.path.exists(folder_video):
+        return path_videos
+    print("[INFO] Find videos into folder: {}".format(folder_video))
     try:
         for folder, subfolder, filenames in os.walk(folder_video):
             for file in filenames:
@@ -75,20 +77,22 @@ def save_paitings(dict_image, destination_path=DESTINATION_PAINTINGS_RECTIFIED, 
 
 def read_video(video_path):
     """
-        Given a path of video return a list of frame. One Frame each second.
-        Each Frame is a image into RGB
-    :param video_path: string - Path of video
-    :param reduce_size: bool - If it is True the algorithm reduce the size of frame
+        Given a path of video it returns a generator which is a ndarrays with shape (M, N, C).
+        Where M is frame height, N is frame width and C is number of channel per pixel
 
-    :return:
-            name_video: list<numpy.ndarray>
+    :param video_path: string - Path of video
+    :return: videodata: generator
     """
     if not os.path.exists(video_path):
         print('[ERROR] File {} not found'.format(video_path))
         return []
-    videodata = skvideo.io.vreader(video_path)
+    video_data = skvideo.io.vreader(fname=video_path)
+    metadata_video = skvideo.io.ffprobe(video_path)['video']
+    if '@width' in metadata_video and '@height' in metadata_video:
+        resolution = (int(metadata_video['@width']), int(metadata_video['@height']))
+        print(resolution)
     print('Video readed.')
-    return videodata
+    return video_data
 
 
 def store_video(name, frames, fps=30, fourcc_name='MJPG', path=PATH_OUTPUT):
