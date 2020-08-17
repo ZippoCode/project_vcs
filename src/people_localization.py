@@ -7,13 +7,15 @@ import argparse
 
 # Custom importing
 from constants.parameters import *
-from read_write import read_video, read_bounding_boxes
+from util.read_write import read_video, read_pickle_file
 from painting_retrieval import match_paitings
 
 
 def people_localization(video_name):
     filename = video_name.split('/')[-1].split('.')[-2]
-    bbox = read_bounding_boxes(filename)
+
+    print(filename)
+    bbox = read_pickle_file(filename, path=DESTINATION_PEOPLE_DETECTED)
     # for b in bbox.items():
     #     print(b)
     real_person = False
@@ -23,7 +25,7 @@ def people_localization(video_name):
     if not real_person:
         print('Real person not found. Return ...')
         return
-    print('\t> Real person found')
+    print('[INFO] Real person found')
     frames = read_video(video_name)
 
     # if len(frames) != len(bbox.keys()):
@@ -123,7 +125,7 @@ def roi_labeling(id, image, coordinate, image_name=None):
 
 def get_args():
     parser = argparse.ArgumentParser('Test your image or video by trained model.')
-    parser.add_argument('-video', type=str, default="../output/person_detected/20180206_113059.avi",
+    parser.add_argument('-video', type=str, default="../output/person_detected/VIRB0396.avi",
                         help='Path of cfg file', dest='video')
     args = parser.parse_args()
     return args

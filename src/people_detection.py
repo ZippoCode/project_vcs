@@ -7,7 +7,7 @@ import torch
 # Custom importing
 from constants.parameters import *
 from constants.colors import *
-from util.read_write import get_videos, read_video, save_bounding_boxes
+from util.read_write import get_videos, read_video, save_pickle_file
 
 
 def drawPred(frame, classes, classId, conf, left, top, right, bottom):
@@ -100,8 +100,7 @@ with open(PATH_COCO_NAMES, 'rt') as f:
     print("Classes {}".format(classes))
 
 list_videos = get_videos(folder_video='')
-list_videos = ['../data/videos/000/VIRB0396.MP4', '../data/videos/003/GOPR1940.MP4',
-               '../data/videos/002/20180206_113059.mp4']
+list_videos = ['../data/videos/000/VIRB0399.MP4']
 
 list_videos = random.choices(list_videos, k=2)
 
@@ -149,5 +148,5 @@ for video_name in list_videos:
         pass
 
     writer.release()
-    save_bounding_boxes(detected_object_dict, output_name, path=path)
+    save_pickle_file(detected_object_dict, output_name, path=path)
     print('Done processing')

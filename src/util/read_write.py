@@ -6,16 +6,24 @@ import skvideo.io
 from constants.parameters import *
 
 
-def save_bounding_boxes(bounding_boxes_dict, name_file, path=PATH_OUTPUT_DETECTED_BBOX):
+def save_pickle_file(dictionary, name_file, path):
+    """
+        Save a dictionary with some information as pickle file
+
+    :param dictionary: The file will be to stored
+    :param name_file: The name of file
+    :param path: The destination where it will save the file
+    :return:
+    """
     if not os.path.exists(path):
-        print('[INFO] Creating folder ...')
+        print('[INFO] Folder Not found. Creating folder ...')
         Path(path).mkdir(parents=True, exist_ok=True)
     with open(path + name_file + '.pck', 'wb') as file:
-        pickle.dump(bounding_boxes_dict, file)
-    print('File storage ...')
+        pickle.dump(dictionary, file)
+    print(f'File {name_file} stored into folder {path}.')
 
 
-def read_bounding_boxes(filename, path=PATH_OUTPUT_DETECTED_BBOX):
+def read_pickle_file(filename, path):
     complete_path = path + filename + '.pck'
     bounding_boxes = dict()
     if not os.path.exists(complete_path):

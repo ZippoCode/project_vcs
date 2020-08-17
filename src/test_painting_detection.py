@@ -7,7 +7,7 @@ from painting_detection.painting_detection import edge_detection
 from util.bounding_boxes import get_bounding_boxes
 from util.plotting import plt_images
 from util.edit_image import reduce_size, draw_paintings
-from util.read_write import get_videos, read_video, store_video, save_bounding_boxes
+from util.read_write import get_videos, read_video, store_video, save_pickle_file
 
 
 def arg_parse():
@@ -21,6 +21,9 @@ def arg_parse():
                         default=1, type=int)
     parser.add_argument("--show", dest='show_images',
                         help='If True you can see the results of frame (Default: False)',
+                        default=False, type=bool)
+    parser.add_argument("--save", dest='save_video',
+                        help='If True it saves the video with painting detected (Default: False)',
                         default=False, type=bool)
     parser.add_argument("--resize", dest='resize_frame',
                         help='If True the algorithm reduces the size of frames (Default: True)',
@@ -36,6 +39,7 @@ def arg_parse():
 
 args = arg_parse()
 num_example = args.num_example
+save_flag = args.save_video
 show_images = args.show_images
 resize_frame = args.resize_frame
 source_folder = args.source_folder
@@ -51,6 +55,7 @@ path_videos = random.choices(path_videos, k=num_example if num_example > 0 else 
 # path_videos = ['../data/videos/010/VID_20180529_112614.mp4']
 
 print(f"[INFO] Number of videos which will be elaborated: {len(path_videos)}")
+print(f"[INFO] Save Video: {save_flag}")
 print(f"[INFO] Show frame elaboration: {show_images}")
 print(f"[INFO] Reduce size of image: {resize_frame}")
 print(f"[INFO] Folder where will store the videos: {destination}")
@@ -101,7 +106,8 @@ while len(path_videos) > 0:
 
     file_name_with_ext = path_video.split('/')[-1]
     file_name = file_name_with_ext.split('.')[0]
-    store_video(file_name + '.avi', frame_results, path=destination)
+    if save_flag:
+        store_video(file_name + '.avi', frame_results, path=destination)
 
     result_dict['Name file'] = file_name_with_ext
     result_dict['Path video'] = path_video
@@ -109,6 +115,6 @@ while len(path_videos) > 0:
     result_dict['Elaborated frame'] = len(bounding_boxes_dict.items())
     result_dict['Resolution frame'] = (h, w)
     result_dict['Bounding boxes'] = bounding_boxes_dict
-    save_bounding_boxes(result_dict, file_name, path=destination)
+    save_pickle_file(result_dict, file_name, path=destination)
 
 print("End process.")

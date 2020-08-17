@@ -1,6 +1,6 @@
 import random, argparse, cv2, os
 
-from read_write import read_video, save_paitings, read_bounding_boxes
+from read_write import read_video, save_paitings, read_pickle_file
 from painting_rectification.painting_rectification import rectification
 from constants.parameters import DESTINATION_PAINTINGS_DETECTED, DESTINATION_PAINTINGS_RECTIFIED
 
@@ -65,7 +65,7 @@ try:
         pickles.remove(path_pickle_file)
         file_name = path_pickle_file.split('/')[-1]
         file_name = file_name.split('.')[0]
-        pickle_file = read_bounding_boxes(file_name, path=source_folder)
+        pickle_file = read_pickle_file(file_name, path=source_folder)
         if 'Name file' in pickle_file:
             print('[INFO] Elaborated file {}'.format(pickle_file['Name file']))
         if 'Path video' in pickle_file:

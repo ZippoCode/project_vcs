@@ -30,10 +30,10 @@
   $ python test.py
 ```
   Output video: `./output/painting_detected/` folder
-![Figure 1](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/final-result.png)
-![Figure 2](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/painting4.png)
-![Figure 3](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/painting7.png)
-![Figure 4](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/painting9.png)
+![Figure 1](https://github.com/ZippoCode/project_vcs/blob/master/image_results/final-result.png)
+![Figure 2](https://github.com/ZippoCode/project_vcs/blob/master/image_results/painting4.png)
+![Figure 3](https://github.com/ZippoCode/project_vcs/blob/master/image_results/painting7.png)
+![Figure 4](https://github.com/ZippoCode/project_vcs/blob/master/image_results/painting9.png)
 
 ## Retrieval Painting
 The task's goal is given a query image find the same similar images in the set. This is called Image Retrieval. The first step is detected the features of query image and these of image contains in the database and then matches these. 
@@ -42,7 +42,7 @@ For the extract the features we used a **Scale-Invariant Feature Transform** ([S
   $ python test.py
 ```
   Output is a image that contants image in result of painting rectification and painting in dataset
-![Figure 5](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/retrieval1.png)
+![Figure 5](https://github.com/ZippoCode/project_vcs/blob/master/image_results/retrieval1.png)
 
 
 ## People detection
@@ -56,12 +56,12 @@ Run
   $ python people_detection.py
 ```
   Output: video result in `./output/person_detected/{video_name}.avi` and we create file PCK that contains coordinate of people in video in `./output/bbox/{video_name}.pck` file .
-![Figure 6](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/yolov3.png)
+![Figure 6](https://github.com/ZippoCode/project_vcs/blob/master/image_results/yolov3.png)
 
 ## People localization
 Make sure you have file PCK in `./output/bbox/` with the same video name that you will use to locate.
 
-![Figure 7](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/painting_location.png)
+![Figure 7](https://github.com/ZippoCode/project_vcs/blob/master/image_results/painting_location.png)
 
 Run
 ```bash
@@ -69,4 +69,4 @@ Run
 ```
 Output is a map with a green highlight rectangle which is the room that real person in
 
-![Figure 8](https://github.com/ZippoCode/project_vcs/blob/master/cvpr2019AuthorKit/map.png)
+![Figure 8](https://github.com/ZippoCode/project_vcs/blob/master/image_results/map.png)

@@ -6,7 +6,7 @@ import numpy as np
 import argparse
 
 # Custom importing
-from read_write import read_video, read_bounding_boxes
+from read_write import read_video, read_pickle_file
 
 
 def get_args():
@@ -24,7 +24,7 @@ if not args.video:
     sys.exit("[ERROR]")
 
 filename = video_name.split('/')[-1].split('.')[-2]
-bbox = read_bounding_boxes(filename)
+bbox = read_pickle_file(filename)
 real_person = False
 for classes_found in bbox.values():
     if 'real person' in classes_found:
