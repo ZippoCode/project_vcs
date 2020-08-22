@@ -42,7 +42,7 @@ def match_paitings(query_painting):
     images_name = [file for file in os.listdir(PATH_PAINTINGS_DB)]
 
     # Init detector and matcher
-    detector = cv2.xfeatures2d.SIFT_create()
+    detector = cv2.SIFT_create()
     flann_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
     search_params = dict(checks=50)
     matcher = cv2.FlannBasedMatcher(flann_params, search_params)

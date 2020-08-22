@@ -1,4 +1,6 @@
 import cv2
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def sorted_points(contour):
@@ -27,10 +29,6 @@ def sorted_points(contour):
             down_right = (contour[point, 0, 0], contour[point, 0, 1])
         else:
             return
-    # if (upper_right[0] - upper_left[0]) < 75 or (down_left[1] - upper_left[1]) < 75:
-    #     return
-    # if (down_right[0] - down_left[0]) < 75 or (down_right[1] - upper_right[1]) < 75:
-    #     return
     return upper_left, upper_right, down_left, down_right
 
 
@@ -49,29 +47,22 @@ def get_bounding_boxes(original_image, edge_detection_image):
     list_bounding_boxes = []
     threshold = sum([cv2.contourArea(c) for c in contours]) / len(contours)
 
-    for contour in contours:
-        epsilon = cv2.arcLength(contour, True) * 0.1
-        approx = cv2.approxPolyDP(contour, epsilon=epsilon, closed=True)
-        if len(approx) == 4 and cv2.contourArea(approx) > threshold:     # Find Rectangle
-            sorted_approx = sorted_points(approx)
-            if sorted_approx is not None and not (0, 0) in sorted_approx:
-                list_bounding_boxes.append(sorted_approx)
-            # cv2.drawContours(original_image, [approx], 0, (255, 255, 255), 2)
+    # Find rectangle
+    used_contours = []
+    for precision in np.arange(0.01, 0.1, 0.02):
+        for index, contour in enumerate(contours):
+            epsilon = cv2.arcLength(contour, True) * precision
+            approx = cv2.approxPolyDP(contour, epsilon=epsilon, closed=True)
+            # cv2.drawContours(original_image, [approx], -1, (255, 0, 0), 3)
+            if len(approx) == 4 and cv2.contourArea(approx) > threshold and index is not used_contours:
+                used_contours.append(contour)
+                sorted_approx = sorted_points(approx)
+                if sorted_approx is not None and not (0, 0) in sorted_approx:
+                    list_bounding_boxes.append(sorted_approx)
 
-    # elif len(approx) > 8 and cv2.contourArea(contour) > 5000:
-    #     (x, y), radius = cv2.minEnclosingCircle(contour)
-    #     (x, y), radius = (int(x), int(y)), int(radius)
-    #     top_left_x = x - radius if x - radius >= 0 else 0
-    #     top_left_y = y - radius if y - radius >= 0 else 0
-    #     bottom_right_x = x + radius if x + radius <= image.shape[1] else image.shape[1]
-    #     bottom_right_y = y + radius if y + radius <= image.shape[0] else image.shape[0]
-    #
-    #     upper_left = (top_left_x, top_left_y)
-    #     upper_right = (top_left_x, bottom_right_y)
-    #     down_left = (bottom_right_x, top_left_y)
-    #     down_right = (bottom_right_x, bottom_right_y)
-    #     list_bounding_boxes.append((upper_left, upper_right, down_left, down_right))
-
-    # plt.imshow(original_image)
+        # elif len(approx) >= 10 and cv2.contourArea(approx) > threshold:
+        #     x, y, w, h = cv2.boundingRect(approx)
+        #     list_bounding_boxes.append(((x, y), (x + w, y), (x, y + h), (x + w, y + h)))
+    # plt.imshow(edge_detection_image)
     # plt.show()
     return list_bounding_boxes

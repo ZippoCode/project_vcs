@@ -1,7 +1,7 @@
 import random, argparse, cv2, os
 
 from read_write import read_video, save_paitings, read_pickle_file
-from painting_rectification.painting_rectification import rectification
+from painting_rectification import rectification
 from constants.parameters import DESTINATION_PAINTINGS_DETECTED, DESTINATION_PAINTINGS_RECTIFIED
 
 
@@ -63,7 +63,7 @@ try:
     while len(pickles) > 0:
         path_pickle_file = random.choice(pickles)
         pickles.remove(path_pickle_file)
-        file_name = path_pickle_file.split('/')[-1]
+        file_name = os.path.split(path_pickle_file)[1]
         file_name = file_name.split('.')[0]
         pickle_file = read_pickle_file(file_name, path=source_folder)
         if 'Name file' in pickle_file:

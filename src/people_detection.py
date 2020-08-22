@@ -100,7 +100,7 @@ with open(PATH_COCO_NAMES, 'rt') as f:
     print("Classes {}".format(classes))
 
 list_videos = get_videos(folder_video='')
-list_videos = ['../data/videos/000/VIRB0399.MP4']
+list_videos = ['../data/videos/009/IMG_2648.MOV']
 
 list_videos = random.choices(list_videos, k=2)
 

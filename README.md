@@ -16,6 +16,14 @@
   $ pip install requirements.txt 
 ```
 
+If you are using Windows OS you need download FFMPEG codec from this [link](https://ffmpeg.zeranoe.com/builds/)
+``` 
+  Download the Build File
+  Extract the file
+  Rename the folder as 'ffmpeg'
+  Move the folder in 'project_vcs'
+```
+
 ## Structure
 * Input: all dataset was put in the `data` folder (video, image, map, csv)
 * Output: in `output` folder

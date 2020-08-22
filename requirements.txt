@@ -3,8 +3,6 @@ future==0.18.2
 kiwisolver==1.2.0
 matplotlib==3.2.1
 numpy==1.19.0
-opencv-contrib-python-headless @ file:///home/zippo/Scaricati/opencv_contrib_python_headless-4.1.0.25-cp36-cp36m-linux_x86_64.whl
-pandas==1.0.5
 Pillow==7.1.2
 pyparsing==2.4.7
 python-dateutil==2.8.1
@@ -12,5 +10,3 @@ pytz==2020.1
 scikit-video==1.1.11
 scipy==1.5.0
 six==1.15.0
-torch==1.5.0
-torchvision==0.6.0

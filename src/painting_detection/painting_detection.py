@@ -1,12 +1,17 @@
 import numpy as np
 import cv2
 
+from improve_quality import multiscale_retinex
+from constants.colors import COLOR_WHITE
+import matplotlib.pyplot as plt
+
 
 def edge_detection(im):
     """
         Takes an image RGB and return a two lists.
         The first list contains edited images while the second contains
         a name of algorithms which used
+
     :param im: original image
 
     :return:
@@ -16,63 +21,45 @@ def edge_detection(im):
     images = []
     titles = []
 
-    # # PYR MEAN SHIFT FILTERING
-    msf_image = cv2.pyrMeanShiftFiltering(im, sp=8, sr=8, maxLevel=3)
+    # Multi-Scale Retinex
+    frame_retinex = multiscale_retinex(im)
+    images.append(frame_retinex)
+    titles.append('Multi-scale Retinex')
+
+    # PYR MEAN SHIFT FILTERING
+    msf_image = cv2.pyrMeanShiftFiltering(frame_retinex, sp=16, sr=16, maxLevel=3)
     images.append(msf_image)
     titles.append("Mean Shift Filtering")
 
-    # Apply Threshold on S-Channel
+    # Apply Canny on S-Channel
     hsv = cv2.cvtColor(msf_image, cv2.COLOR_RGB2HSV)
     h_space, s_space, v_space = cv2.split(hsv)
-    s_space_threshold = cv2.adaptiveThreshold(v_space, maxValue=np.max(s_space),
+    threshold = int(min(255, 1.5 * np.median(s_space)))
+    # print(f"[INFO] Threshold Min: {threshold_min} - Threshold  {threshold_max}")
+    # s_space_threshold = cv2.Canny(s_space, threshold1=threshold_min, threshold2=threshold_max)
+    s_space_threshold = cv2.adaptiveThreshold(v_space, maxValue=threshold,
                                               adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                               thresholdType=cv2.THRESH_BINARY_INV, blockSize=11, C=2)
     images.append(s_space_threshold)
-    titles.append('Threshold S-channel in HSV space')
+    titles.append('Adaptive Threshold on S-channel in HSV space')
 
-    # # Erosion and dilation
-    img_dilate = cv2.dilate(s_space_threshold, np.ones((3, 3), dtype=np.uint8), iterations=1)
-    img_erose = cv2.dilate(img_dilate, np.ones((3, 3), dtype=np.uint8), iterations=1)
-    images.append(img_erose)
-    titles.append('Erosion and dilation')
+    # Sure background area
+    kernel = np.ones((3, 3), dtype=np.uint8)
+    sure_bg = cv2.dilate(s_space_threshold, kernel=kernel, iterations=1)
+    images.append(sure_bg)
+    titles.append('Background')
 
-    # Distance Transform
-    image_dist = cv2.distanceTransform(img_erose, distanceType=cv2.DIST_L1, maskSize=3)
-    cv2.normalize(image_dist, image_dist, alpha=0.0, beta=1.0, norm_type=cv2.NORM_MINMAX)
-    threshold_dilate = 0.25
-    _, image_dist = cv2.threshold(image_dist, threshold_dilate, 1.0, cv2.THRESH_BINARY)
-    image_dist = cv2.dilate(image_dist, kernel=np.ones((3, 3), dtype=np.uint8))
-    image_dist = image_dist.astype('uint8')
-    images.append(image_dist)
-    titles.append('Image Transform')
+    # Fill the contours with white color
+    contours, _ = cv2.findContours(sure_bg, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
+    img_fill = sure_bg.copy()
+    for contour in contours:
+        cv2.fillPoly(img_fill, pts=[contour], color=COLOR_WHITE)
+    images.append(img_fill)
+    titles.append('Fill Image')
 
-    # Connected components
-    im_ccs = connected_components_segmentation(image_dist)
-    images.append(im_ccs)
-    titles.append('Connected components Image')
+    # Erode Fill Countours
+    fill_erode = cv2.erode(img_fill, kernel=kernel, iterations=5)
+    images.append(fill_erode)
+    titles.append("Erode Fill Image")
 
     return images, titles
-
-
-def connected_components_segmentation(im):
-    """
-
-    :param im:
-    :return:
-    """
-    _, labeled_img = cv2.connectedComponentsWithAlgorithm(im, 8, cv2.CV_32S, cv2.CCL_GRANA)
-    labels = np.unique(labeled_img)
-    labels = labels[labels != 0]
-    im = np.zeros_like(labeled_img, dtype=np.uint8)
-    for label in labels:
-        mask = np.zeros_like(labeled_img, dtype=np.uint8)
-        mask[labeled_img == label] = 255
-        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        hull = []
-        for cnt in contours:
-            hull.append(cv2.convexHull(cnt, False))
-        hull_mask = np.zeros((mask.shape[0], mask.shape[1]), dtype=np.uint8)
-        for i in range(len(contours)):
-            hull_mask = cv2.drawContours(hull_mask, hull, i, 255, -1, 8)
-        im = np.clip(im + hull_mask, 0, 255)
-    return im

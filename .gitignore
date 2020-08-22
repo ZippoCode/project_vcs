@@ -1,6 +1,7 @@
 data/*
 output/*
 yolo/obj/*
+ffmpeg/*
 src/__pycache__/*
 *.pyc
 *.xml

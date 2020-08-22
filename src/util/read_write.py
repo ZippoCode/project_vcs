@@ -1,5 +1,12 @@
-import cv2, sys, json
+import cv2
+import sys
+import os
 import _pickle as pickle
+import skvideo
+
+if os.name == 'nt':
+    skvideo.setFFmpegPath("../ffmpeg/bin")
+
 import skvideo.io
 
 # Custom importing
@@ -89,7 +96,7 @@ def read_video(video_path):
         Where M is frame height, N is frame width and C is number of channel per pixel
 
     :param video_path: string - Path of video
-    :return: videodata: generator
+    :return: video_data: generator
     """
     if not os.path.exists(video_path):
         print('[ERROR] File {} not found'.format(video_path))
@@ -98,7 +105,6 @@ def read_video(video_path):
     metadata_video = skvideo.io.ffprobe(video_path)['video']
     if '@width' in metadata_video and '@height' in metadata_video:
         resolution = (int(metadata_video['@width']), int(metadata_video['@height']))
-        print(resolution)
     print('Video readed.')
     return video_data
 
