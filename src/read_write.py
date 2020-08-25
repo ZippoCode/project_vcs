@@ -10,7 +10,7 @@ if os.name == 'nt':
 import skvideo.io
 
 # Custom importing
-from constants.parameters import *
+from parameters import *
 
 
 def save_pickle_file(dictionary, name_file, path):

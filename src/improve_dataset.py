@@ -1,6 +1,6 @@
 import warnings, sys
 from os.path import isfile, join
-from data_augmentation.editing import *
+from editing import *
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 

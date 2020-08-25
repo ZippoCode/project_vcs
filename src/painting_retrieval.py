@@ -3,8 +3,8 @@ import os
 import _pickle as pickle
 
 # Custom importing
-from constants.parameters import PATH_PAINTINGS_DB, PATH_KEYPOINTS_DB
-from constants.parameters import RATIO, FLANN_INDEX_KDTREE
+from parameters import PATH_PAINTINGS_DB, PATH_KEYPOINTS_DB
+from parameters import RATIO, FLANN_INDEX_KDTREE
 
 
 def save_keypoints(images_name, detector):

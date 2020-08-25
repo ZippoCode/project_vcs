@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 
-__location__ = Path(__file__).parent.parent.parent.absolute()
+__location__ = Path(__file__).parent.parent.absolute()
 
 PATH_PAINTINGS_DB = os.path.join(__location__, 'data/paintings_db/')
 SOURCE_PATH_VIDEOS = os.path.join(__location__, 'data/videos/')
@@ -52,3 +52,21 @@ nmsThreshold = 0.4  # Non-maximum suppression threshold
 inpWidth = 416  # Width of network's input image
 inpHeight = 416  # Height of network's input image
 classesFile = "../yolo/coco.names"
+
+
+# MESSAGE COLORS
+HEADER = '\033[95m'
+OKBLUE = '\033[94m'
+OKGREEN = '\033[92m'
+WARNING = '\033[93m'
+FAIL = '\033[91m'
+ENDC = '\033[0m'
+BOLD = '\033[1m'
+UNDERLINE = '\033[4m'
+
+# COLORS
+COLOR_GREEN = (0, 255, 0)
+COLOR_RED = (255, 0, 0)
+COLOR_BLUE = (0, 0, 255)
+COLOR_YELLOW = (0, 255, 255)
+COLOR_WHITE = (255, 255, 255)

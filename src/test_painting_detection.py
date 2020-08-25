@@ -4,13 +4,12 @@ import cv2
 import argparse
 import os
 
-from constants.parameters import SOURCE_PATH_VIDEOS, DESTINATION_PAINTINGS_DETECTED
-from constants.colors import FAIL, ENDC
-from painting_detection.painting_detection import edge_detection
-from util.bounding_boxes import get_bounding_boxes
-from util.plotting import plt_images
-from util.edit_image import reduce_size, draw_paintings
-from util.read_write import get_videos, read_video, store_video, save_pickle_file
+from parameters import SOURCE_PATH_VIDEOS, DESTINATION_PAINTINGS_DETECTED, FAIL, ENDC
+from painting_detection import edge_detection
+from bounding_boxes import get_bounding_boxes
+from plotting import plt_images
+from edit_image import reduce_size, draw_paintings
+from read_write import get_videos, read_video, store_video, save_pickle_file
 
 
 def arg_parser():

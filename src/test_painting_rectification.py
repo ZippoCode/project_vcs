@@ -2,7 +2,7 @@ import random, argparse, cv2, os
 
 from read_write import read_video, save_paitings, read_pickle_file
 from painting_rectification import rectification
-from constants.parameters import DESTINATION_PAINTINGS_DETECTED, DESTINATION_PAINTINGS_RECTIFIED
+from parameters import DESTINATION_PAINTINGS_DETECTED, DESTINATION_PAINTINGS_RECTIFIED
 
 
 def arg_parse():
@@ -34,10 +34,7 @@ resize_frame = args.resize_frame
 source_folder = args.source_folder
 destination_folder = args.destination_folder
 
-print("Start Processing ...")
-# print("[INFO] Number of video which will be elaborated: {}".format(len(path_videos)))
-# print("[INFO] Show frame elaboration: {}".format(show_images))
-# print("[INFO] Reduce size of image: {}".format(resize_frame))
+print("Start Processing Painting Rectification ...")
 
 file_name = None
 path_video = None

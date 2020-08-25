@@ -1,7 +1,7 @@
 import numpy as np, cv2
 
 # Custom importing
-from constants.parameters import SIGMA
+from parameters import SIGMA
 
 
 def multiscale_retinex(image):

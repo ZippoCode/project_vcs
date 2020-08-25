@@ -1,6 +1,7 @@
 Problems with video
 ../data/videos/000/VIRB0394.MP4 -> BAD RESULTS
 ../data/videos/001/GOPR5827.MP4 --> Not too bad, There are many paintings
+../data/videos/002/20180206_111817.mp4 --> Statue
 ../data/videos/002/20180206_114506.mp4 --> Oval Shape
 ../data/videos/003/GOPR1938.MP4 -> BAD RESULT
 ../data/videos/003/GOPR1925.MP4 -> TOO MANY LIGHT

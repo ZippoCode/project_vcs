@@ -5,9 +5,8 @@ import numpy as np
 import torch
 
 # Custom importing
-from constants.parameters import *
-from constants.colors import *
-from util.read_write import get_videos, read_video, save_pickle_file
+from parameters import *
+from read_write import get_videos, read_video, save_pickle_file
 
 
 def drawPred(frame, classes, classId, conf, left, top, right, bottom):

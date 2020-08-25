@@ -1,6 +1,6 @@
 import cv2
 
-from constants.colors import *
+from parameters import *
 
 
 def reduce_size(image):
@@ -42,14 +42,14 @@ def draw_paintings(image, list_painting):
 
     image_painting = image.copy()
     for upper_left, upper_right, down_left, down_right in list_painting:
-        cv2.line(img=image_painting, pt1=upper_left, pt2=upper_right, color=color_green)
-        cv2.line(img=image_painting, pt1=upper_left, pt2=down_left, color=color_green)
-        cv2.line(img=image_painting, pt1=down_left, pt2=down_right, color=color_green)
-        cv2.line(img=image_painting, pt1=upper_right, pt2=down_right, color=color_green)
+        cv2.line(img=image_painting, pt1=upper_left, pt2=upper_right, color=COLOR_GREEN)
+        cv2.line(img=image_painting, pt1=upper_left, pt2=down_left, color=COLOR_GREEN)
+        cv2.line(img=image_painting, pt1=down_left, pt2=down_right, color=COLOR_GREEN)
+        cv2.line(img=image_painting, pt1=upper_right, pt2=down_right, color=COLOR_GREEN)
 
-        cv2.circle(image_painting, upper_left, radius=2, color=color_green)
-        cv2.circle(image_painting, down_left, radius=2, color=color_red)
-        cv2.circle(image_painting, upper_right, radius=2, color=color_blue)
-        cv2.circle(image_painting, down_right, radius=2, color=color_yellow)
+        cv2.circle(image_painting, upper_left, radius=2, color=COLOR_GREEN)
+        cv2.circle(image_painting, down_left, radius=2, color=COLOR_RED)
+        cv2.circle(image_painting, upper_right, radius=2, color=COLOR_BLUE)
+        cv2.circle(image_painting, down_right, radius=2, color=COLOR_YELLOW)
 
     return image_painting

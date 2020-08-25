@@ -2,7 +2,7 @@ import random, argparse, cv2, os, sys
 
 from painting_retrieval import match_paitings
 from plotting import plt_images
-from constants.parameters import DESTINATION_PAINTINGS_RECTIFIED, PATH_PAINTINGS_DB
+from parameters import DESTINATION_PAINTINGS_RECTIFIED, PATH_PAINTINGS_DB
 
 
 def arg_parse():
@@ -38,7 +38,7 @@ if len(path_paintings) == 0:
 
 painting_choices = random.choices(path_paintings, k=num_example if num_example > 0 else len(path_paintings))
 
-print("Start Processing ...")
+print("Start Processing Painting Retrieval ...")
 
 try:
     for name_painting in painting_choices:

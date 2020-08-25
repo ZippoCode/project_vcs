@@ -6,8 +6,8 @@ import numpy as np
 import argparse
 
 # Custom importing
-from constants.parameters import *
-from util.read_write import read_video, read_pickle_file
+from parameters import *
+from read_write import read_video, read_pickle_file
 from painting_retrieval import match_paitings
 
 

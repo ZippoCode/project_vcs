@@ -2,8 +2,7 @@ import numpy as np
 import cv2
 
 from improve_quality import multiscale_retinex
-from constants.colors import COLOR_WHITE
-import matplotlib.pyplot as plt
+from parameters import COLOR_WHITE
 
 
 def edge_detection(im):

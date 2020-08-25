@@ -1,7 +1,7 @@
 import cv2, numpy as np, os, sys
 
-from constants.parameters import PATH_EDIT
-from data_augmentation.rotate_image import rotate_image, rotate_yolo_bbox, cvFormattoYolo
+from parameters import PATH_EDIT
+from rotate_image import rotate_image, rotate_yolo_bbox, cvFormattoYolo
 
 
 def write_output(image, text, name_image, edit_name):

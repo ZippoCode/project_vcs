@@ -1,11 +1,4 @@
-import random
-import cv2
-import numpy as np
-from matplotlib import pyplot as plt
-
 # Custom importing
-from painting_retrieval import match_paitings
-from constants.parameters import *
 
 
 # def localization(image_name):
