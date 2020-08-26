@@ -1,4 +1,4 @@
-import argparse, random
+import argparse
 import cv2
 import sys
 import numpy as np
@@ -6,7 +6,7 @@ import torch
 
 # Custom importing
 from parameters import *
-from read_write import get_videos, read_video, save_pickle_file
+from read_write import get_videos, read_video, store_video, save_pickle_file
 
 
 def drawPred(frame, classes, classId, conf, left, top, right, bottom):
@@ -99,9 +99,8 @@ with open(PATH_COCO_NAMES, 'rt') as f:
     print("Classes {}".format(classes))
 
 list_videos = get_videos(folder_video='')
-list_videos = ['../data/videos/009/IMG_2648.MOV']
-
-list_videos = random.choices(list_videos, k=2)
+# list_videos = random.choices(list_videos, k=2)
+list_videos = ['../data/videos/003/GOPR1933.MP4']
 
 detected_object_dict = dict()
 output_name = ''
@@ -111,15 +110,8 @@ for video_name in list_videos:
         print("Input video file ", video_name, " doesn't exist")
         sys.exit(1)
     frames = read_video(video_name)
+    frame_results = []
     print("Start processing {}".format(video_name))
-
-    output_name = video_name.split('/')[-1][:-4]
-    output_path = path + output_name + '.avi'
-    four_cc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
-    FPS = 30.0
-    resolution = (1280, 720)
-    writer = cv2.VideoWriter(output_path, four_cc, FPS, resolution)
-
     if frames is None:
         print(f'{FAIL}[ERROR] Frames not found. Return ...')
         continue
@@ -136,8 +128,7 @@ for video_name in list_videos:
             t, _ = net.getPerfProfile()
             label = 'Inference time: %.2f ms' % (t * 1000.0 / cv2.getTickFrequency())
             cv2.putText(frame, label, (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
-            writer.write(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-
+            frame_results.append(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             time_end = cv2.getTickCount()
             time_elaboration = (time_end - time_start) / cv2.getTickFrequency()
             print('Elaborate {} frame in {} s'.format(num + 1, time_elaboration))
@@ -146,6 +137,8 @@ for video_name in list_videos:
         print(f'{FAIL}Stop processing{ENDC}')
         pass
 
-    writer.release()
-    save_pickle_file(detected_object_dict, output_name, path=path)
+    file_name_with_ext = os.path.split(video_name)[1]
+    file_name = file_name_with_ext.split('.')[0]
+    store_video(name=file_name + '.avi', frames=frame_results, path=path)
+    save_pickle_file(detected_object_dict, file_name, path=path)
     print('Done processing')

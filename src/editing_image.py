@@ -1,7 +1,10 @@
-import random, numpy as np, cv2, math
+import cv2
+import random
+import math
+import numpy as np
 
 from parameters import *
-from save_image import write_output, rotating_and_saving
+from read_write import write_output, rotating_and_saving
 
 
 def get_bbox(image, text):
@@ -93,7 +96,7 @@ def save_rotated_image(image, labels, name_image):
 
     :param image:
     :param name_image:
-    :param path_labels:
+    :param labels:
     :return:
     """
     # ROTATE
@@ -204,3 +207,56 @@ def edge_object_histogram(image, readed, name_image):
             eoh_image[y: y + h, x: x + w, c] = psi[:, :, max]
 
     write_output(eoh_image, readed, name_image, '_eoh')
+
+
+def reduce_size(image):
+    """
+        Reduce size of shape from image
+
+    :param image:
+    :return:
+    """
+    if image is None:
+        print(f"{FAIL}[ERROR] Image is None.")
+    if len(image.shape) < 2:
+        print(f"{FAIL}[ERROR] Shape of image is wrong.")
+        return
+    frame = image.copy()
+    h, w = int(image.shape[0]), int(image.shape[1])
+    thr_w, thr_h = 500, 500
+    if h > thr_h or w > thr_w:
+        h_ratio = thr_h / h
+        w_ratio = thr_w / w
+        w = int(image.shape[1] * min(h_ratio, w_ratio))
+        h = int(image.shape[0] * min(h_ratio, w_ratio))
+        frame = cv2.resize(frame, (w, h), interpolation=cv2.INTER_AREA)
+    return frame
+
+
+def draw_paintings(image, list_painting):
+    """
+        Given a images with shape (H, W, C) and a list of painting
+        this method draws the lines, the points and a rectangles on each paintings
+    :param:
+        - image: numpy.ndarray with shape (H, W, C)
+        - list_paintings: a list of pointing.
+    :return:
+        - image: numpy.ndarray
+    """
+    if image is None or len(image.shape) != 3:
+        print(f"{FAIL}[ERROR] Shape is wrong")
+        return image
+
+    image_painting = image.copy()
+    for upper_left, upper_right, down_left, down_right in list_painting:
+        cv2.line(img=image_painting, pt1=upper_left, pt2=upper_right, color=COLOR_GREEN)
+        cv2.line(img=image_painting, pt1=upper_left, pt2=down_left, color=COLOR_GREEN)
+        cv2.line(img=image_painting, pt1=down_left, pt2=down_right, color=COLOR_GREEN)
+        cv2.line(img=image_painting, pt1=upper_right, pt2=down_right, color=COLOR_GREEN)
+
+        cv2.circle(image_painting, upper_left, radius=2, color=COLOR_GREEN)
+        cv2.circle(image_painting, down_left, radius=2, color=COLOR_RED)
+        cv2.circle(image_painting, upper_right, radius=2, color=COLOR_BLUE)
+        cv2.circle(image_painting, down_right, radius=2, color=COLOR_YELLOW)
+
+    return image_painting

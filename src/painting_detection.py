@@ -1,8 +1,7 @@
-import numpy as np
 import cv2
 
 from improve_quality import multiscale_retinex
-from parameters import COLOR_WHITE
+from parameters import *
 
 
 def edge_detection(im):
@@ -26,7 +25,7 @@ def edge_detection(im):
     titles.append('Multi-scale Retinex')
 
     # PYR MEAN SHIFT FILTERING
-    msf_image = cv2.pyrMeanShiftFiltering(frame_retinex, sp=16, sr=16, maxLevel=3)
+    msf_image = cv2.pyrMeanShiftFiltering(frame_retinex, sp=SPATIAL_WINDOW_RADIUS, sr=COLOR_WINDOW_RADIUS, maxLevel=3)
     images.append(msf_image)
     titles.append("Mean Shift Filtering")
 
@@ -43,8 +42,7 @@ def edge_detection(im):
     titles.append('Adaptive Threshold on S-channel in HSV space')
 
     # Sure background area
-    kernel = np.ones((3, 3), dtype=np.uint8)
-    sure_bg = cv2.dilate(s_space_threshold, kernel=kernel, iterations=1)
+    sure_bg = cv2.dilate(s_space_threshold, kernel=KERNEL_3x3, iterations=NUM_ITERATIONS_DILATE)
     images.append(sure_bg)
     titles.append('Background')
 
@@ -57,7 +55,7 @@ def edge_detection(im):
     titles.append('Fill Image')
 
     # Erode Fill Countours
-    fill_erode = cv2.erode(img_fill, kernel=kernel, iterations=5)
+    fill_erode = cv2.erode(img_fill, kernel=KERNEL_3x3, iterations=NUM_ITERATIONS_ERODE)
     images.append(fill_erode)
     titles.append("Erode Fill Image")
 

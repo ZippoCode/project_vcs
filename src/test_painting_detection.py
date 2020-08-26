@@ -8,7 +8,7 @@ from parameters import SOURCE_PATH_VIDEOS, DESTINATION_PAINTINGS_DETECTED, FAIL,
 from painting_detection import edge_detection
 from bounding_boxes import get_bounding_boxes
 from plotting import plt_images
-from edit_image import reduce_size, draw_paintings
+from editing_image import reduce_size, draw_paintings
 from read_write import get_videos, read_video, store_video, save_pickle_file
 
 
@@ -20,9 +20,9 @@ def arg_parser():
     parser = argparse.ArgumentParser(description="Process Painting Detection")
     parser.add_argument("--num", dest='num_example',
                         help='The number of videos. With -1 will be process all videos. (Default: 1)',
-                        default=10, type=int)
+                        default=1, type=int)
     parser.add_argument("--show", dest='show_images',
-                        help='If True you can see the results of frame (Default: False)',
+                        help='If True you can see the results for each frame (Default: False)',
                         default=False, type=bool)
     parser.add_argument("--save", dest='save_video',
                         help='If True it saves the video with painting detected (Default: False)',

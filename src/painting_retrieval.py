@@ -3,15 +3,15 @@ import os
 import _pickle as pickle
 
 # Custom importing
-from parameters import PATH_PAINTINGS_DB, PATH_KEYPOINTS_DB
+from parameters import PATH_KEYPOINTS_DB
 from parameters import RATIO, FLANN_INDEX_KDTREE
 
 
-def save_keypoints(images_name, detector):
+def save_keypoints(images_name, detector, path):
     print('[INFO] Key-points not found. Need to save key-points')
     database_features = dict()
     for path_image in images_name:
-        image = cv2.imread(PATH_PAINTINGS_DB + path_image, cv2.IMREAD_GRAYSCALE)
+        image = cv2.imread(path + path_image, cv2.IMREAD_GRAYSCALE)
         kp, des = detector.detectAndCompute(image, None)
         if kp is not None and des is not None:
             database_features[path_image] = des
@@ -30,16 +30,18 @@ def read_keypoints():
     return database_features
 
 
-def match_paitings(query_painting):
+def match_paitings(query_painting, folder_database):
     """
         Given a rectified painting return a ranked list of all the images in the painting DB,
         sorted by descending similarity with the detected painting.
 
     :param query_painting: numpy.ndarray with shape (H, W)
+    :param folder_database: the folder which contains the database painting
+
     :return: a list of (string, similarity)
     """
     print('Start Retrieval ...')
-    images_name = [file for file in os.listdir(PATH_PAINTINGS_DB)]
+    images_name = [file for file in os.listdir(folder_database)]
 
     # Init detector and matcher
     detector = cv2.SIFT_create()
@@ -50,7 +52,7 @@ def match_paitings(query_painting):
     kp_q, des_q = detector.detectAndCompute(query_painting, None)
 
     if not os.path.exists(PATH_KEYPOINTS_DB):
-        database_features = save_keypoints(images_name, detector)
+        database_features = save_keypoints(images_name, detector, path=folder_database)
     else:
         database_features = read_keypoints()
 
@@ -77,7 +79,7 @@ def match_paitings(query_painting):
                     database_matches[image] += 1
 
     print('Sorting ....')
-    database_matches = {name : similarity for name, similarity in database_matches.items() if similarity != 0}
+    database_matches = {name: similarity for name, similarity in database_matches.items() if similarity != 0}
     sorted_matches = sorted(database_matches.items(), key=lambda x: x[1], reverse=True)
     print('End matching')
     return sorted_matches

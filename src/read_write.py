@@ -2,7 +2,9 @@ import cv2
 import sys
 import os
 import _pickle as pickle
+import math
 import skvideo
+import numpy as np
 
 if os.name == 'nt':
     skvideo.setFFmpegPath("../ffmpeg/bin")
@@ -11,6 +13,7 @@ import skvideo.io
 
 # Custom importing
 from parameters import *
+from rotate_image import rotate_image, rotate_yolo_bbox, cvFormattoYolo
 
 
 def save_pickle_file(dictionary, name_file, path):
@@ -56,7 +59,7 @@ def get_videos(folder_video):
         return path_videos
     print("[INFO] Find videos into folder: {}".format(folder_video))
     try:
-        for folder, subfolder, filenames in os.walk(folder_video):
+        for folder, _, filenames in os.walk(folder_video):
             for file in filenames:
                 if file.lower().endswith(tuple(ext)):
                     path_video = os.path.join(folder, file)
@@ -68,7 +71,7 @@ def get_videos(folder_video):
     return path_videos
 
 
-def save_paitings(dict_image, destination_path=DESTINATION_PAINTINGS_RECTIFIED, folder=False, filename=None):
+def save_paintings(dict_image, destination_path=DESTINATION_PAINTINGS_RECTIFIED, folder=False, filename=None):
     """
 
     :param dict_image:
@@ -102,9 +105,9 @@ def read_video(video_path):
         print('[ERROR] File {} not found'.format(video_path))
         return []
     video_data = skvideo.io.vreader(fname=video_path)
-    metadata_video = skvideo.io.ffprobe(video_path)['video']
-    if '@width' in metadata_video and '@height' in metadata_video:
-        resolution = (int(metadata_video['@width']), int(metadata_video['@height']))
+    # metadata_video = skvideo.io.ffprobe(video_path)['video']
+    # if '@width' in metadata_video and '@height' in metadata_video:
+    #     resolution = (int(metadata_video['@width']), int(metadata_video['@height']))
     print('Video readed.')
     return video_data
 
@@ -137,3 +140,52 @@ def store_video(name, frames, fps=30, fourcc_name='MJPG', path=PATH_OUTPUT):
         output.write(frame)
     output.release()
     print('Ending storage.')
+
+
+def crawl_frame():
+    path_videos = get_videos(folder_video=SOURCE_PATH_VIDEOS)
+    for path_video in path_videos:
+        path_video_arr = path_video.split('/')
+        destination_folder = "../output/frames/"
+        cap = cv2.VideoCapture(path_video)
+        frame_rate = cap.get(5)  # frame rate
+        count = 0
+        print(f"{path_video_arr[3]}/{path_video_arr[-1]}")
+        while cap.isOpened():
+            frame_id = cap.get(1)  # current frame number
+            ret, frame = cap.read()
+            if not ret:
+                break
+            if frame_id % math.floor(frame_rate) == 0:
+                filename = destination_folder + '/' + str(path_video_arr[-1][:-4]) + '_' + str(count) + ".jpg"
+                count = count + 1
+                cv2.imwrite(filename, frame)
+        cap.release()
+        print("Done!")
+
+
+def write_output(image, text, name_image, edit_name):
+    try:
+        if not os.path.exists(PATH_EDIT):
+            os.mkdir(PATH_EDIT)
+        path_jpg = PATH_EDIT + name_image + edit_name + '.jpg'
+        path_txt = PATH_EDIT + name_image + edit_name + '.txt'
+        cv2.imwrite(path_jpg, image)
+        with open(path_txt, 'w') as file:
+            file.write(text)
+            file.close()
+    except OSError:
+        sys.exit('Creation of the directory {} failed'.format(PATH_EDIT))
+
+
+def rotating_and_saving(image, angle, text, path):
+    rotation_angle = angle * np.pi / 180
+    rot_image = rotate_image(image, angle)
+    bbox = rotate_yolo_bbox(image, angle, rotation_angle, text)
+    path_jpg, path_txt = path + '.jpg', path + '.txt'
+    cv2.imwrite(path_jpg, rot_image)
+    if os.path.exists(path_txt):
+        os.remove(path_txt)
+    for i in bbox:
+        with open(path_txt, 'a') as fout:
+            fout.writelines(' '.join(map(str, cvFormattoYolo(i, rot_image.shape[0], rot_image.shape[1]))) + '\n')

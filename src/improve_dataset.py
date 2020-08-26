@@ -1,6 +1,7 @@
-import warnings, sys
+import warnings
+import sys
 from os.path import isfile, join
-from editing import *
+from editing_image import *
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -33,6 +34,44 @@ def create_images(images, labels):
         print('Finish {}'.format(name_image))
 
 
+PATH_TRAIN = '/content/gdrive/My Drive/VCS Project/Darknet/custom_data/'
+PATH = '../../yolo/obj/'
+
+
+def check_database():
+    path_images = []
+    for path, sub_dirs, files in os.walk(PATH):
+        for name in files:
+            if name.split('.')[-1] == 'jpg':
+                path_images.append(join(path, name.split('.')[0]))
+    path_images.sort()
+
+    path_labels = []
+    for path, sub_dirs, files in os.walk(PATH):
+        for name in files:
+            if name.split('.')[-1] == 'txt' and name.split('.')[0] != 'classes':
+                path_labels.append(join(path, name.split('.')[0]))
+    path_labels.sort()
+
+    num_images = len(path_images)
+    num_labels = len(path_labels)
+    if num_images != num_labels:
+        sys.exit('Nums don\'t match')
+    print('Lengths: {} File JPG {} File TXT'.format(num_images, num_labels))
+
+    for pi, pl in zip(path_images, path_labels):
+        # print('Image {} - Labels {}'.format(pi, pl))
+        if pi != pl:
+            print(pi, pl)
+
+    print("Saving train file ...")
+    train = open('../../yolo/train.txt', 'w')
+    for imgs in path_images:
+        train.write(PATH_TRAIN + imgs + '.jpg\n')
+    train.close()
+    print('End.')
+
+
 if __name__ == '__main__':
     images = [file for file in os.listdir(PATH_ORIGINAL) if
               isfile(join(PATH_ORIGINAL, file)) and file.split('.')[-1] == 'jpg']
@@ -43,5 +82,7 @@ if __name__ == '__main__':
 
     images.sort()
     labels.sort()
-
     create_images(images, labels)
+
+    # Create training file
+    check_database()

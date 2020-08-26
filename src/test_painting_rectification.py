@@ -1,6 +1,6 @@
 import random, argparse, cv2, os
 
-from read_write import read_video, save_paitings, read_pickle_file
+from read_write import read_video, save_paintings, read_pickle_file
 from painting_rectification import rectification
 from parameters import DESTINATION_PAINTINGS_DETECTED, DESTINATION_PAINTINGS_RECTIFIED
 
@@ -91,7 +91,7 @@ try:
                 painting = cv2.cvtColor(painting, cv2.COLOR_BGR2RGB)
                 name = "{}_frame{}_painting{}".format(file_name, num_frame, num)
                 paintings_rectified[name] = painting
-            save_paitings(paintings_rectified, folder=True, filename=file_name)
+            save_paintings(paintings_rectified, folder=True, filename=file_name)
 
 except KeyboardInterrupt:
     print('Stop processing')
