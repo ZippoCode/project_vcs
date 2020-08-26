@@ -1,7 +1,29 @@
+from distutils.command.upload import upload
+
 import cv2
 import numpy as np
 
 import matplotlib.pyplot as plt
+from setuptools.command.upload import upload
+
+
+def convert_bounding_boxes(list_bounding_boxes):
+    """
+        Give a list of bounding boxes in format point (upper_left, upper_right, down_left, down_right)
+        return a list of bounding boxes in format (X, Y, W, H ) where (x,y) is a coordinate of upper left point,
+        W is the weight and  H is the height of rectangle
+
+    :param list_bounding_boxes: list
+    :return:
+    """
+    bounding_boxes = []
+    for upper_left, upper_right, down_left, down_right in list_bounding_boxes:
+        x, y = upper_left
+        x1, y1 = down_right
+        bounding_boxes.append((x, y, (x1 - x), (y1, y)))
+        print(upper_left, upper_right, down_left, down_right)
+        print((x, y, (x1 - x), (y1 - y)))
+    return bounding_boxes
 
 
 def sorted_points(contour):

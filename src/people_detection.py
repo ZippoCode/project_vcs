@@ -72,14 +72,30 @@ def get_args():
                         help='Path of cfg file', dest='cfgfile')
     parser.add_argument('--weightfile', type=str, default=PATH_YOLO_WEIGHTS,
                         help='Path of trained model.', dest='weightfile')
+    parser.add_argument("--source", dest='source_folder',
+                        help=f'The source folder of painting detected (Default: {SOURCE_PATH_VIDEOS})',
+                        default=SOURCE_PATH_VIDEOS, type=str)
     parser.add_argument('--destination', type=str, default=DESTINATION_PEOPLE_DETECTED,
                         help='Path of trained model.', dest='path')
     args = parser.parse_args()
     return args
 
 
+# Read classes
+with open(PATH_COCO_NAMES, 'rt') as f:
+    classes = f.read().rstrip('\n').split('\n')
+    print(f"Classes {classes}")
+
 args = get_args()
 path = args.path
+source_folder = args.source
+
+list_videos = get_videos(folder_video=source_folder)
+# list_videos = random.choices(list_videos, k=2)
+list_videos = ['../data/videos/003/GOPR1933.MP4']
+
+detected_object_dict = dict()
+output_name = ''
 
 # Configure Network
 net = cv2.dnn.readNetFromDarknet(args.cfgfile, args.weightfile)
@@ -92,18 +108,6 @@ else:
     print("[INFO] Setting preferable backend and target without CUDA ...")
     net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
-
-# Read classes
-with open(PATH_COCO_NAMES, 'rt') as f:
-    classes = f.read().rstrip('\n').split('\n')
-    print("Classes {}".format(classes))
-
-list_videos = get_videos(folder_video='')
-# list_videos = random.choices(list_videos, k=2)
-list_videos = ['../data/videos/003/GOPR1933.MP4']
-
-detected_object_dict = dict()
-output_name = ''
 
 for video_name in list_videos:
     if not os.path.isfile(video_name):

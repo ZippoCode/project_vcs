@@ -6,7 +6,7 @@ import os
 
 from parameters import SOURCE_PATH_VIDEOS, DESTINATION_PAINTINGS_DETECTED, FAIL, ENDC
 from painting_detection import edge_detection
-from bounding_boxes import get_bounding_boxes
+from bounding_boxes import get_bounding_boxes, convert_bounding_boxes
 from plotting import plt_images
 from editing_image import reduce_size, draw_paintings
 from read_write import get_videos, read_video, store_video, save_pickle_file
@@ -23,7 +23,7 @@ def arg_parser():
                         default=1, type=int)
     parser.add_argument("--show", dest='show_images',
                         help='If True you can see the results for each frame (Default: False)',
-                        default=False, type=bool)
+                        default=True, type=bool)
     parser.add_argument("--save", dest='save_video',
                         help='If True it saves the video with painting detected (Default: False)',
                         default=True, type=bool)
@@ -91,12 +91,14 @@ while len(path_videos) > 0:
             edit_images, edit_titles = edge_detection(frame)
             list_bounding = get_bounding_boxes(frame, edit_images[-1])
             bounding_boxes_dict[num_frame] = list_bounding
+            convert_bounding_boxes(list_bounding)
             result = draw_paintings(frame, list_bounding)
             frame_results.append(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
             if show_images:
                 images = []
                 titles = []
-                images.append(frame)
+                x, y, w, h = list_bounding[0]
+                images.append(frame[y:y + h, x:x + w])
                 titles.append("Original Frame")
                 for image, title in zip(edit_images, edit_titles):
                     images.append(image)

@@ -4,6 +4,7 @@ yolo/*
 ffmpeg/*
 data/*
 src/__pycache__/*
+yolo/*
 *.pyc
 *.xml
 *.iml
