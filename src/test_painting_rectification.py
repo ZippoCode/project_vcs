@@ -54,7 +54,6 @@ for root, _, file_names in os.walk(source_folder):
             pickles.append(os.path.join(root, filename))
 
 pickles = random.choices(pickles, k=num_example if num_example > 0 else len(pickles))
-pickles = ['../output/paintings_detected/IMG_2660.pck']
 print("[INFO] Number of video which will be elaborated: {}".format(len(pickles)))
 
 try:
@@ -64,6 +63,8 @@ try:
         file_name = os.path.split(path_pickle_file)[1]
         file_name = file_name.split('.')[0]
         pickle_file = read_pickle_file(file_name, path=source_folder)
+        if len(pickle_file.items()) == 0:
+            continue
         if 'Name file' in pickle_file:
             print('[INFO] Elaborated file {}'.format(pickle_file['Name file']))
         if 'Path video' in pickle_file:
