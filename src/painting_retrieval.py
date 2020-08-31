@@ -59,7 +59,7 @@ def match_paitings(query_painting, folder_database):
     database_matches = dict()
     print('Matching key-points ...')
     for image, des_t in database_features.items():
-        if des_q is None or des_t is None:
+        if des_q is None or des_t is None or len(des_q) * len(des_t) == 0:
             return []
         raw_matches_one = matcher.knnMatch(des_q, des_t, k=2)
         good_matches_one = []

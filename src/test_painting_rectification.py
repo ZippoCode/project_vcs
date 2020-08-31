@@ -1,7 +1,11 @@
-import random, argparse, cv2, os
+import random
+import argparse
+import cv2
+import os
+import matplotlib.pyplot as plt
 
 from read_write import read_video, save_paintings, read_pickle_file
-from painting_rectification import rectification
+from painting_rectification import rectification, search_unique_bounding_boxes
 from parameters import DESTINATION_PAINTINGS_DETECTED, DESTINATION_PAINTINGS_RECTIFIED
 
 
@@ -42,18 +46,15 @@ height, width = (0, 0)
 total_frame = 0
 bounding_boxes_dict = dict()
 
-# path_videos = get_videos(folder_video=DESTINATION_VIDEOS_PAINTINGS_DETECTED)
-# path_videos = random.choices(path_videos, k=num_example if num_example > 0 else len(path_videos))
-
-# path_videos = ['../data/videos/002/20180206_112306.mp4']
-
 pickles = []
+print(f"[INFO] Source folder is {source_folder}")
 for root, _, file_names in os.walk(source_folder):
     for filename in file_names:
         if filename.lower().endswith('.pck'):
             pickles.append(os.path.join(root, filename))
 
 pickles = random.choices(pickles, k=num_example if num_example > 0 else len(pickles))
+pickles = ['../output/paintings_detected/IMG_2660.pck']
 print("[INFO] Number of video which will be elaborated: {}".format(len(pickles)))
 
 try:
@@ -79,14 +80,14 @@ try:
         titles = []
         for frame, (num_frame, bounding_boxes_frame) in zip(frames, bounding_boxes_dict.items()):
             paintings_rectified = dict()
-            for num, bounding_boxes in enumerate(bounding_boxes_frame):
+            for num, (upper_left, upper_right, down_left, down_right) in enumerate(bounding_boxes_frame):
                 height_frame, width_frame = frame.shape[:2]
-                upper_left, upper_right, down_left, down_right = bounding_boxes
                 scale = round(height_frame / height)
                 upper_left = (upper_left[0] * scale, upper_left[1] * scale)
                 upper_right = (upper_right[0] * scale, upper_right[1] * scale)
                 down_left = (down_left[0] * scale, down_left[1] * scale)
                 down_right = (down_right[0] * scale, down_right[1] * scale)
+                area = (down_right[0] - upper_left[0]) * (down_right[1] - upper_left[1])
                 painting = rectification(frame, (upper_left, upper_right, down_left, down_right))
                 painting = cv2.cvtColor(painting, cv2.COLOR_BGR2RGB)
                 name = "{}_frame{}_painting{}".format(file_name, num_frame, num)

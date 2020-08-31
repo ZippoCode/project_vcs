@@ -1,7 +1,6 @@
 import argparse
 import cv2
 import sys
-import numpy as np
 import torch
 
 # Custom importing
@@ -88,11 +87,11 @@ with open(PATH_COCO_NAMES, 'rt') as f:
 
 args = get_args()
 path = args.path
-source_folder = args.source
+source_folder = args.source_folder
 
 list_videos = get_videos(folder_video=source_folder)
 # list_videos = random.choices(list_videos, k=2)
-list_videos = ['../data/videos/003/GOPR1933.MP4']
+list_videos = ['../data/videos/000/VIRB0396.MP4', '../data/videos/000/VIRB0399.MP4']
 
 detected_object_dict = dict()
 output_name = ''

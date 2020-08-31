@@ -1,4 +1,8 @@
-import random, argparse, cv2, os, sys
+import random
+import argparse
+import cv2
+import os
+import sys
 
 from painting_retrieval import match_paitings
 from plotting import plt_images
@@ -16,7 +20,7 @@ def arg_parse():
                         default=1, type=int)
     parser.add_argument('--name', dest='name_painting', help="The path of painting rectified if you want retrieval",
                         default=None, type=str)
-    parser.add_argument('--source_db', dest='source_folder', help="The path of paintings database folderl",
+    parser.add_argument('--source_db', dest='source_folder', help="The path of paintings database folder",
                         default=SOURCE_PAINTINGS_DB, type=str)
     return parser.parse_args()
 

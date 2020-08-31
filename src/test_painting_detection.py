@@ -3,6 +3,7 @@ import sys
 import cv2
 import argparse
 import os
+import matplotlib.pyplot as plt
 
 from parameters import SOURCE_PATH_VIDEOS, DESTINATION_PAINTINGS_DETECTED, FAIL, ENDC
 from painting_detection import edge_detection
@@ -23,7 +24,7 @@ def arg_parser():
                         default=1, type=int)
     parser.add_argument("--show", dest='show_images',
                         help='If True you can see the results for each frame (Default: False)',
-                        default=True, type=bool)
+                        default=False, type=bool)
     parser.add_argument("--save", dest='save_video',
                         help='If True it saves the video with painting detected (Default: False)',
                         default=True, type=bool)
@@ -59,6 +60,7 @@ path_videos = random.choices(path_videos, k=num_example if num_example > 0 else 
 # path_videos = ['../data/videos/000/VIRB0394.MP4']
 # path_videos = ['../data/videos/009/IMG_2652.MOV']
 # path_videos = ['../data/videos/001/GOPR5827.MP4']
+# path_videos = ['../data/videos/008/VIRB0425.MP4']
 
 
 print(f"[INFO] Number of videos which will be elaborated: {len(path_videos)}")
@@ -67,15 +69,15 @@ print(f"[INFO] Show frame elaboration: {show_images}")
 print(f"[INFO] Reduce size of image: {resize_frame}")
 print(f"[INFO] Folder where will store the videos: {destination}")
 
-path_video = ''
-result_dict = dict()
-bounding_boxes_dict = dict()
-num_frame = 0
-h, w = (0, 0)
-
 while len(path_videos) > 0:
     frame_results = []
-    path_video = random.choice(path_videos)
+    result_dict = dict()
+    bounding_boxes_dict = dict()
+    correct_format_boxes = dict()
+    num_frame = 0
+    h, w = (0, 0)
+
+    path_video = random.choice(path_videos)     # Choice random video
     path_videos.remove(path_video)
 
     print(f"Elaborating Edge Detection for {path_video.split('/')[-1]}")
@@ -90,15 +92,14 @@ while len(path_videos) > 0:
             h, w = frame.shape[:-1]
             edit_images, edit_titles = edge_detection(frame)
             list_bounding = get_bounding_boxes(frame, edit_images[-1])
+            print(f"Elaborate {num_frame + 1} frame. Found {len(list_bounding)} paintings")
             bounding_boxes_dict[num_frame] = list_bounding
-            convert_bounding_boxes(list_bounding)
+            correct_format_boxes[num_frame] = convert_bounding_boxes(list_bounding)
             result = draw_paintings(frame, list_bounding)
             frame_results.append(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
             if show_images:
-                images = []
-                titles = []
-                x, y, w, h = list_bounding[0]
-                images.append(frame[y:y + h, x:x + w])
+                images, titles = [], []
+                images.append(frame)
                 titles.append("Original Frame")
                 for image, title in zip(edit_images, edit_titles):
                     images.append(image)
@@ -106,10 +107,13 @@ while len(path_videos) > 0:
                 images.append(result)
                 titles.append('Final result')
                 plt_images(images, titles)
-            print(f"Elaborate {num_frame + 1} frame. Found {len(list_bounding)} paintings")
     except KeyboardInterrupt:
         print(f'{FAIL}Stop processing{ENDC}')
         pass
+
+    # Print Bounding Boxes
+    for num_frame, list_bboxes in correct_format_boxes.items():
+        print(f" Found in frame {num_frame}: {list_bboxes}")
 
     file_name_with_ext = os.path.split(path_video)[1]
     file_name = file_name_with_ext.split('.')[0]
@@ -122,6 +126,7 @@ while len(path_videos) > 0:
     result_dict['Elaborated frame'] = len(bounding_boxes_dict.items())
     result_dict['Resolution frame'] = (h, w)
     result_dict['Bounding boxes'] = bounding_boxes_dict
+    result_dict['Correct Bounding Boxes'] = correct_format_boxes
     save_pickle_file(result_dict, file_name, path=destination)
 
 print("End process.")

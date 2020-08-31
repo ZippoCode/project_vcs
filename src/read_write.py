@@ -145,19 +145,19 @@ def store_video(name, frames, fps=30, fourcc_name='MJPG', path=PATH_OUTPUT):
 def crawl_frame():
     path_videos = get_videos(folder_video=SOURCE_PATH_VIDEOS)
     for path_video in path_videos:
-        path_video_arr = path_video.split('/')
+        name_video = os.path.split(path_video)[1]
         destination_folder = "../output/frames/"
         cap = cv2.VideoCapture(path_video)
         frame_rate = cap.get(5)  # frame rate
         count = 0
-        print(f"{path_video_arr[3]}/{path_video_arr[-1]}")
+        print(f"Elaborate {name_video}")
         while cap.isOpened():
             frame_id = cap.get(1)  # current frame number
             ret, frame = cap.read()
             if not ret:
                 break
             if frame_id % math.floor(frame_rate) == 0:
-                filename = destination_folder + '/' + str(path_video_arr[-1][:-4]) + '_' + str(count) + ".jpg"
+                filename = destination_folder + '/' + str(name_video[:-4]) + '_' + str(count) + ".jpg"
                 count = count + 1
                 cv2.imwrite(filename, frame)
         cap.release()

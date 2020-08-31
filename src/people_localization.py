@@ -1,6 +1,6 @@
 import cv2
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 
 import numpy as np
 import argparse
@@ -12,9 +12,9 @@ from painting_retrieval import match_paitings
 
 
 def people_localization(video_name):
-    filename = video_name.split('/')[-1].split('.')[-2]
+    filename = (os.path.split(video_name)[1]).split('.')[0]
+    print(f"[INFO] Elaborate {filename}")
 
-    print(filename)
     bbox = read_pickle_file(filename, path=DESTINATION_PEOPLE_DETECTED)
     # for b in bbox.items():
     #     print(b)
@@ -44,12 +44,13 @@ def people_localization(video_name):
                 y_center = int(y + height / 2)
                 for x, y in unique_paintings.keys():
                     distance = np.sqrt((x - x_center) ** 2 + (y - y_center) ** 2)
-                    if distance < 100:
+                    if distance < 50:
                         unique_found = True
                 if not unique_found:
-                    print('Found new unique detected painting ...')
+                    print('[INFO] Found new unique detected painting. ')
                     unique_paintings[(x_center, y_center)] = (x, y, width, height)
-                    result_retrieval_frame = match_paitings(frame[y: y + height, x: x + width, :])
+                    result_retrieval_frame = match_paitings(frame[y: y + height, x: x + width, :],
+                                                            folder_database=SOURCE_PAINTINGS_DB)
                     for name_painting, sim in result_retrieval_frame:
                         if name_painting in list_retrieval:
                             list_retrieval[name_painting] += sim
@@ -58,7 +59,7 @@ def people_localization(video_name):
 
     total_retrieval = sorted(list_retrieval.items(), key=lambda x: x[1], reverse=True)
     best_locations = dict()
-    data = pd.read_csv(PATH_DATA_CSV, sep=",")
+    data = pd.read_csv(PATH_DATA_CSV, sep=',')
     for image_name, sim in total_retrieval[:5]:
         curr_row = data[data["Image"] == image_name]
         room = curr_row["Room"].values[0]
@@ -68,10 +69,13 @@ def people_localization(video_name):
             best_locations[room] = 1
 
     best_locations = sorted(best_locations.items(), key=lambda x: x[1], reverse=True)
-    room, sim = best_locations[0]
-    location = rooms_map_highlight(room, (0, 255, 0))
-    plt.imshow(location)
-    plt.show()
+    if len(best_locations) != 0:
+        room, sim = best_locations[0]
+        location = rooms_map_highlight(room, (0, 255, 0))
+        plt.imshow(location)
+        plt.show()
+    else:
+        print("Room not found!")
 
 
 def room_dict(image_name):
@@ -125,7 +129,7 @@ def roi_labeling(id, image, coordinate, image_name=None):
 
 def get_args():
     parser = argparse.ArgumentParser('Test your image or video by trained model.')
-    parser.add_argument('-video', type=str, default="../output/person_detected/VIRB0396.avi",
+    parser.add_argument('-video', type=str, default="../output/person_detected/20180206_113059.avi",
                         help='Path of cfg file', dest='video')
     args = parser.parse_args()
     return args
