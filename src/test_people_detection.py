@@ -2,6 +2,7 @@ import argparse
 import cv2
 import sys
 import torch
+import random
 
 # Custom importing
 from parameters import *
@@ -71,10 +72,12 @@ def get_args():
                         help='Path of cfg file', dest='cfgfile')
     parser.add_argument('--weightfile', type=str, default=PATH_YOLO_WEIGHTS,
                         help='Path of trained model.', dest='weightfile')
+    parser.add_argument("--name", dest='name_video',
+                        help=f'The name of video which you want to detect.',
+                        default=None, type=str)
     parser.add_argument("--source", dest='source_folder',
                         help=f'The source folder of painting detected (Default: {SOURCE_PATH_VIDEOS})',
                         default=SOURCE_PATH_VIDEOS, type=str)
-
     parser.add_argument('--destination', type=str, default=DESTINATION_PEOPLE_DETECTED,
                         help='Path of trained model.', dest='path')
     args = parser.parse_args()
@@ -88,11 +91,14 @@ with open(PATH_COCO_NAMES, 'rt') as f:
 
 args = get_args()
 path = args.path
+name = args.name_video
 source_folder = args.source_folder
 
-list_videos = get_videos(folder_video=source_folder)
-# list_videos = random.choices(list_videos, k=2)
-list_videos = ['../data/videos/000/VIRB0397.MP4', '../data/videos/010/VID_20180529_112722.mp4']
+if name is not None:
+    list_videos = [name]
+else:
+    list_videos = get_videos(folder_video=source_folder)
+    list_videos = random.choices(list_videos, k=1)
 
 detected_object_dict = dict()
 output_name = ''

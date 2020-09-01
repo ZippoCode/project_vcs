@@ -126,7 +126,7 @@ def roi_labeling(id, image, coordinate, image_name=None):
 def get_args():
     parser = argparse.ArgumentParser('Test your image or video by trained model.')
     parser.add_argument('--video', type=str, default="../output/person_detected/VIRB0397.avi",
-                        help='Path of cfg file', dest='video')
+                        help='Path of video', dest='video')
     return parser.parse_args()
 
 

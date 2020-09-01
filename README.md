@@ -32,49 +32,55 @@ If you are using Windows OS you need download FFMPEG codec from this [link](http
 
 
 ## Painting Detection & Rectification
-  The file `src/painting_detection.py` contains all functions for detecting edge and finding four corners of the painting. In addition, file `painting_rectification.py` has affine transformations to create new image that has only painting. 
+  The file `src/test_painting_detection.py` contains all functions for detecting edge and finding four corners of the painting.
+   In addition, file `test_painting_rectification.py` has affine transformations to create new image that has only painting. 
   Run: 
 ```bash
-  $ python test.py
+  $ python test_painting_detection.py
+  $ python test_painting_rectification.py
+
 ```
-  Output video: `./output/painting_detected/` folder
+  Output video and PCK file for the Painting Detection is : `../output/painting_detected/`.
+  Output video for the Painting Rectification is `./output/painting_rectificated/`.
+  
 ![Figure 1](https://github.com/ZippoCode/project_vcs/blob/master/image_results/final-result.png)
 ![Figure 2](https://github.com/ZippoCode/project_vcs/blob/master/image_results/painting4.png)
 ![Figure 3](https://github.com/ZippoCode/project_vcs/blob/master/image_results/painting7.png)
 ![Figure 4](https://github.com/ZippoCode/project_vcs/blob/master/image_results/painting9.png)
 
+
 ## Retrieval Painting
 The task's goal is given a query image find the same similar images in the set. This is called Image Retrieval. The first step is detected the features of query image and these of image contains in the database and then matches these. 
 For the extract the features we used a **Scale-Invariant Feature Transform** ([SIFT](https://docs.opencv.org/master/da/df5/tutorial_py_sift_intro.html))  while for the Features Match we used **FLANN** which filter the matches second the propos of Lowe.
 ```bash
-  $ python test.py
+  $ python test_painting_retrieval.py
 ```
-  Output is a image that contants image in result of painting rectification and painting in dataset
+  Output is a image that contains image in result of painting rectification and painting in dataset
 ![Figure 5](https://github.com/ZippoCode/project_vcs/blob/master/image_results/retrieval1.png)
 
 
 ## People detection
 We use YOLOv3 to detect people.
-  * Weight file: `./yolo/yolov3-obj-train_last.weights`
-  * Coco file: `./yolo/coco.name`
-  * Config file: `./yolo/cfg/yolov3-obj-test.cfg`
+  * Weight file: `../yolo/yolov3-obj-train_last.weights`
+  * Coco file: `../yolo/coco.name`
+  * Config file: `../yolo/cfg/yolov3-obj-test.cfg`
 
 Run
 ```bash
-  $ python people_detection.py
+  $ python test_people_detection.py
 ```
-  Output: video result in `./output/person_detected/{video_name}.avi` and we create file PCK that contains coordinate of people in video in `./output/bbox/{video_name}.pck` file .
+  Output: video result in `../output/person_detected/` and we create file PCK that contains coordinate of people in video in `../output/person_detected/{video_name}.pck` file .
 ![Figure 6](https://github.com/ZippoCode/project_vcs/blob/master/image_results/yolov3.png)
 
 ## People localization
-Make sure you have file PCK in `./output/bbox/` with the same video name that you will use to locate.
+Make sure you have file PCK in `../output/person_detected/` with the same video name that you will use to locate.
 
 ![Figure 7](https://github.com/ZippoCode/project_vcs/blob/master/image_results/painting_location.png)
 
 Run
 ```bash
-  $ python people_localization.py 
+  $ python test_people_localization.py 
 ```
-Output is a map with a green highlight rectangle which is the room that real person in
+Output is a map with a green highlight rectangle which is the room that real person and the list of painting with best similarity value.
 
 ![Figure 8](https://github.com/ZippoCode/project_vcs/blob/master/image_results/map.png)
