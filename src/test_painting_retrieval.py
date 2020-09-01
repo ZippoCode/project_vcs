@@ -18,8 +18,11 @@ def arg_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument("--num", dest='num_example', help='The number of video which do you want detect',
                         default=1, type=int)
-    parser.add_argument('--name', dest='name_painting', help="The path of painting rectified if you want retrieval",
+    parser.add_argument('--name', dest='name_painting', help="The path of painting rectified which you want retrieval",
                         default=None, type=str)
+    parser.add_argument('--folder', dest='paintings_folder',
+                        help="The path of folder which contains painting rectified which you want retrieval",
+                        default=DESTINATION_PAINTINGS_RECTIFIED, type=str)
     parser.add_argument('--source_db', dest='source_folder', help="The path of paintings database folder",
                         default=SOURCE_PAINTINGS_DB, type=str)
     return parser.parse_args()
@@ -28,13 +31,15 @@ def arg_parse():
 args = arg_parse()
 num_example = args.num_example
 name_painting = args.name_painting
+folder = args.paintings_folder
 source_folder = args.source_folder
 
 path_paintings = []
 if name_painting:
     path_paintings.append(name_painting)
 else:
-    for root, _, file_names in os.walk(DESTINATION_PAINTINGS_RECTIFIED):
+    print(f"[INFO] The source folder of paintings: {folder}")
+    for root, _, file_names in os.walk(folder):
         for filename in file_names:
             if filename.lower().endswith('.jpg'):
                 path_paintings.append(os.path.join(root, filename))

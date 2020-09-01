@@ -56,12 +56,7 @@ if len(path_videos) == 0:
     print(f'{FAIL}[ERROR] Folder not found!{ENDC}')
     sys.exit(0)
 path_videos = random.choices(path_videos, k=num_example if num_example > 0 else len(path_videos))
-# path_videos = ['../data/videos/005/GOPR2051.MP4']
-# path_videos = ['../data/videos/000/VIRB0394.MP4']
-# path_videos = ['../data/videos/009/IMG_2652.MOV']
-# path_videos = ['../data/videos/001/GOPR5827.MP4']
-# path_videos = ['../data/videos/008/VIRB0425.MP4']
-
+path_videos = ['../data/videos/002/20180206_113600.mp4']
 
 print(f"[INFO] Number of videos which will be elaborated: {len(path_videos)}")
 print(f"[INFO] Save Video: {save_flag}")
@@ -77,7 +72,7 @@ while len(path_videos) > 0:
     num_frame = 0
     h, w = (0, 0)
 
-    path_video = random.choice(path_videos)     # Choice random video
+    path_video = random.choice(path_videos)  # Choice random video
     path_videos.remove(path_video)
 
     print(f"Elaborating Edge Detection for {path_video.split('/')[-1]}")
@@ -107,6 +102,11 @@ while len(path_videos) > 0:
                 images.append(result)
                 titles.append('Final result')
                 plt_images(images, titles)
+            # cv2.imwrite(f'..\output\\frames\\original_{num_frame}.jpg', cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
+            # cv2.imwrite(f'..\output\\frames\\edge_detection_{num_frame}.jpg', cv2.cvtColor(edit_images[2], cv2.COLOR_RGB2BGR))
+            # cv2.imwrite(f'..\output\\frames\\fill_edge_{num_frame}.jpg', cv2.cvtColor(edit_images[-1], cv2.COLOR_RGB2BGR))
+            # cv2.imwrite(f'..\output\\frames\\result_{num_frame}.jpg', cv2.cvtColor(result, cv2.COLOR_RGB2BGR))
+
     except KeyboardInterrupt:
         print(f'{FAIL}Stop processing{ENDC}')
         pass

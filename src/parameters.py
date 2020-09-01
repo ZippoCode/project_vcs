@@ -18,6 +18,7 @@ PATH_OUTPUT = os.path.join(__location__, 'output/')
 DESTINATION_PAINTINGS_DETECTED = os.path.join(__location__, 'output/paintings_detected/')
 DESTINATION_PAINTINGS_RECTIFIED = os.path.join(__location__, 'output/paintings_rectified/')
 DESTINATION_PEOPLE_DETECTED = os.path.join(__location__, 'output/person_detected/')
+DESTINATION_PEOPLE_FACIAL = os.path.join(__location__, 'output/person_facial/')
 
 # Yolo
 PATH_YOLO_CFG = os.path.join(__location__, 'yolo/cfg/yolov3-obj-test.cfg')

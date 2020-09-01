@@ -16,8 +16,6 @@ def people_localization(video_name):
     print(f"[INFO] Elaborate {filename}")
 
     bbox = read_pickle_file(filename, path=DESTINATION_PEOPLE_DETECTED)
-    # for b in bbox.items():
-    #     print(b)
     real_person = False
     for classes_found in bbox.values():
         if 'real person' in classes_found:
@@ -35,16 +33,15 @@ def people_localization(video_name):
     unique_paintings = dict()
     list_retrieval = dict()
     for frame, (num_frames, classes_founded) in zip(frames, bbox.items()):
-        if 'real person' in classes_founded and 'painted person' in classes_founded:
-            bounding_boxes_rp = classes_founded['real person']
+        if 'painted person' in classes_founded:
             bounding_boxes_pp = classes_founded['painted person']
             for x, y, width, height in bounding_boxes_pp:
                 unique_found = False
                 x_center = int(x + width / 2)
                 y_center = int(y + height / 2)
-                for x, y in unique_paintings.keys():
-                    distance = np.sqrt((x - x_center) ** 2 + (y - y_center) ** 2)
-                    if distance < 50:
+                for x_up, y_up in unique_paintings.keys():
+                    distance = np.sqrt((x_up - x_center) ** 2 + (y_up - y_center) ** 2)
+                    if distance < 100:
                         unique_found = True
                 if not unique_found:
                     print('[INFO] Found new unique detected painting. ')
@@ -58,9 +55,12 @@ def people_localization(video_name):
                             list_retrieval[name_painting] = sim
 
     total_retrieval = sorted(list_retrieval.items(), key=lambda x: x[1], reverse=True)
+    print(total_retrieval)
+    if len(total_retrieval) >= 3:
+        print(f"Name painting founded: {total_retrieval[0][0]} - {total_retrieval[1][0]} - {total_retrieval[2][0]}")
     best_locations = dict()
     data = pd.read_csv(PATH_DATA_CSV, sep=',')
-    for image_name, sim in total_retrieval[:5]:
+    for image_name, sim in total_retrieval[:3]:
         curr_row = data[data["Image"] == image_name]
         room = curr_row["Room"].values[0]
         if room in best_locations:
@@ -71,7 +71,7 @@ def people_localization(video_name):
     best_locations = sorted(best_locations.items(), key=lambda x: x[1], reverse=True)
     if len(best_locations) != 0:
         room, sim = best_locations[0]
-        location = rooms_map_highlight(room, (0, 255, 0))
+        location = rooms_map_highlight(room, color=COLOR_GREEN)
         plt.imshow(location)
         plt.show()
     else:
@@ -84,23 +84,19 @@ def room_dict(image_name):
 
     data = pd.read_csv(PATH_DATA_CSV, sep=",")
     curr_row = data[data["Image"] == image_name]
-
     room = curr_row["Room"].values[0]
-
     room_paintings = data[data["Room"] == room]["Image"].values
-
     location = rooms_map_highlight(room=room, color=(0, 255, 0))
     return location
 
 
 def rooms_map_highlight(room, color):
     rooms_roi = pd.read_csv(PATH_ROOMS_ROI_CSV)
-
     curr_roi = rooms_roi[rooms_roi["room"] == room]
     map = cv2.imread(PATH_MAP)
-
-    cv2.rectangle(map, (curr_roi['x'], curr_roi['y']),
-                  (curr_roi['x'] + curr_roi['w'], curr_roi['y'] + curr_roi['h']), (36, 255, 12), 3)
+    p1 = (curr_roi['x'], curr_roi['y'])
+    p2 = (curr_roi['x'] + curr_roi['w'], curr_roi['y'] + curr_roi['h'])
+    cv2.rectangle(map, pt1=p1, pt2=p2, color=color, thickness=3)
     return map
 
 
@@ -129,13 +125,11 @@ def roi_labeling(id, image, coordinate, image_name=None):
 
 def get_args():
     parser = argparse.ArgumentParser('Test your image or video by trained model.')
-    parser.add_argument('-video', type=str, default="../output/person_detected/20180206_113059.avi",
+    parser.add_argument('--video', type=str, default="../output/person_detected/VIRB0397.avi",
                         help='Path of cfg file', dest='video')
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
-if __name__ == '__main__':
-    args = get_args()
-    if args.video:
-        people_localization(args.video)
+args = get_args()
+if args.video:
+    people_localization(args.video)

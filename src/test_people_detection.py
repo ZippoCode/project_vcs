@@ -74,6 +74,7 @@ def get_args():
     parser.add_argument("--source", dest='source_folder',
                         help=f'The source folder of painting detected (Default: {SOURCE_PATH_VIDEOS})',
                         default=SOURCE_PATH_VIDEOS, type=str)
+
     parser.add_argument('--destination', type=str, default=DESTINATION_PEOPLE_DETECTED,
                         help='Path of trained model.', dest='path')
     args = parser.parse_args()
@@ -91,7 +92,7 @@ source_folder = args.source_folder
 
 list_videos = get_videos(folder_video=source_folder)
 # list_videos = random.choices(list_videos, k=2)
-list_videos = ['../data/videos/000/VIRB0396.MP4', '../data/videos/000/VIRB0399.MP4']
+list_videos = ['../data/videos/000/VIRB0397.MP4', '../data/videos/010/VID_20180529_112722.mp4']
 
 detected_object_dict = dict()
 output_name = ''

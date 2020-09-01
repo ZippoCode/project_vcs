@@ -20,12 +20,10 @@ def arg_parse():
                         default=-1, type=int)
     parser.add_argument("--show", dest='show_images', help='If True you can see the results of frame',
                         default=False, type=bool)
-    parser.add_argument("--resize", dest='resize_frame', help='If True the algorithm reduce the size of frames',
-                        default=True, type=bool)
     parser.add_argument("--source", dest='source_folder',
                         help='The source folder of painting detected',
                         default=DESTINATION_PAINTINGS_DETECTED, type=str)
-    parser.add_argument("--dest", dest='destination_folder',
+    parser.add_argument("--destination", dest='destination_folder',
                         help='The folder where the list of bounding boxes will be saved',
                         default=DESTINATION_PAINTINGS_RECTIFIED, type=str)
     return parser.parse_args()
@@ -34,7 +32,6 @@ def arg_parse():
 args = arg_parse()
 num_example = args.num_example
 show_images = args.show_images
-resize_frame = args.resize_frame
 source_folder = args.source_folder
 destination_folder = args.destination_folder
 
@@ -54,6 +51,7 @@ for root, _, file_names in os.walk(source_folder):
             pickles.append(os.path.join(root, filename))
 
 pickles = random.choices(pickles, k=num_example if num_example > 0 else len(pickles))
+
 print("[INFO] Number of video which will be elaborated: {}".format(len(pickles)))
 
 try:

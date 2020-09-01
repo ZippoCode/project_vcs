@@ -41,7 +41,6 @@ def edge_detection(im):
                                               thresholdType=cv2.THRESH_BINARY_INV, blockSize=11, C=2)
     images.append(s_space_threshold)
     titles.append('Adaptive Threshold on S-channel in HSV space')
-    cv2.imwrite('edge_detection_1.jpg', s_space_threshold)
 
     # Sure background area
     sure_bg = cv2.dilate(s_space_threshold, kernel=KERNEL_3x3, iterations=NUM_ITERATIONS_DILATE)
@@ -60,6 +59,4 @@ def edge_detection(im):
     fill_erode = cv2.erode(img_fill, kernel=KERNEL_3x3, iterations=NUM_ITERATIONS_ERODE)
     images.append(fill_erode)
     titles.append("Erode Fill Image")
-    cv2.imwrite('original_frame_1.jpg', cv2.cvtColor(im, cv2.COLOR_RGB2BGR))
-    cv2.imwrite('edge_detection_frame_1.jpg', fill_erode)
     return images, titles
