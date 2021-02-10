@@ -16,7 +16,8 @@
   $ pip install requirements.txt 
 ```
 
-If you are using Windows OS you need download FFMPEG codec from this [link](https://ffmpeg.zeranoe.com/builds/)
+You need install a FFMPEG codec. If you use Linux S.O. you can use ``` sudo apt-get install FFMPEG ```.
+Else if you are using Windows OS you need download FFMPEG codec from this [link](https://ffmpeg.zeranoe.com/builds/)
 ``` 
   Download the Build File
   Extract the file

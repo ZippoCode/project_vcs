@@ -11,7 +11,12 @@ SOURCE_PATH_VIDEOS = os.path.join(__location__, 'data/videos/')
 PATH_DATA_CSV = os.path.join(__location__, 'data/data.csv')
 PATH_ROOMS_ROI_CSV = os.path.join(__location__, 'data/rooms_roi.csv')
 PATH_MAP = os.path.join(__location__, 'data/map.png')
-PATH_KEYPOINTS_DB = os.path.join(__location__, 'output/key-points.pck')
+PATH_KEYPOINTS_DB = os.path.join(__location__, 'output/db_descriptors.json')
+PATH_MEANS = os.path.join(__location__, 'output/means.json')
+PATH_WEIGHTS = os.path.join(__location__, 'output/weights.json')
+PATH_COVARIANCES = os.path.join(__location__, 'output/covariances.json')
+PATH_FISHER_VECTOR_DB = os.path.join(__location__, 'output/db_fisher_vectors')
+PATH_GMM_DB = os.path.join(__location__, 'output/db_gmm.json')
 PATH_OUTPUT = os.path.join(__location__, 'output/')
 
 # Destination folders

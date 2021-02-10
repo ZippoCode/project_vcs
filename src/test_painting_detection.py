@@ -21,7 +21,7 @@ def arg_parser():
     parser = argparse.ArgumentParser(description="Process Painting Detection")
     parser.add_argument("--num", dest='num_example',
                         help='The number of videos. With -1 will be process all videos. (Default: 1)',
-                        default=1, type=int)
+                        default=10, type=int)
     parser.add_argument("--show", dest='show_images',
                         help='If True you can see the results for each frame (Default: False)',
                         default=False, type=bool)
@@ -56,7 +56,6 @@ if len(path_videos) == 0:
     print(f'{FAIL}[ERROR] Folder not found!{ENDC}')
     sys.exit(0)
 path_videos = random.choices(path_videos, k=num_example if num_example > 0 else len(path_videos))
-path_videos = ['../data/videos/002/20180206_113600.mp4']
 
 print(f"[INFO] Number of videos which will be elaborated: {len(path_videos)}")
 print(f"[INFO] Save Video: {save_flag}")
