@@ -29,24 +29,31 @@ def sorted_points(contour):
     :param contour:
     :return:
     """
-    middle_x, middle_y = 0, 0
-    upper_left, upper_right, down_left, down_right = (0, 0), (0, 0), (0, 0), (0, 0)
-    for point in range(contour.shape[0]):
-        middle_x += contour[point, 0, 1]
-        middle_y += contour[point, 0, 0]
-    middle_x /= 4
-    middle_y /= 4
-    for point in range(contour.shape[0]):
-        if contour[point, 0, 1] < middle_x and contour[point, 0, 0] < middle_y:
-            upper_left = (contour[point, 0, 0], contour[point, 0, 1])
-        elif contour[point, 0, 1] < middle_x and contour[point, 0, 0] > middle_y:
-            upper_right = (contour[point, 0, 0], contour[point, 0, 1])
-        elif contour[point, 0, 1] > middle_x and contour[point, 0, 0] < middle_y:
-            down_left = (contour[point, 0, 0], contour[point, 0, 1])
-        elif contour[point, 0, 1] > middle_x and contour[point, 0, 0] > middle_y:
-            down_right = (contour[point, 0, 0], contour[point, 0, 1])
-        else:
-            return
+    if len(contour) == 8:
+        points = contour[:, 0, :]
+        upper_left = np.min(points[:, 0]), np.min(points[:, 1])
+        upper_right = np.min(points[:, 0]), np.max(points[:, 1])
+        down_left = np.max(points[:, 0]), np.min(points[:, 1])
+        down_right = np.max(points[:, 0]), np.max(points[:, 1])
+    else:
+        middle_x, middle_y = 0, 0
+        upper_left, upper_right, down_left, down_right = (0, 0), (0, 0), (0, 0), (0, 0)
+        for point in range(contour.shape[0]):
+            middle_x += contour[point, 0, 1]
+            middle_y += contour[point, 0, 0]
+        middle_x /= 4
+        middle_y /= 4
+        for point in range(contour.shape[0]):
+            if contour[point, 0, 1] < middle_x and contour[point, 0, 0] < middle_y:
+                upper_left = (contour[point, 0, 0], contour[point, 0, 1])
+            elif contour[point, 0, 1] < middle_x and contour[point, 0, 0] > middle_y:
+                upper_right = (contour[point, 0, 0], contour[point, 0, 1])
+            elif contour[point, 0, 1] > middle_x and contour[point, 0, 0] < middle_y:
+                down_left = (contour[point, 0, 0], contour[point, 0, 1])
+            elif contour[point, 0, 1] > middle_x and contour[point, 0, 0] > middle_y:
+                down_right = (contour[point, 0, 0], contour[point, 0, 1])
+            else:
+                return None
     return upper_left, upper_right, down_left, down_right
 
 
@@ -118,6 +125,24 @@ def check_paintings(bounding_boxes, previous_rectangles, image):
     return True
 
 
+def find_paintings(contour):
+    for precision in np.arange(0.03, 0.3, 0.02):
+        epsilon = cv2.arcLength(contour, True) * precision
+        approx = cv2.approxPolyDP(contour, epsilon=epsilon, closed=True)
+        if len(approx) == 8:
+            sorted_approx = sorted_points(approx)
+            if sorted_approx is None:
+                continue
+            return sorted_approx
+        if len(approx) == 4:
+            sorted_approx = sorted_points(approx)
+            if sorted_approx is None:
+                continue
+            return sorted_approx
+
+    return None
+
+
 def get_bounding_boxes(original_frame, edge_detection_image):
     """
         Given an image it looks for the paintings and returns a list of bounding boxes.
@@ -127,23 +152,26 @@ def get_bounding_boxes(original_frame, edge_detection_image):
     :param edge_detection_image: ndarray (H, W)
     :return: list of bounding boxes
     """
-
-    contours, hierarchy = cv2.findContours(edge_detection_image, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
-    if len(contours) == 0:
-        return []
-
     list_bounding_boxes = []
-    threshold = sum([cv2.contourArea(c) for c in contours]) / len(contours)
-
-    # Find rectangle
-    used_rectangles = []
-    for precision in np.arange(0.01, 0.1, 0.02):
-        for index, contour in enumerate(contours):
-            epsilon = cv2.arcLength(contour, True) * precision
-            approx = cv2.approxPolyDP(contour, epsilon=epsilon, closed=True)
-            if len(approx) == 4 and cv2.contourArea(approx) > threshold:
-                sorted_approx = sorted_points(approx)
-                if check_paintings(sorted_approx, used_rectangles, original_frame):
-                    used_rectangles.append(sorted_approx)
-                    list_bounding_boxes.append(sorted_approx)
+    padding_image = cv2.copyMakeBorder(edge_detection_image, 1, 1, 1, 1, cv2.BORDER_CONSTANT, None, 0)
+    ret_val, labels, stats, centroids = cv2.connectedComponentsWithStatsWithAlgorithm(padding_image,
+                                                                                      connectivity=8,
+                                                                                      ltype=cv2.CV_16U,
+                                                                                      ccltype=cv2.CCL_WU)
+    # Remove more small
+    num_paintings = 1
+    for num_label in range(1, stats.shape[0]):
+        if stats[num_label, cv2.CC_STAT_AREA] < np.mean(stats[1:, cv2.CC_STAT_AREA]):
+            labels[labels == num_label] = 0
+        else:
+            labels[labels == num_label] = num_paintings
+            num_paintings += 1
+    for num_label in range(1, num_paintings):  # Label equals zero is the background
+        label_image = (labels == num_label) * 255
+        label_image = label_image.astype('uint8')
+        contours, hierarchy = cv2.findContours(label_image, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_NONE)
+        cv2.drawContours(label_image, contours, -1, color=(0, 0, 0), thickness=10)
+        sorted_approx = find_paintings(contours[0])
+        if sorted_approx is not None and not (0, 0) in sorted_approx:
+            list_bounding_boxes.append(sorted_approx)
     return list_bounding_boxes

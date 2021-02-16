@@ -22,6 +22,12 @@ def multiscale_retinex(image):
         return
     low_clip = 0.01
     high_clip = 0.99
+    h, w = image.shape[:2]
+    h_ratio = 300 / h
+    w_ratio = 300 / w
+    new_w = int(image.shape[1] * min(h_ratio, w_ratio))
+    new_h = int(image.shape[0] * min(h_ratio, w_ratio))
+    image = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_AREA)
     image = image.astype(np.float64) + 1.0
 
     intensity = np.sum(image, axis=2) / image.shape[2]
@@ -58,4 +64,4 @@ def multiscale_retinex(image):
             out[y, x, 1] = A * image[y, x, 1]
             out[y, x, 2] = A * image[y, x, 2]
 
-    return np.uint8(out - 1.0)
+    return cv2.resize(np.uint8(out - 1.0), (w, h), interpolation=cv2.INTER_AREA)

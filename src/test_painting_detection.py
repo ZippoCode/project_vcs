@@ -30,7 +30,7 @@ def arg_parser():
                         default=True, type=bool)
     parser.add_argument("--resize", dest='resize_frame',
                         help='If True the algorithm reduces the size of frames (Default: True)',
-                        default=True, type=bool)
+                        default=False, type=bool)
     parser.add_argument("--source", dest='source_folder',
                         help=f'The source folder of painting detected (Default: {SOURCE_PATH_VIDEOS})',
                         default=SOURCE_PATH_VIDEOS, type=str)
@@ -55,7 +55,8 @@ path_videos = get_videos(folder_video=source_folder)
 if len(path_videos) == 0:
     print(f'{FAIL}[ERROR] Folder not found!{ENDC}')
     sys.exit(0)
-path_videos = random.choices(path_videos, k=num_example if num_example > 0 else len(path_videos))
+path_videos = random.sample(path_videos, k=num_example if num_example > 0 else len(path_videos))
+# path_videos = ['/home/zippo/PycharmProjects/project_vcs/data/videos/003/GOPR1921.MP4']
 
 print(f"[INFO] Number of videos which will be elaborated: {len(path_videos)}")
 print(f"[INFO] Save Video: {save_flag}")
@@ -91,7 +92,7 @@ while len(path_videos) > 0:
             correct_format_boxes[num_frame] = convert_bounding_boxes(list_bounding)
             result = draw_paintings(frame, list_bounding)
             frame_results.append(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
-            if show_images:
+            if show_images and num_frame % 50 == 0:
                 images, titles = [], []
                 images.append(frame)
                 titles.append("Original Frame")
@@ -101,11 +102,6 @@ while len(path_videos) > 0:
                 images.append(result)
                 titles.append('Final result')
                 plt_images(images, titles)
-            # cv2.imwrite(f'..\output\\frames\\original_{num_frame}.jpg', cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
-            # cv2.imwrite(f'..\output\\frames\\edge_detection_{num_frame}.jpg', cv2.cvtColor(edit_images[2], cv2.COLOR_RGB2BGR))
-            # cv2.imwrite(f'..\output\\frames\\fill_edge_{num_frame}.jpg', cv2.cvtColor(edit_images[-1], cv2.COLOR_RGB2BGR))
-            # cv2.imwrite(f'..\output\\frames\\result_{num_frame}.jpg', cv2.cvtColor(result, cv2.COLOR_RGB2BGR))
-
     except KeyboardInterrupt:
         print(f'{FAIL}Stop processing{ENDC}')
         pass

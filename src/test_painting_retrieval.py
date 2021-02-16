@@ -22,7 +22,8 @@ def arg_parse():
                         default=None, type=str)
     parser.add_argument('--folder', dest='paintings_folder',
                         help="The path of folder which contains painting rectified which you want retrieval",
-                        default=f"{DESTINATION_PAINTINGS_RECTIFIED}/TEST", type=str)
+                        # default=f"{DESTINATION_PAINTINGS_RECTIFIED}/TEST", type=str)
+                        default = f"../data/paintings_db/", type = str)
     parser.add_argument('--source_db', dest='source_folder', help="The path of paintings database folder",
                         default=SOURCE_PAINTINGS_DB, type=str)
     return parser.parse_args()
@@ -47,7 +48,7 @@ else:
 if len(path_paintings) == 0:
     sys.exit("[ERROR] Paintings not found.")
 
-painting_choices = random.choices(path_paintings, k=num_example if num_example > 0 else len(path_paintings))
+painting_choices = random.sample(path_paintings, k=num_example if num_example > 0 else len(path_paintings))
 print("Start Processing Painting Retrieval ...")
 print(f"[INFO] Source folder database: {source_folder}")
 print(f"[INFO] Number of paintings which be elaborate: {len(painting_choices)}")
