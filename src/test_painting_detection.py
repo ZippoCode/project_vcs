@@ -21,10 +21,10 @@ def arg_parser():
     parser = argparse.ArgumentParser(description="Process Painting Detection")
     parser.add_argument("--num", dest='num_example',
                         help='The number of videos. With -1 will be process all videos. (Default: 1)',
-                        default=10, type=int)
+                        default=-1, type=int)
     parser.add_argument("--show", dest='show_images',
                         help='If True you can see the results for each frame (Default: False)',
-                        default=False, type=bool)
+                        default=True, type=bool)
     parser.add_argument("--save", dest='save_video',
                         help='If True it saves the video with painting detected (Default: False)',
                         default=True, type=bool)
@@ -56,7 +56,6 @@ if len(path_videos) == 0:
     print(f'{FAIL}[ERROR] Folder not found!{ENDC}')
     sys.exit(0)
 path_videos = random.sample(path_videos, k=num_example if num_example > 0 else len(path_videos))
-# path_videos = ['/home/zippo/PycharmProjects/project_vcs/data/videos/003/GOPR1921.MP4']
 
 print(f"[INFO] Number of videos which will be elaborated: {len(path_videos)}")
 print(f"[INFO] Save Video: {save_flag}")
@@ -82,8 +81,6 @@ while len(path_videos) > 0:
         continue
     try:
         for num_frame, frame in enumerate(frames):
-            if resize_frame:
-                frame = reduce_size(frame)
             h, w = frame.shape[:-1]
             edit_images, edit_titles = edge_detection(frame)
             list_bounding = get_bounding_boxes(frame, edit_images[-1])

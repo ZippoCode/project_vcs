@@ -68,7 +68,7 @@ def extract_dictionary(descriptors, num_cluster):
 
 def computer_fisher_vector(image, pca, detector, weights, means, covariances):
     h, w = image.shape
-    if h > 350 or w > 350:
+    if h > 350 and w > 350:
         image = cv2.resize(image, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
     _, des = detector.detectAndCompute(image, None)
     des = pca.transform(des)
@@ -109,12 +109,19 @@ def computer_fisher_vector(image, pca, detector, weights, means, covariances):
     for i in range(num_clusters):
         delta[i] = (descriptor_average[i, :] - means[i, :]) / np.sqrt(covariances_matrix[i, :])
 
+    fisher_vector = None
+    for i in range(num_clusters):
+        fv = descriptor_proportion[i] / np.sqrt(weights[i]) * delta[i, :] * num_descriptors
+        if fisher_vector is None:
+            fisher_vector = fv
+        else:
+            fisher_vector = np.concatenate([fisher_vector, fv])
+
     # Normalize Fisher Vector
-    delta = delta.ravel()
-    delta = np.sqrt(abs(delta)) * np.sign(delta)
-    delta = delta / np.sqrt(np.dot(delta, delta))
-    delta = delta.reshape((num_clusters, num_features))
-    return descriptor_proportion, delta
+    fisher_vector = np.sqrt(abs(fisher_vector)) * np.sign(fisher_vector)
+    fisher_vector = fisher_vector / np.sqrt(np.dot(fisher_vector, fisher_vector))
+    fisher_vector = fisher_vector.reshape((num_clusters, num_features))
+    return fisher_vector
 
 
 def match_paintings(query_painting, folder_database=SOURCE_PAINTINGS_DB):
@@ -149,31 +156,38 @@ def match_paintings(query_painting, folder_database=SOURCE_PAINTINGS_DB):
         path_fisher_vector = f"{PATH_FISHER_VECTOR_DB}/{name}.json"
         if os.path.isfile(path_fisher_vector):  # Check if exist Fisher Vector file
             fv = np.array(json.loads(codecs.open(path_fisher_vector, 'r', encoding='utf-8').read()))
-            fisher_vectors[image_names[i]] = fv[:, 0], fv[:, 1:]
+            # fisher_vectors[image_names[i]] = fv[:, 0], fv[:, 1:]
+            fisher_vectors[image_names[i]] = fv
         else:
             image = cv2.imread(f"{folder_database}/{image_names[i]}", cv2.IMREAD_GRAYSCALE)
             image = cv2.resize(image, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
-            prop, delta = computer_fisher_vector(image, pca, detector, weights, means, covariances)
-            if prop is not None or delta is not None:
-                fisher_vectors[image_names[i]] = prop, delta
-                fv = np.concatenate((prop.reshape((prop.shape[0], 1)), delta), axis=1)
+            # prop, delta = computer_fisher_vector(image, pca, detector, weights, means, covariances)
+            # if prop is not None or delta is not None:
+            #     fisher_vectors[image_names[i]] = prop, delta
+            #     fv = np.concatenate((prop.reshape((prop.shape[0], 1)), delta), axis=1)
+            #     with codecs.open(path_fisher_vector, 'w', encoding='utf-8') as file:
+            #         json.dump(fv.tolist(), file, separators=(',', ':'))
+            fv = computer_fisher_vector(image, pca, detector, weights, means, covariances)
+            if fisher_vectors is not None:
+                fisher_vectors[image_names[i]] = fv
+                # fv = np.concatenate((prop.reshape((prop.shape[0], 1)), delta), axis=1)
                 with codecs.open(path_fisher_vector, 'w', encoding='utf-8') as file:
                     json.dump(fv.tolist(), file, separators=(',', ':'))
 
     # Compute Similarity
     if len(query_painting.shape) > 2:
         query_painting = cv2.cvtColor(query_painting, cv2.COLOR_BGR2GRAY)
-    q_prop, q_delta = computer_fisher_vector(query_painting, pca, detector, weights, means, covariances)
+    q_fv = computer_fisher_vector(query_painting, pca, detector, weights, means, covariances)
     list_similarity = {}
-    for name_image, (db_prop, db_delta) in fisher_vectors.items():
-        similarity = 0
-        for i in range(num_clusters):
-            # similarity += (db_prop[i] * q_prop[i]) / weights[i] * np.dot(db_delta[i, :], q_delta[i, :])
-            # similarity += (db_prop[i] * q_prop[i]) * (num_components - 2 * hamming(db_delta[i, :], q_delta[i, :]))
-            similarity += 1 - cosine(db_delta[i, :], q_delta[i, :])
+    for name_image, db_fv in fisher_vectors.items():
+        similarity = 1 - cosine(np.ravel(db_fv), np.ravel(q_fv))
+        # for i in range(num_clusters):
+        #     similarity += (db_prop[i] * q_prop[i]) / weights[i] * np.dot(db_delta[i, :], q_delta[i, :])
+        #     similarity += (db_prop[i] * q_prop[i]) * (num_components - 2 * hamming(db_delta[i, :], q_delta[i, :]))
+        #     similarity += 1 - cosine(db_delta[i, :], q_delta[i, :])
         if similarity > 0:
-            norm = (np.sqrt(num_components * np.sum(db_prop)) * np.sqrt(num_components * np.sum(q_prop)))
-            list_similarity[name_image] = similarity / norm
-            # list_similarity[name_image] = similarity
+            # norm = (np.sqrt(num_components * np.sum(db_prop)) * np.sqrt(num_components * np.sum(q_prop)))
+            # list_similarity[name_image] = similarity / norm
+            list_similarity[name_image] = similarity
     list_similarity = sorted(list_similarity.items(), key=lambda x: x[1], reverse=True)
     return list_similarity

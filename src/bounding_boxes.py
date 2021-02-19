@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+import math
 import matplotlib.pyplot as plt
 
 
@@ -139,7 +139,6 @@ def find_paintings(contour):
             if sorted_approx is None:
                 continue
             return sorted_approx
-
     return None
 
 
@@ -157,7 +156,7 @@ def get_bounding_boxes(original_frame, edge_detection_image):
     ret_val, labels, stats, centroids = cv2.connectedComponentsWithStatsWithAlgorithm(padding_image,
                                                                                       connectivity=8,
                                                                                       ltype=cv2.CV_16U,
-                                                                                      ccltype=cv2.CCL_WU)
+                                                                                      ccltype=cv2.CCL_GRANA)
     # Remove more small
     num_paintings = 1
     for num_label in range(1, stats.shape[0]):
@@ -173,5 +172,11 @@ def get_bounding_boxes(original_frame, edge_detection_image):
         cv2.drawContours(label_image, contours, -1, color=(0, 0, 0), thickness=10)
         sorted_approx = find_paintings(contours[0])
         if sorted_approx is not None and not (0, 0) in sorted_approx:
+            # upper_left, upper_right, lower_left, lower_right = sorted_approx
+            # upper_width = abs(upper_right[1] - upper_left[1])
+            # lower_width = abs(lower_right[1] - lower_left[1])
+            # right_height = abs(lower_left[0] - upper_left[0])
+            # left_height = abs(lower_right[0] - upper_right[0])
+            # print(upper_width, lower_width, right_height, left_height)
             list_bounding_boxes.append(sorted_approx)
     return list_bounding_boxes

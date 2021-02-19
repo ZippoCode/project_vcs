@@ -1,68 +1,62 @@
 import numpy as np
 import cv2
 import math
+import matplotlib.pyplot as plt
 
 
-def check_same_bounding_boxes(first_box, second_box):
-    ul1, ur1, dl1, dr1 = first_box
-    ul2, ur2, dl2, dr2 = second_box
-    x1, y1, w1, r1 = ul1[0], ur1[0], (dr1[0] - ul1[0]), (dr1[1] - ul1[1])
-    x2, y2, w2, r2 = ul2[0], ur2[0], (dr2[0] - ul2[0]), (dr2[1] - ul2[1])
-    if math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2) > 100:
-        return False
-    x1_centre, y1_centre = round((ul1[0] + dr1[0]) / 2), round((ul1[1] + dr1[1]) / 2)
-    x2_centre, y2_centre = round((ul2[0] + dr2[0]) / 2), round((ul2[1] + dr2[1]) / 2)
-    if math.sqrt((x1_centre - x2_centre) ** 2 + (y1_centre - y2_centre) ** 2) > 100:
-        return False
-    # print(f"{first_box} and {second_box} are the same boxes")
-    return True
+# def get_calibration(image, bounding_boxes):
+#     height, width, channels = image.shape
+#     dist_coefficients = np.zeros((4, 1), np.float64)
+#     k1, k2, p1, p2 = -1.0e-5, 0.0, 0.0, 0.0
+#
+#     dist_coefficients[0, 0] = k1
+#     dist_coefficients[1, 0] = k2
+#     dist_coefficients[2, 0] = p1
+#     dist_coefficients[3, 0] = p2
+#
+#     cam = np.eye(3, dtype=np.float32)
+#     cam[0, 2] = width / 2.0  # define center x
+#     cam[1, 2] = height / 2.0  # define center y
+#     cam[0, 0] = 10.  # define focal length x
+#     cam[1, 1] = 10.  # define focal length y
+#
+#     new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(cam, dist_coefficients, (width, height), 1, (width, height))
+#     output = cv2.undistort(image, cam, dist_coefficients, None, new_camera_matrix)
+#     plt.imshow(output)
+#     plt.show()
+#     bounding_boxes = np.swapaxes(np.expand_dims(np.array(bounding_boxes, dtype=np.float32), axis=0), 1, 0)
+#     new_bounding_boxes = cv2.undistortPoints(bounding_boxes, cam, dist_coefficients, None, new_camera_matrix)
+#     new_bounding_boxes = np.swapaxes(new_bounding_boxes, 0, 1).squeeze().tolist()
+#     output_bounding_boxes = list()
+#     for x, y in new_bounding_boxes:
+#         output_bounding_boxes.append((int(x), int(y)))
+#
+#     return output, output_bounding_boxes
 
 
-def search_best_area(first_box, second_box):
-    """
-    Given two bounding boxes return which has a
-
-    :param first_box:
-    :param second_box:
-    :return:
-    """
-    ul1, ur1, dl1, dr1 = first_box
-    ul2, ur2, dl2, dr2 = second_box
-    x1, y1, w1, h1 = ul1[0], ur1[0], (dr1[0] - ul1[0]), (dr1[1] - ul1[1])
-    x2, y2, w2, h2 = ul2[0], ur2[0], (dr2[0] - ul2[0]), (dr2[1] - ul2[1])
-    area_one = 2 * (w1 + h1)
-    area_two = 2 * (w2 + h2)
-    if area_one > area_two:
-        return first_box
-    return second_box
-
-
-def search_unique_bounding_boxes(current_bounding_boxes, previous_bounding_boxed):
-    """
-        Return a list of unique bounding boxes given to match between a current bounding boxes and
-        a list which will be for searching.
-
-    :param current_bounding_boxes:
-    :param list_bounding_boxes:
-    :return:
-    """
-    if len(previous_bounding_boxed) == 0:
-        return current_bounding_boxes
-    best_bounding_boxes = []
-    for search_box in current_bounding_boxes:
-        for current_box in previous_bounding_boxed:
-            if check_same_bounding_boxes(current_box, search_box):
-                # Same Box. Add the best of these two
-                best = search_best_area(search_box, current_box)
-                return best_bounding_boxes.append(best)
-            else:
-                # This bounding boxes is not present in the previous frame
-                best_bounding_boxes.append(search_box)
-
-    return best_bounding_boxes
+# def get_new_coordinates(bounding_boxes, x, y, height, width):
+#     upper_leftX = bounding_boxes[0][0]
+#     upper_leftY = bounding_boxes[0][1]
+#     lower_rightX = bounding_boxes[3][0]
+#     lower_rightY = bounding_boxes[3][1]
+#
+#     sizeX = lower_rightX - upper_leftX
+#     sizeY = lower_rightY - upper_leftY
+#     size_max = max(sizeX, sizeY)
+#
+#     centerX = (lower_rightX + upper_leftX) / 2
+#     centerY = (lower_rightY + upper_leftY) / 2
+#
+#     offesetX = (centerX - size_max / 2) * height / size_max
+#     offesetY = (centerY - size_max / 2) * width / size_max
+#
+#     x = x * height / size_max - offesetX
+#     y = y * width / size_max - offesetY
+#
+#     return (x, y)
 
 
-def rectification(im, coordinate):
+def rectification(image, coordinate):
     upper_left, upper_right, down_left, down_right = coordinate
 
     rows = int(math.sqrt(math.pow((down_left[0] - upper_left[0]), 2) + math.pow((down_left[1] - upper_left[1]), 2)))
@@ -70,6 +64,6 @@ def rectification(im, coordinate):
     src_points = np.float32([upper_left, down_left, upper_right, down_right])
     dst_points = np.float32([[0, 0], [0, rows - 1], [cols - 1, 0], [cols - 1, rows - 1]])
     projective_matrix = cv2.getPerspectiveTransform(src_points, dst_points)
-    img_output = cv2.warpPerspective(im, projective_matrix, (cols, rows))
+    img_output = cv2.warpPerspective(image, projective_matrix, (cols, rows))
 
     return img_output

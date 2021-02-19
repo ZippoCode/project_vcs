@@ -5,7 +5,7 @@ import os
 import matplotlib.pyplot as plt
 
 from read_write import read_video, save_paintings, read_pickle_file
-from painting_rectification import rectification, search_unique_bounding_boxes
+from painting_rectification import rectification
 from parameters import DESTINATION_PAINTINGS_DETECTED, DESTINATION_PAINTINGS_RECTIFIED
 
 
@@ -51,7 +51,7 @@ for root, _, file_names in os.walk(source_folder):
             pickles.append(os.path.join(root, filename))
 
 pickles = random.sample(pickles, k=num_example if num_example > 0 else len(pickles))
-pickles = ['/home/zippo/PycharmProject/output/paintings_detected/']
+# pickles = ['/home/zippo/PycharmProject/output/paintings_detected/GOPR5825.avi']
 print("[INFO] Number of video which will be elaborated: {}".format(len(pickles)))
 
 try:
@@ -59,7 +59,7 @@ try:
         path_pickle_file = random.choice(pickles)
         pickles.remove(path_pickle_file)
         file_name = os.path.split(path_pickle_file)[1]
-        file_name = file_name.split('.')[0]
+        file_name = str(file_name.split('.')[0])
         pickle_file = read_pickle_file(file_name, path=source_folder)
         if len(pickle_file.items()) == 0:
             continue
@@ -78,20 +78,23 @@ try:
         frames = read_video(video_path=path_video)
         titles = []
         for frame, (num_frame, bounding_boxes_frame) in zip(frames, bounding_boxes_dict.items()):
-            paintings_rectified = dict()
-            for num, (upper_left, upper_right, down_left, down_right) in enumerate(bounding_boxes_frame):
-                height_frame, width_frame = frame.shape[:2]
-                scale = round(height_frame / height)
-                upper_left = (upper_left[0] * scale, upper_left[1] * scale)
-                upper_right = (upper_right[0] * scale, upper_right[1] * scale)
-                down_left = (down_left[0] * scale, down_left[1] * scale)
-                down_right = (down_right[0] * scale, down_right[1] * scale)
-                area = (down_right[0] - upper_left[0]) * (down_right[1] - upper_left[1])
-                painting = rectification(frame, (upper_left, upper_right, down_left, down_right))
-                painting = cv2.cvtColor(painting, cv2.COLOR_BGR2RGB)
-                name = "{}_frame{}_painting{}".format(file_name, num_frame, num)
-                paintings_rectified[name] = painting
-            save_paintings(paintings_rectified, folder=True, filename=file_name)
+            if num_frame % 50 == 0:
+                paintings_rectified = dict()
+                (x, y, w, h) = (0, 0, 0, 0)
+                for num, (upper_left, upper_right, down_left, down_right) in enumerate(bounding_boxes_frame):
+                    height_frame, width_frame = frame.shape[:2]
+                    scale_height = round((height_frame - height_frame) / 2)
+                    scale_width = round((height_frame - height_frame) / 2)
+                    upper_left = (upper_left[0] + scale_height, upper_left[1] + scale_width)
+                    upper_right = (upper_right[0] + scale_height, upper_right[1] + scale_width)
+                    down_left = (down_left[0] + scale_height, down_left[1] + scale_width)
+                    down_right = (down_right[0] + scale_height, down_right[1] + scale_width)
+                    bounding_boxes = (upper_left, upper_right, down_left, down_right)
+                    painting = rectification(frame, bounding_boxes)
+                    painting = cv2.cvtColor(painting, cv2.COLOR_BGR2RGB)
+                    name = "{}_frame{}_painting{}".format(file_name, num_frame, num)
+                    paintings_rectified[name] = painting
+                save_paintings(paintings_rectified, folder=True, filename=file_name)
 
 except KeyboardInterrupt:
     print('Stop processing')
