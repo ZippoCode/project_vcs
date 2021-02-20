@@ -23,7 +23,7 @@ def arg_parse():
     parser.add_argument('--folder', dest='paintings_folder',
                         help="The path of folder which contains painting rectified which you want retrieval",
                         # default=f"{DESTINATION_PAINTINGS_RECTIFIED}/TEST", type=str)
-                        default = f"../data/paintings_db/", type = str)
+                        default=DESTINATION_PAINTINGS_RECTIFIED, type=str)
     parser.add_argument('--source_db', dest='source_folder', help="The path of paintings database folder",
                         default=SOURCE_PAINTINGS_DB, type=str)
     return parser.parse_args()
@@ -34,6 +34,7 @@ num_example = args.num_example
 name_painting = args.name_painting
 folder = args.paintings_folder
 source_folder = args.source_folder
+folder = folder + 'TEST/'
 
 path_paintings = []
 if name_painting:

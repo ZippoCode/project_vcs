@@ -21,16 +21,16 @@ def arg_parser():
     parser = argparse.ArgumentParser(description="Process Painting Detection")
     parser.add_argument("--num", dest='num_example',
                         help='The number of videos. With -1 will be process all videos. (Default: 1)',
-                        default=-1, type=int)
+                        default=1, type=int)
     parser.add_argument("--show", dest='show_images',
                         help='If True you can see the results for each frame (Default: False)',
-                        default=True, type=bool)
+                        default=False, type=bool)
     parser.add_argument("--save", dest='save_video',
                         help='If True it saves the video with painting detected (Default: False)',
                         default=True, type=bool)
-    parser.add_argument("--resize", dest='resize_frame',
-                        help='If True the algorithm reduces the size of frames (Default: True)',
-                        default=False, type=bool)
+    parser.add_argument("--file", dest='file_video',
+                        help=f'The single file. (Default: {None})',
+                        default=None, type=str)
     parser.add_argument("--source", dest='source_folder',
                         help=f'The source folder of painting detected (Default: {SOURCE_PATH_VIDEOS})',
                         default=SOURCE_PATH_VIDEOS, type=str)
@@ -44,23 +44,25 @@ args = arg_parser()
 num_example = args.num_example
 save_flag = args.save_video
 show_images = args.show_images
-resize_frame = args.resize_frame
+file = args.file_video
 source_folder = args.source_folder
 destination = args.destination_folder
 
 print("Start Processing Painting Detection ...")
 print("Press CTRL+C for stopping the process.")
 
-path_videos = get_videos(folder_video=source_folder)
-if len(path_videos) == 0:
-    print(f'{FAIL}[ERROR] Folder not found!{ENDC}')
-    sys.exit(0)
-path_videos = random.sample(path_videos, k=num_example if num_example > 0 else len(path_videos))
+if file is not None:
+    path_videos = [file]
+else:
+    path_videos = get_videos(folder_video=source_folder)
+    if len(path_videos) == 0:
+        print(f'{FAIL}[ERROR] Folder not found!{ENDC}')
+        sys.exit(0)
+    path_videos = random.sample(path_videos, k=num_example if num_example > 0 else len(path_videos))
 
 print(f"[INFO] Number of videos which will be elaborated: {len(path_videos)}")
 print(f"[INFO] Save Video: {save_flag}")
 print(f"[INFO] Show frame elaboration: {show_images}")
-print(f"[INFO] Reduce size of image: {resize_frame}")
 print(f"[INFO] Folder where will store the videos: {destination}")
 
 while len(path_videos) > 0:
@@ -81,6 +83,7 @@ while len(path_videos) > 0:
         continue
     try:
         for num_frame, frame in enumerate(frames):
+            cv2.imwrite('../image_results/original_frame_1.png', cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             h, w = frame.shape[:-1]
             edit_images, edit_titles = edge_detection(frame)
             list_bounding = get_bounding_boxes(frame, edit_images[-1])
@@ -99,6 +102,7 @@ while len(path_videos) > 0:
                 images.append(result)
                 titles.append('Final result')
                 plt_images(images, titles)
+            cv2.imwrite('../image_results/result_edge_detection.png', cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
     except KeyboardInterrupt:
         print(f'{FAIL}Stop processing{ENDC}')
         pass

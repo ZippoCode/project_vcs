@@ -17,7 +17,7 @@ def arg_parse():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--num", dest='num_example', help='The number of video which do you want detect',
-                        default=-1, type=int)
+                        default=1, type=int)
     parser.add_argument("--show", dest='show_images', help='If True you can see the results of frame',
                         default=False, type=bool)
     parser.add_argument("--source", dest='source_folder',
@@ -52,6 +52,8 @@ for root, _, file_names in os.walk(source_folder):
 
 pickles = random.sample(pickles, k=num_example if num_example > 0 else len(pickles))
 # pickles = ['/home/zippo/PycharmProject/output/paintings_detected/GOPR5825.avi']
+pickles = ['/home/zippo/PycharmProject/output/paintings_detected/VIRB0399.avi']
+
 print("[INFO] Number of video which will be elaborated: {}".format(len(pickles)))
 
 try:

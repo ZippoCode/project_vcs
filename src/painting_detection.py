@@ -25,6 +25,7 @@ def edge_detection(image):
     retinex_image = multiscale_retinex(image)
     images.append(retinex_image)
     titles.append('Multi-scale Retinex')
+    # cv2.imwrite('../image_results/multiscale-retinex.png', cv2.cvtColor(retinex_image, cv2.COLOR_BGR2RGB))
 
     # Bilateral Filter
     bilateral_image = cv2.bilateralFilter(retinex_image, d=9, sigmaColor=75, sigmaSpace=75)
@@ -33,7 +34,7 @@ def edge_detection(image):
 
     # Apply Canny on V-Channel
     h_space, s_space, v_space = cv2.split(cv2.cvtColor(bilateral_image, cv2.COLOR_RGB2HSV))
-    image = cv2.Canny(v_space, threshold1=70, threshold2=80)
+    image = cv2.Canny(v_space, threshold1=80, threshold2=110)
     images.append(image)
     titles.append('Canny on S-channel in HSV space')
 
@@ -42,12 +43,13 @@ def edge_detection(image):
     dilate_image = cv2.morphologyEx(dilate_image, cv2.MORPH_CLOSE, kernel=np.ones((3, 3), np.uint8))
     images.append(dilate_image)
     titles.append('Background')
+    # cv2.imwrite('../image_results/edge_detection_1.jpg.png', dilate_image)
 
     # FIND FORMS
     # - Rectangle
-    linesP = cv2.HoughLinesP(dilate_image, rho=1, theta=np.pi / 180, threshold=150, lines=np.array([]),
-                             minLineLength=20,
-                             maxLineGap=20)
+    linesP = cv2.HoughLinesP(dilate_image, rho=15, theta=np.pi / 180, threshold=150, lines=np.array([]),
+                             minLineLength=10,
+                             maxLineGap=10)
     lines_image = np.zeros(image.shape, dtype=np.uint8)
     if linesP is not None:
         for i in range(0, len(linesP)):
@@ -66,9 +68,10 @@ def edge_detection(image):
         approx = cv2.approxPolyDP(hull, epsilon=epsilon, closed=True)
         cv2.fillConvexPoly(hull_image, approx, color=COLOR_WHITE)
     images.append(hull_image)
-    titles.append('Eroded paintings')
+    titles.append('Hull paintings')
 
     eroded_image = cv2.morphologyEx(hull_image, cv2.MORPH_OPEN, kernel=np.ones((7, 7), np.uint8), iterations=3)
     images.append(eroded_image)
     titles.append('Eroded paintings')
+    # cv2.imwrite('../image_results/edge_detection_1.jpg.jpg.png', eroded_image)
     return images, titles

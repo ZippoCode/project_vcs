@@ -27,7 +27,8 @@ DESTINATION_PEOPLE_FACIAL = os.path.join(__location__, 'output/person_facial/')
 
 # Yolo
 PATH_YOLO_CFG = os.path.join(__location__, 'yolo/cfg/yolov3-obj-test.cfg')
-PATH_YOLO_WEIGHTS = os.path.join(__location__, 'yolo/yolov3-obj-train_last.weights')
+# https://drive.google.com/file/d/1bkADs1lT8ayXwDwYnS1rU0Nz8rmTNmOt/view?usp=sharing
+PATH_YOLO_WEIGHTS = os.path.join(__location__, 'yolo/yolov3-obj-train_final.weights')
 PATH_COCO_NAMES = os.path.join(__location__, 'yolo/coco.names')
 
 PATH_ORIGINAL = '/fhntjti/custom_data/obj/original/people/'

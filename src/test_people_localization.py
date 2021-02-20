@@ -1,14 +1,16 @@
 import cv2
 import matplotlib.pyplot as plt
 import pandas as pd
+import sys
+import random
 
 import numpy as np
 import argparse
 
 # Custom importing
 from parameters import *
-from read_write import read_video, read_pickle_file
-from painting_retrieval import match_paitings
+from read_write import read_video, read_pickle_file, get_videos
+from painting_retrieval import match_paintings
 
 
 def people_localization(video_name):
@@ -46,8 +48,8 @@ def people_localization(video_name):
                 if not unique_found:
                     print('[INFO] Found new unique detected painting. ')
                     unique_paintings[(x_center, y_center)] = (x, y, width, height)
-                    result_retrieval_frame = match_paitings(frame[y: y + height, x: x + width, :],
-                                                            folder_database=SOURCE_PAINTINGS_DB)
+                    result_retrieval_frame = match_paintings(frame[y: y + height, x: x + width, :],
+                                                             folder_database=SOURCE_PAINTINGS_DB)
                     for name_painting, sim in result_retrieval_frame:
                         if name_painting in list_retrieval:
                             list_retrieval[name_painting] += sim
@@ -125,11 +127,20 @@ def roi_labeling(id, image, coordinate, image_name=None):
 
 def get_args():
     parser = argparse.ArgumentParser('Test your image or video by trained model.')
-    parser.add_argument('--video', type=str, default="../output/person_detected/VIRB0397.avi",
-                        help='Path of video', dest='video')
+    parser.add_argument('--source', type=str, default=DESTINATION_PEOPLE_DETECTED,
+                        help='Path of video', dest='path_folder')
+    parser.add_argument("--file", dest='video', help=f'The single file. (Default: {None})',
+                        default=None, type=str)
     return parser.parse_args()
 
 
 args = get_args()
-if args.video:
+if args.video is not None:
     people_localization(args.video)
+else:
+    path_videos = get_videos(folder_video=args.path_folder)
+    if len(path_videos) == 0:
+        print(f'{FAIL}[ERROR] Folder not found!{ENDC}')
+        sys.exit(0)
+    for videos in path_videos:
+        people_localization(videos)

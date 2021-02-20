@@ -62,7 +62,7 @@ For the extract the features we used a **Scale-Invariant Feature Transform** ([S
 
 ## People detection
 We use YOLOv3 to detect people.
-  * Weight file: `../yolo/yolov3-obj-train_last.weights`
+  * Weight file: `../yolo/yolov3-obj-train_final.weights`. You can download it [here](https://drive.google.com/file/d/1bkADs1lT8ayXwDwYnS1rU0Nz8rmTNmOt/view?usp=sharing)
   * Coco file: `../yolo/coco.name`
   * Config file: `../yolo/cfg/yolov3-obj-test.cfg`
 
