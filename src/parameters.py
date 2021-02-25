@@ -15,9 +15,11 @@ PATH_KEYPOINTS_DB = os.path.join(__location__, 'output/db_descriptors.json')
 PATH_MEANS = os.path.join(__location__, 'output/means.json')
 PATH_WEIGHTS = os.path.join(__location__, 'output/weights.json')
 PATH_COVARIANCES = os.path.join(__location__, 'output/covariances.json')
+PATH_PROBABILITIES = os.path.join(__location__, 'output/probabilities.json')
 PATH_FISHER_VECTOR_DB = os.path.join(__location__, 'output/db_fisher_vectors')
 PATH_GMM_DB = os.path.join(__location__, 'output/db_gmm.json')
 PATH_OUTPUT = os.path.join(__location__, 'output/')
+PATH_TEST_DATASET = os.path.join(__location__, 'data/test_retrieval')
 
 # Destination folders
 DESTINATION_PAINTINGS_DETECTED = os.path.join(__location__, 'output/paintings_detected/')

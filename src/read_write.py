@@ -71,6 +71,25 @@ def get_videos(folder_video):
     return path_videos
 
 
+ext_image = ('.jpg', '.bmp', '.jpeg', '.png')
+
+
+def find_image(folder: str):
+    image_paths = list()
+    file = None
+    if not os.path.exists(folder):
+        return image_paths
+    try:
+        for folder, _, filenames in os.walk(folder):
+            for file in filenames:
+                if file.lower().endswith(ext_image):
+                    image_paths.append(os.path.join(folder, file))
+    except FileNotFoundError:
+        print(f"File {file} not found into {folder}")
+        sys.exit()
+    return image_paths
+
+
 def save_paintings(dict_image, destination_path=DESTINATION_PAINTINGS_RECTIFIED, folder=False, filename=None):
     """
 

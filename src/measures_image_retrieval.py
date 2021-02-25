@@ -4,46 +4,40 @@ import os
 
 # Custom importing
 from parameters import *
-from painting_retrieval import match_paintings
-
-folder = '../output/paintings_rectified/TEST/'
-path_paintings = []
+from painting_retrieval import PaintingRetrieval
+from read_write import find_image
 
 
-def check_image_retrieval():
-    # df = pandas.read_csv(PATH_DATA_CSV)
-    # name_images = df['Image']
-    matches = dict()
-    true_positive = 0
-    false_negative = 0
-    true_negative = 0
-    false_positive = 0
-    for root, _, file_names in os.walk(folder):
-        for filename in file_names:
-            if filename.lower().endswith('.jpg') or filename.lower().endswith('png'):
-                path_paintings.append(os.path.join(root, filename))
-    sorted(path_paintings)
-    print(f"Found {len(path_paintings)} paintings")
+def check_image_retrieval(folder=PATH_TEST_DATASET):
+    true_positive, false_negative, true_negative, false_positive = 0, 0, 0, 0
+    path_paintings = find_image(folder)
+
+    print(f"Found {len(path_paintings)} test paintings")
+    print("Start Retrieval ...")
+    print('*' * 25)
+    painting_retrieval = PaintingRetrieval()
+    path_paintings.sort()
+    print('*' * 25)
     for name_image in path_paintings:
-        image = cv2.imread(name_image, cv2.IMREAD_COLOR)
-        list_retrieval = match_paintings(image)
-        best_match, similarity = list_retrieval[0][0], round(list_retrieval[0][1], 3)
-        painting_test = (os.path.splitext(os.path.basename(name_image))[0]).split('_')[0]
-        if similarity <= 0.08:
-            predicted_paintings = 'NonMatch'
-        else:
-            predicted_paintings = best_match.split('.')[0]
-        if painting_test != 'NonMatch' and painting_test == predicted_paintings:
-            true_positive += 1
-        elif painting_test != 'NonMatch' and painting_test != predicted_paintings:
-            false_positive += 1
-        elif painting_test == 'NonMatch' and painting_test == predicted_paintings:
-            true_negative += 1
-        elif painting_test == 'NonMatch' and painting_test != predicted_paintings:
-            false_negative += 1
-        else:
-            print("ERROR!")
-        print(f"Test: {painting_test} - Predicted: {predicted_paintings} with similarity: {similarity}")
+        list_retrieval = painting_retrieval.match_painting(name_image)
+        if len(list_retrieval) > 0:
+            best_match, similarity = list_retrieval[0][0], round(list_retrieval[0][1], 3)
+            painting_test = (os.path.splitext(os.path.basename(name_image))[0]).split('_')[0]
+            if similarity <= 0.08:
+                predicted_paintings = 'NonMatch'
+            else:
+                predicted_paintings = best_match.split('.')[0]
+            if painting_test != 'NonMatch' and painting_test == predicted_paintings:
+                true_positive += 1
+            elif painting_test != 'NonMatch' and painting_test != predicted_paintings:
+                false_positive += 1
+            elif painting_test == 'NonMatch' and painting_test == predicted_paintings:
+                true_negative += 1
+            elif painting_test == 'NonMatch' and painting_test != predicted_paintings:
+                false_negative += 1
+            else:
+                print("ERROR!")
+            print(f"Test: {painting_test} - Predicted: {predicted_paintings} with similarity: {similarity}")
 
     accuracy = round((true_positive + true_negative) / len(path_paintings), 3)
     recall = round(true_positive / (true_positive + false_negative), 3)
