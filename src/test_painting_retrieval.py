@@ -4,9 +4,9 @@ import cv2
 import os
 import sys
 
-from painting_retrieval import match_paintings
+from painting_retrieval import PaintingRetrieval
 from plotting import plt_images
-from parameters import DESTINATION_PAINTINGS_RECTIFIED, SOURCE_PAINTINGS_DB
+from parameters import *
 
 
 def arg_parse():
@@ -22,8 +22,7 @@ def arg_parse():
                         default=None, type=str)
     parser.add_argument('--folder', dest='paintings_folder',
                         help="The path of folder which contains painting rectified which you want retrieval",
-                        # default=f"{DESTINATION_PAINTINGS_RECTIFIED}/TEST", type=str)
-                        default=DESTINATION_PAINTINGS_RECTIFIED, type=str)
+                        default=PATH_TEST_DATASET, type=str)
     parser.add_argument('--source_db', dest='source_folder', help="The path of paintings database folder",
                         default=SOURCE_PAINTINGS_DB, type=str)
     return parser.parse_args()
@@ -34,7 +33,6 @@ num_example = args.num_example
 name_painting = args.name_painting
 folder = args.paintings_folder
 source_folder = args.source_folder
-folder = folder + 'TEST/'
 
 path_paintings = []
 if name_painting:
@@ -54,20 +52,22 @@ print("Start Processing Painting Retrieval ...")
 print(f"[INFO] Source folder database: {source_folder}")
 print(f"[INFO] Number of paintings which be elaborate: {len(painting_choices)}")
 
+painting_retrieval = PaintingRetrieval()
+
 try:
     for name_painting in painting_choices:
         if not os.path.isfile(name_painting):
             print('Rectified image not found')
             continue
         print(f"[INFO] Elaborate {os.path.split(name_painting)[1]} painting rectified")
-        painting = cv2.imread(name_painting, cv2.IMREAD_COLOR)
-        list_retrieval = match_paintings(painting, folder_database=source_folder)
+        list_retrieval = painting_retrieval.match_painting(name_painting)
         for best_match, similarity in list_retrieval:
             print(f"Match Name {best_match} - Similarity {similarity}")
         if list_retrieval is not None and len(list_retrieval) > 0:
             best_match, similarity = list_retrieval[0]
-            retrieval = cv2.imread(f"{SOURCE_PAINTINGS_DB}{best_match}", cv2.IMREAD_COLOR)
             titles = ['Painting Rectified', 'Painting Best Match']
+            painting = cv2.imread(name_painting, cv2.IMREAD_COLOR)
+            retrieval = cv2.imread(f"{SOURCE_PAINTINGS_DB}{best_match}.png", cv2.IMREAD_COLOR)
             images = [cv2.cvtColor(painting, cv2.COLOR_BGR2RGB), cv2.cvtColor(retrieval, cv2.COLOR_BGR2RGB)]
             plt_images(images=images, titles=titles)
         else:

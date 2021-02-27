@@ -53,10 +53,9 @@ COLOR_WINDOW_RADIUS = 16
 # Rectification
 ENTROPY_THRESHOLD = 2.0
 
-# Retrieval
-FLANN_INDEX_KDTREE = 1
-RATIO = 0.7
-MIN_MATCH_COUNT = 150
+# PAINTING RETRIEVAL
+MAX_ITER = 3000
+COVARIANCE_TYPE = 'diag'
 
 # YOLO
 confThreshold = 0.5  # Confidence threshold

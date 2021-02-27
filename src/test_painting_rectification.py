@@ -51,9 +51,6 @@ for root, _, file_names in os.walk(source_folder):
             pickles.append(os.path.join(root, filename))
 
 pickles = random.sample(pickles, k=num_example if num_example > 0 else len(pickles))
-# pickles = ['/home/zippo/PycharmProject/output/paintings_detected/GOPR5825.avi']
-pickles = ['/home/zippo/PycharmProject/output/paintings_detected/VIRB0399.avi']
-
 print("[INFO] Number of video which will be elaborated: {}".format(len(pickles)))
 
 try:

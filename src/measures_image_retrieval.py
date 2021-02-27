@@ -23,7 +23,7 @@ def check_image_retrieval(folder=PATH_TEST_DATASET):
         if len(list_retrieval) > 0:
             best_match, similarity = list_retrieval[0][0], round(list_retrieval[0][1], 3)
             painting_test = (os.path.splitext(os.path.basename(name_image))[0]).split('_')[0]
-            if similarity <= 0.08:
+            if similarity <= 0.06:
                 predicted_paintings = 'NonMatch'
             else:
                 predicted_paintings = best_match.split('.')[0]
@@ -43,7 +43,7 @@ def check_image_retrieval(folder=PATH_TEST_DATASET):
     recall = round(true_positive / (true_positive + false_negative), 3)
     precision = round(true_positive / (true_positive + false_positive), 3)
     f1_score = round(2 * (precision * recall) / (precision + recall))
-    print(f"Accuracy: {accuracy} - Recall: {recall} - Precision: {precision}")
+    print(f"Accuracy: {accuracy} - Recall: {recall} - Precision: {precision} - F1 Score: {f1_score}")
     #     if test_painting in matches:
     #         matches[test_painting].append((predicted_paintings, similarity))
     #     else:
