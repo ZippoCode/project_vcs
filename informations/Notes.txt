@@ -9,12 +9,14 @@ Problems with video
 ../data/videos/003/GOPR1933.MP4 -> BAD RESULT
 ../data/videos/003/GOPR1940.MP4 -> MANY AND TOO LITTLE PAINTINGS
 ../data/videos/003/GOPR1936.MP4 -> BAD RESULT
-../data/videos/004/IMG_3816.MOV -> BAD RESULT
 ../data/videos/004/IMG_3802.MOV -> The painting is a circle
+../data/videos/004/IMG_3811.MOV -> It has no painting! -> Must be corrected
+../data/videos/004/IMG_3816.MOV -> BAD RESULT
 ../data/videos/005/GOPR2051.MP4 -> CIRCLE PAINTING
 ../data/videos/005/GOPR2052.MP4 (Bad Result)
 ../data/videos/005/GOPR2045.MP4 -> Correct
 ../data/videos/006/IMG_9621.MOV -> PERFECT (Easy)
+../data/videos/006/IMG_9630.MOV -> It has no painting! -> Must be corrected
 ../data/videos/007/IMG_7857.MOV -> Perfect
 ../data/videos/009/IMG_2656.MOV -> Perfect
 ../data/videos/009/IMG_2652.MOV (Bad Result)
@@ -27,16 +29,5 @@ Problems with video
 ../data/videos/011/3.mp4 -> Correct
 ../data/videos/012/IMG_4082.MOV -> NOT PERFECT
 ../data/videos/014/VID_20180529_112517.mp4 -> Correct
-../data/videos/014/VID_20180529_112517.mp4
+../data/videos/014/VID_20180529_112722.mp4 -> The results are not perfect
 
-# Painting presents into paiting_db
-IMG_3814_#1.jpg -> Correct
-GOPR5826_#3.jpg -> Wrong
-20180206_113600_#0.jpg -> Correct
-VIRB0392_#0.jpg -> Correct
-GOPR5826_#0.jpg -> Correct
-VID_20180529_112627_#1.jpg -> Wrong
-VID_20180529_112627_#2.jpg -> Correct
-VID_20180529_112627_#4.jpg -> Correct
-GOPR5818_#2.jpg -> Correct
-IMG_4083_#3.jpg -> Correct

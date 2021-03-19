@@ -17,7 +17,7 @@
 ```
 
 You need install a FFMPEG codec. If you use Linux S.O. you can use ``` sudo apt-get install FFMPEG ```.
-Else if you are using Windows OS you need download FFMPEG codec from this [link](https://ffmpeg.zeranoe.com/builds/)
+Else if you are using Windows OS you need download FFMPEG codec from this [link](https://ottverse.com/ffmpeg-builds/)
 ``` 
   Download the Build File
   Extract the file
@@ -33,32 +33,40 @@ Else if you are using Windows OS you need download FFMPEG codec from this [link]
 
 
 ## Painting Detection & Rectification
-  The file `src/test_painting_detection.py` contains all functions for detecting edge and finding four corners of the painting.
-   In addition, file `test_painting_rectification.py` has affine transformations to create new image that has only painting. 
-  Run: 
+The file `src/test_painting_detection.py` contains all functions for detecting edge and finding four corners of the painting.
+In addition, file `test_painting_rectification.py` has affine transformations to create a new image that has only painting. <br>Usage:<br/>
 ```bash
   $ python test_painting_detection.py
   $ python test_painting_rectification.py
-
 ```
   Output video and PCK file for the Painting Detection is : `../output/painting_detected/`.
   Output video for the Painting Rectification is `./output/painting_rectificated/`.
   
-![Figure 1](https://github.com/ZippoCode/project_vcs/blob/master/image_results/final-result.png)
-![Figure 2](https://github.com/ZippoCode/project_vcs/blob/master/image_results/painting4.png)
-![Figure 3](https://github.com/ZippoCode/project_vcs/blob/master/image_results/painting7.png)
-![Figure 4](https://github.com/ZippoCode/project_vcs/blob/master/image_results/painting9.png)
-
+![Figure 1](https://github.com/ZippoCode/project_vcs/blob/master/image_results/original_frame_1.png)
+![Figure 2](https://github.com/ZippoCode/project_vcs/blob/master/image_results/painting_detection.png)
 
 ## Retrieval Painting
-The task's goal is given a query image find the same similar images in the set. This is called Image Retrieval. The first step is detected the features of query image and these of image contains in the database and then matches these. 
-For the extract the features we used a **Scale-Invariant Feature Transform** ([SIFT](https://docs.opencv.org/master/da/df5/tutorial_py_sift_intro.html))  while for the Features Match we used **FLANN** which filter the matches second the propos of Lowe.
+The task's goal is given a query image find the same similar images in the set. The first step is detected the features of query image and these of image contains in the database and then matches these. 
+For the extract the features we used a **Scale-Invariant Feature Transform** [SIFT](https://docs.opencv.org/master/da/df5/tutorial_py_sift_intro.html)
+<br/>Usage
 ```bash
   $ python test_painting_retrieval.py
 ```
-  Output is a image that contains image in result of painting rectification and painting in dataset
-![Figure 5](https://github.com/ZippoCode/project_vcs/blob/master/image_results/retrieval1.png)
+**Parameters:**:  
+`--num`: The number of paintings<br/>
+`--painting`: The path of painting<br/>
+`--folder`: The path of folder which contains paintings<br/>
+`--source_db`: The path of paintings database folder<br/>
+<br/>
+Output is an image that contains image in result of painting rectification and painting in dataset<br/>
+![Figure 5](https://github.com/ZippoCode/project_vcs/blob/master/image_results/painting_retrieval_1.png)
+![Figure 6](https://github.com/ZippoCode/project_vcs/blob/master/image_results/painting_retrieval_2.png)
 
+<br>Results:<br/>
+
+| Accuracy  |  Recall   | Precision | F1        |
+| --------- | --------- | --------- | --------- |
+| 0.601     | 0.828     | 0.568     | 1.0       |
 
 ## People detection
 We use YOLOv3 to detect people.
