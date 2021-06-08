@@ -7,7 +7,7 @@ matplotlib==3.3.2
 numpy==1.19.4
 opencv-contrib-python-headless @ file:///home/zippo/Scaricati/opencv_contrib_python_headless-4.1.0.25-cp36-cp36m-linux_x86_64.whl
 pandas==1.1.4
-Pillow==8.1.2
+Pillow==8.2.0
 pyparsing==2.4.7
 python-dateutil==2.8.1
 pytz==2020.4
