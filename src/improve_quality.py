@@ -1,27 +1,20 @@
-import numpy as np, cv2
+import numpy as np
+import cv2
 
 # Custom importing
-from parameters import SIGMA
+from parameters import SIGMA, LOW_CLIP, HIGH_CLIP
 
 
-def multiscale_retinex(image):
+def multiscale_retinex(image: np.ndarray):
     """
         Using the Multiscale Retinex with Color Restoration for image enhancement
-
-        http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.52.1669&rep=rep1&type=pdf
-        http://ieeexplore.ieee.org/document/597272/
-        http://ieeexplore.ieee.org/document/6176791/
-        http://www.ipol.im/pub/art/2014/107/
-
-    :param image:
+    :param image: np.ndarray
         Original Image with shape (H, W, C)
     :return:
     """
     if len(image.shape) != 3:
         print('Image need have shape (H, W, C)')
         return
-    low_clip = 0.01
-    high_clip = 0.99
     h, w = image.shape[:2]
     h_ratio = 300 / h
     w_ratio = 300 / w
@@ -47,9 +40,9 @@ def multiscale_retinex(image):
         unique, counts = np.unique(retinex[:, :, c], return_counts=True)
         current, high_val, low_val = 0, 0, 0
         for u, count in zip(unique, counts):
-            if float(current) / total < low_clip:
+            if float(current) / total < LOW_CLIP:
                 low_val = u
-            if float(current) / total < high_clip:
+            if float(current) / total < HIGH_CLIP:
                 high_val = u
             current += count
         retinex[:, :, c] = np.maximum(np.minimum(retinex[:, :, c], high_val), low_val)

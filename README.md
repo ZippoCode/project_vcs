@@ -64,9 +64,9 @@ Output is an image that contains image in result of painting rectification and p
 
 <br>Results:<br/>
 
-| Accuracy  |  Recall   | Precision | F1        |
-| --------- | --------- | --------- | --------- |
-| 0.601     | 0.828     | 0.568     | 1.0       |
+| Accuracy  |  Recall   | Precision | F1        |   TPR       |   NPR    |   
+| --------- | --------- | --------- | --------- | ---------   |----------|
+| 0.646     | 0.845     | 0.624     | 0.699     | 0.639       |  0.571   |
 
 ## People detection
 We use YOLOv3 to detect people.

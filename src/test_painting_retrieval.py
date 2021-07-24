@@ -16,12 +16,13 @@ def arg_parse():
     :return:
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("--num", dest='num_example', help='The number of video which do you want detect',
-                        default=10, type=int)
-    parser.add_argument('--name', dest='name_painting', help="The path of painting rectified which you want retrieval",
+    parser.add_argument("--num", dest='num_example', help='The number of painting which do you want retrieval',
+                        default=1, type=int)
+    parser.add_argument('--painting', dest='name_painting',
+                        help="The path of painting which you want retrieval",
                         default=None, type=str)
     parser.add_argument('--folder', dest='paintings_folder',
-                        help="The path of folder which contains painting rectified which you want retrieval",
+                        help="The path of folder which contains painting which you want retrieval",
                         default=PATH_TEST_DATASET, type=str)
     parser.add_argument('--source_db', dest='source_folder', help="The path of paintings database folder",
                         default=SOURCE_PAINTINGS_DB, type=str)
@@ -35,27 +36,29 @@ folder = args.paintings_folder
 source_folder = args.source_folder
 
 path_paintings = []
-if name_painting:
-    path_paintings.append(name_painting)
+if args.name_painting is not None:
+    path_paintings = [name_painting]
 else:
+    if not os.path.isdir(folder):
+        print(f"[ERROR] Folder not found")
+        sys.exit(-1)
     print(f"[INFO] The source folder of paintings: {folder}")
     for root, _, file_names in os.walk(folder):
         for filename in file_names:
             if filename.lower().endswith('.jpg') or filename.lower().endswith('png'):
                 path_paintings.append(os.path.join(root, filename))
+    path_paintings = random.sample(path_paintings, k=num_example if num_example > 0 else len(path_paintings))
+    if len(path_paintings) == 0:
+        sys.exit("[ERROR] Paintings not found.")
 
-if len(path_paintings) == 0:
-    sys.exit("[ERROR] Paintings not found.")
-
-painting_choices = random.sample(path_paintings, k=num_example if num_example > 0 else len(path_paintings))
 print("Start Processing Painting Retrieval ...")
 print(f"[INFO] Source folder database: {source_folder}")
-print(f"[INFO] Number of paintings which be elaborate: {len(painting_choices)}")
+print(f"[INFO] Number of paintings which be elaborate: {len(path_paintings)}")
 
-painting_retrieval = PaintingRetrieval()
+painting_retrieval = PaintingRetrieval(folder_database=SOURCE_PAINTINGS_DB)
 
 try:
-    for name_painting in painting_choices:
+    for name_painting in path_paintings:
         if not os.path.isfile(name_painting):
             print('Rectified image not found')
             continue

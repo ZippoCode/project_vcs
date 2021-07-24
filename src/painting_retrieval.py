@@ -1,13 +1,10 @@
 import cv2
-import os
-import numpy as np
 import json
 import codecs
 from tqdm import tqdm
-from scipy.stats import multivariate_normal
 from sklearn.mixture import GaussianMixture
 from sklearn.decomposition import PCA
-from scipy.spatial.distance import cosine
+from scipy.spatial.distance import cosine, hamming
 
 # Custom importing
 from parameters import *
@@ -21,7 +18,7 @@ class NumpyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def save_file(filename: str, array):
+def save_file(filename: str, array: object):
     try:
         with codecs.open(filename, 'w', encoding='utf-8') as file:
             json.dump(array, file, separators=(',', ':'), cls=NumpyEncoder)
@@ -52,7 +49,9 @@ class PaintingRetrieval:
         self.weights_vector = None
         self.means_matrix = None
         self.covariances_matrix = None
-        self.gmm = GaussianMixture(n_components=self.num_clusters, covariance_type=COVARIANCE_TYPE, max_iter=MAX_ITER)
+        self.variance = None
+        self.gmm = GaussianMixture(n_components=self.num_clusters, covariance_type=COVARIANCE_TYPE, max_iter=MAX_ITER,
+                                   verbose=2)
 
         # Configuration the class
         self.execute_descriptors()
@@ -66,10 +65,10 @@ class PaintingRetrieval:
             print(f"Found descriptors file!")
         else:
             print(f"File with descriptors not found. It needs to create one!")
-            for name_image in self.path_images:
+            for name_image in tqdm(self.path_images):
                 filename = os.path.splitext(os.path.basename(name_image))[0]
                 image = cv2.imread(name_image, cv2.IMREAD_GRAYSCALE)
-                image = cv2.resize(image, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
+                image = cv2.resize(image, (256, 256), interpolation=cv2.INTER_LINEAR)
                 _, des = self.detector.detectAndCompute(image, None)
                 self.descriptors[filename] = des
             save_file(PATH_KEYPOINTS_DB, self.descriptors)
@@ -80,18 +79,27 @@ class PaintingRetrieval:
         print(f"Applied Principal Component Analysis. Now the dimension of descriptor is: {self.pca.n_components_}")
 
     def extract_dictionary(self):
+        print(f"[INFO] Configuration GMM - Number of Components: {self.gmm.n_components}")
+
         if os.path.isfile(PATH_MEANS) and os.path.isfile(PATH_WEIGHTS) and os.path.isfile(PATH_COVARIANCES):
             self.weights_vector = np.array(json.loads(codecs.open(PATH_WEIGHTS, 'r', encoding='utf-8').read()))
             self.means_matrix = np.array(json.loads(codecs.open(PATH_MEANS, 'r', encoding='utf-8').read()))
             self.covariances_matrix = np.array(json.loads(codecs.open(PATH_COVARIANCES, 'r', encoding='utf-8').read()))
-            print("Found trained Gaussian Mixture Model.")
+            self.variance = np.diagonal(self.covariances_matrix, axis1=1, axis2=2)
 
+            # Configuration GMM
+            self.gmm.weights_ = self.weights_vector
+            self.gmm.means_ = self.means_matrix
+            self.gmm.covariances_ = self.covariances_matrix
+            self.gmm.precisions_cholesky_ = np.linalg.cholesky(np.linalg.inv(self.covariances_matrix))
+            print("Found trained Gaussian Mixture Model.")
         else:
             print("File with configurations not found. Wait because it needs to fit the GMM!")
             self.gmm.fit(self.pca.transform(self.all_descriptors))
-            self.covariances_matrix = self.gmm.covariances_
             self.means_matrix = self.gmm.means_
             self.weights_vector = self.gmm.weights_
+            self.covariances_matrix = self.gmm.covariances_
+            self.variance = np.diagonal(self.covariances_matrix, axis1=1, axis2=2)
             print("Gaussian Mixture Model fitted!")
 
             # Store File
@@ -121,21 +129,7 @@ class PaintingRetrieval:
 
     def compute_fisher_vector(self, des: np.ndarray):
         num_descriptors = des.shape[0]
-
-        # Compute MLE
-        g = []
-        for i in range(self.num_clusters):
-            g.append(multivariate_normal(mean=self.means_matrix[i], cov=self.covariances_matrix[i]))
-        prob = np.zeros((num_descriptors, self.num_clusters))
-        for t in range(num_descriptors):
-            for i, g_x in enumerate(g):
-                prob[t, i] = g_x.pdf(des[t, :])
-
-        # Calculate Soft Assignment
-        soft_assignment = np.zeros((num_descriptors, self.num_clusters))
-        for t in range(num_descriptors):
-            soft_assignment[t, :] = np.multiply(self.weights_vector, prob[t, :]) / np.sum(
-                self.weights_vector * prob[t, :])
+        soft_assignment = self.gmm.predict_proba(des)
 
         # Compute Proportion and Average of descriptors
         descriptor_proportion = np.sum(soft_assignment, axis=0) / num_descriptors
@@ -146,12 +140,13 @@ class PaintingRetrieval:
             for t in range(num_descriptors):
                 value += soft_assignment[t, i] * des[t, :]
             if np.sum(soft_assignment[:, i]) == 0:
-                return None, None
-            descriptor_average[i, :] = value / np.sum(soft_assignment[:, i])
+                descriptor_average[i, :] = np.zeros(self.num_components)
+            else:
+                descriptor_average[i, :] = value / np.sum(soft_assignment[:, i])
 
         delta = np.empty((self.num_clusters, self.num_components))
         for i in range(self.num_clusters):
-            delta[i] = (descriptor_average[i, :] - self.means_matrix[i, :]) / np.sqrt(self.covariances_matrix[i, :])
+            delta[i] = (descriptor_average[i, :] - self.means_matrix[i, :]) / np.sqrt(self.variance[i, :])
 
         fisher_vector = None
         for i in range(self.num_clusters):
@@ -169,9 +164,7 @@ class PaintingRetrieval:
 
     def match_painting(self, path_image: str):
         image = cv2.imread(path_image, cv2.IMREAD_GRAYSCALE)
-        h, w = image.shape
-        if h > 350 and w > 350:
-            image = cv2.resize(image, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
+        image = cv2.resize(image, (256, 256), interpolation=cv2.INTER_LINEAR)
         _, des = self.detector.detectAndCompute(image, None)
         des = self.pca.transform(des)
         query_fisher_vector = self.compute_fisher_vector(des)

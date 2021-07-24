@@ -2,7 +2,7 @@ import random
 import argparse
 import cv2
 import os
-import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 from read_write import read_video, save_paintings, read_pickle_file
 from painting_rectification import rectification
@@ -51,9 +51,11 @@ for root, _, file_names in os.walk(source_folder):
             pickles.append(os.path.join(root, filename))
 
 pickles = random.sample(pickles, k=num_example if num_example > 0 else len(pickles))
+# pickles = ['/home/zippo/PycharmProjects/project_vcs/output/paintings_detected/VID_20180529_112951.pck']
 print("[INFO] Number of video which will be elaborated: {}".format(len(pickles)))
 
 try:
+    progress_bar = tqdm(total=len(pickles))
     while len(pickles) > 0:
         path_pickle_file = random.choice(pickles)
         pickles.remove(path_pickle_file)
@@ -63,15 +65,11 @@ try:
         if len(pickle_file.items()) == 0:
             continue
         if 'Name file' in pickle_file:
-            print('[INFO] Elaborated file {}'.format(pickle_file['Name file']))
+            progress_bar.set_description(f"Elaborate: {pickle_file['Name file']}")
         if 'Path video' in pickle_file:
             path_video = pickle_file['Path video']
-            print('[INFO] Path: {}'.format(path_video))
-        if 'Total frame' in pickle_file:
-            print('[INFO] Total Number frame: {}'.format(pickle_file['Total frame']))
         if 'Resolution frame' in pickle_file:
             height, width = pickle_file['Resolution frame']
-            print('[INFO] Frame Resolution: {}'.format((height, width)))
         if 'Bounding boxes' in pickle_file:
             bounding_boxes_dict = pickle_file['Bounding boxes']
         frames = read_video(video_path=path_video)
@@ -94,7 +92,8 @@ try:
                     name = "{}_frame{}_painting{}".format(file_name, num_frame, num)
                     paintings_rectified[name] = painting
                 save_paintings(paintings_rectified, folder=True, filename=file_name)
-
+        progress_bar.update(n=1)
+    progress_bar.close()
 except KeyboardInterrupt:
     print('Stop processing')
     pass

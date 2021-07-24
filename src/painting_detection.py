@@ -6,13 +6,13 @@ from improve_quality import multiscale_retinex
 from parameters import *
 
 
-def edge_detection(image):
+def edge_detection(original_image: np.ndarray):
     """
         Takes an image RGB and return a two lists.
         The first list contains edited images while the second contains
         a name of algorithms which used
 
-    :param image: original image
+    :param original_image: np.ndarray
 
     :return:
         - a list containing the images of the operations carried out
@@ -21,20 +21,19 @@ def edge_detection(image):
     images = []
     titles = []
 
+    # image = cv2.copyMakeBorder(original_image, top=VP, bottom=VP, left=VP, right=VP, borderType=cv2.BORDER_CONSTANT)
+    # images.append(image)
+    # titles.append("Border image")
+
     # Multi-Scale Retinex
-    retinex_image = multiscale_retinex(image)
+    retinex_image = multiscale_retinex(original_image)
     images.append(retinex_image)
     titles.append('Multi-scale Retinex')
     # cv2.imwrite('../image_results/multiscale-retinex.png', cv2.cvtColor(retinex_image, cv2.COLOR_BGR2RGB))
 
-    # Bilateral Filter
-    bilateral_image = cv2.bilateralFilter(retinex_image, d=9, sigmaColor=75, sigmaSpace=75)
-    images.append(bilateral_image)
-    titles.append('Bilateral Image')
-
     # Apply Canny on V-Channel
-    h_space, s_space, v_space = cv2.split(cv2.cvtColor(bilateral_image, cv2.COLOR_RGB2HSV))
-    image = cv2.Canny(v_space, threshold1=80, threshold2=110)
+    h_space, s_space, v_space = cv2.split(cv2.cvtColor(retinex_image, cv2.COLOR_RGB2HSV))
+    image = cv2.Canny(v_space, threshold1=80, threshold2=110, L2gradient=True)
     images.append(image)
     titles.append('Canny on S-channel in HSV space')
 
@@ -46,7 +45,7 @@ def edge_detection(image):
     # cv2.imwrite('../image_results/edge_detection_1.jpg.png', dilate_image)
 
     # FIND FORMS
-    # - Rectangle
+    # Rectangle
     linesP = cv2.HoughLinesP(dilate_image, rho=15, theta=np.pi / 180, threshold=150, lines=np.array([]),
                              minLineLength=10,
                              maxLineGap=10)
@@ -73,5 +72,11 @@ def edge_detection(image):
     eroded_image = cv2.morphologyEx(hull_image, cv2.MORPH_OPEN, kernel=np.ones((7, 7), np.uint8), iterations=3)
     images.append(eroded_image)
     titles.append('Eroded paintings')
+
+    # Remove border add
+    # result_image = eroded_image[VP:original_image.shape[0] - VP, VP: original_image.shape[1] - VP]
+    # images.append(result_image)
+    # titles.append("Final")
+
     # cv2.imwrite('../image_results/edge_detection_1.jpg.jpg.png', eroded_image)
     return images, titles

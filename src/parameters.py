@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 import numpy as np
+import cv2
 
 __location__ = Path(__file__).parent.parent.absolute()
 
@@ -27,6 +28,9 @@ DESTINATION_PAINTINGS_RECTIFIED = os.path.join(__location__, 'output/paintings_r
 DESTINATION_PEOPLE_DETECTED = os.path.join(__location__, 'output/person_detected/')
 DESTINATION_PEOPLE_FACIAL = os.path.join(__location__, 'output/person_facial/')
 
+# KEY DICTIONARY
+FILENAME = 'Name file'
+
 # Yolo
 PATH_YOLO_CFG = os.path.join(__location__, 'yolo/cfg/yolov3-obj-test.cfg')
 # https://drive.google.com/file/d/1bkADs1lT8ayXwDwYnS1rU0Nz8rmTNmOt/view?usp=sharing
@@ -42,6 +46,8 @@ EROSION_ITERATIONS = 3
 
 # MULTI-SCALE RETINEX
 SIGMA = [7, 40, 125]
+LOW_CLIP = 0.01
+HIGH_CLIP = 0.99
 
 # PAINTING DETECTION
 KERNEL_3x3 = np.ones((3, 3), dtype=np.uint8)
@@ -49,13 +55,14 @@ NUM_ITERATIONS_DILATE = 1
 NUM_ITERATIONS_ERODE = 3
 SPATIAL_WINDOW_RADIUS = 16
 COLOR_WINDOW_RADIUS = 16
+VP = 25
 
 # Rectification
 ENTROPY_THRESHOLD = 2.0
 
 # PAINTING RETRIEVAL
-MAX_ITER = 3000
-COVARIANCE_TYPE = 'diag'
+MAX_ITER = 1000
+COVARIANCE_TYPE = 'full'
 
 # YOLO
 confThreshold = 0.5  # Confidence threshold
@@ -66,8 +73,8 @@ classesFile = "../yolo/coco.names"
 
 # MESSAGE COLORS
 HEADER = '\033[95m'
-OKBLUE = '\033[94m'
-OKGREEN = '\033[92m'
+BLUE = '\033[94m'
+GREEN = '\033[92m'
 WARNING = '\033[93m'
 FAIL = '\033[91m'
 ENDC = '\033[0m'
@@ -80,3 +87,7 @@ COLOR_RED = (255, 0, 0)
 COLOR_BLUE = (0, 0, 255)
 COLOR_YELLOW = (0, 255, 255)
 COLOR_WHITE = (255, 255, 255)
+
+# STORE VIDEO
+FOURCC_NAME = 'MJPG'
+FPS = 30

@@ -233,7 +233,7 @@ def reduce_size(image):
     return frame
 
 
-def draw_paintings(image, list_painting):
+def draw_paintings(image: np.ndarray, list_painting):
     """
         Given a images with shape (H, W, C) and a list of painting
         this method draws the lines, the points and a rectangles on each paintings
