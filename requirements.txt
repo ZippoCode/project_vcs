@@ -1,4 +1,4 @@
-certifi==2021.5.30
+certifi==2022.12.7
 cycler==0.10.0
 dataclasses==0.8
 future==0.18.2
